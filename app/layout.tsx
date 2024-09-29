@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import "@/styles/css/satoshi.css";
+// import "@/styles/css/satoshi.css";
+import "react-toastify/dist/ReactToastify.css";
+import AppProvider from "@/components/AppProvider/AppProvider";
+import { cookies } from "next/headers";
+
+const inter = Inter({ subsets: ["vietnamese"] });
 
 export const metadata: Metadata = {
     title: "Create Next App",
@@ -12,10 +18,14 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const cookiesStore = cookies();
+    const sessionToken = cookiesStore.get("sessionToken");
     return (
         <html lang="en">
-            <body suppressHydrationWarning={true}>
-                <div className="dark:bg-boxdark-2 dark:text-bodydark">{children}</div>
+            <body className={inter.className} suppressHydrationWarning={true}>
+                <div className="dark:bg-boxdark-2 dark:text-bodydark">
+                    <AppProvider initialSessionToken={sessionToken?.value}>{children}</AppProvider>
+                </div>
             </body>
         </html>
     );

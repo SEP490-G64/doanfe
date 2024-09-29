@@ -9,7 +9,7 @@ const config: Config = {
     ],
     theme: {
         fontFamily: {
-            satoshi: ["Satoshi", "sans-serif"],
+            satoshi: ["Inter", "sans-serif"],
         },
         screens: {
             "2xsm": "375px",
