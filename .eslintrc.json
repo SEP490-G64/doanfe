@@ -1,6 +1,6 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript", "plugin:tailwindcss/recommended", "prettier"],
-  "rules": {
-    "tailwindcss/classnames-order": "off"
-  }
+    "extends": ["next/core-web-vitals", "next/typescript", "plugin:tailwindcss/recommended", "prettier"],
+    "rules": {
+        "tailwindcss/classnames-order": "off"
+    }
 }
