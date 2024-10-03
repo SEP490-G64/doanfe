@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 
 const SwitcherThree = () => {
@@ -5,8 +7,8 @@ const SwitcherThree = () => {
 
     return (
         <div>
-            <label htmlFor="toggle3" className="flex cursor-pointer select-none items-center">
-                <div className="relative">
+            <label htmlFor="toggle3" className="flex h-9 w-9 cursor-pointer select-none items-center">
+                <div className="relative h-full w-full">
                     <input
                         type="checkbox"
                         id="toggle3"
@@ -15,9 +17,9 @@ const SwitcherThree = () => {
                             setEnabled(!enabled);
                         }}
                     />
-                    <div className="block h-8 w-14 rounded-full bg-meta-9 dark:bg-[#5A616B]"></div>
+                    <div className="block h-12 w-21 rounded-full bg-meta-9 dark:bg-[#5A616B]"></div>
                     <div
-                        className={`dot absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white transition ${
+                        className={`dot absolute left-1.5 top-1.5 flex h-full w-full items-center justify-center rounded-full bg-white transition ${
                             enabled && "!right-1 !translate-x-full !bg-primary dark:!bg-white"
                         }`}
                     >
