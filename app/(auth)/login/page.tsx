@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const LogIn: React.FC = () => {
     return (
-        <div className="h-screen flex justify-center items-center">
+        <div className="flex h-screen items-center justify-center">
             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                 <div className="flex flex-wrap items-center">
                     <div className="hidden w-full xl:block xl:w-1/2">
@@ -156,10 +156,10 @@ const LogIn: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
+                    <div className="w-full border-stroke xl:w-1/2 xl:border-l-2 dark:border-strokedark">
                         <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
                             {/* <span className="mb-1.5 block font-medium">Bắt đầu miễn phí</span> */}
-                            <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
+                            <h2 className="mb-9 text-2xl font-bold text-black sm:text-title-xl2 dark:text-white">
                                 Đăng nhập
                             </h2>
 

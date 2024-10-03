@@ -114,7 +114,7 @@
 }
 
 .flatpickr-calendar {
-    @apply !p-6 dark:!bg-boxdark dark:!text-bodydark dark:!shadow-8 2xsm:!w-auto;
+    @apply !p-6 2xsm:!w-auto dark:!bg-boxdark dark:!text-bodydark dark:!shadow-8;
 }
 
 .flatpickr-day {
@@ -142,7 +142,9 @@ span.flatpickr-weekday,
 }
 
 .flatpickr-day.inRange {
-    box-shadow: -5px 0 0 #f3f4f6, 5px 0 0 #f3f4f6 !important;
+    box-shadow:
+        -5px 0 0 #f3f4f6,
+        5px 0 0 #f3f4f6 !important;
     @apply dark:!shadow-7;
 }
 

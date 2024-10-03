@@ -81,7 +81,7 @@ function LoginForm() {
                             {...register("email")}
                         />
                         {errors.email && (
-                            <span className="block w-full mt-1 text-sm text-rose-500">{errors.email.message}</span>
+                            <span className="mt-1 block w-full text-sm text-rose-500">{errors.email.message}</span>
                         )}
 
                         <span className="absolute right-4 top-4">
@@ -114,7 +114,7 @@ function LoginForm() {
                             {...register("password")}
                         />
                         {errors.password && (
-                            <span className="block w-full mt-1 text-sm text-rose-500">{errors.password.message}</span>
+                            <span className="mt-1 block w-full text-sm text-rose-500">{errors.password.message}</span>
                         )}
 
                         <span className="absolute right-4 top-4">
