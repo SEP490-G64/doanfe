@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 import { login } from "@/services/authServices";
 import { LoginBody, LoginBodyType } from "@/lib/schemaValidate/authSchema";
@@ -158,7 +158,6 @@ function LoginForm() {
                     </p>
                 </div>
             </form>
-            <ToastContainer autoClose={3000} />
         </>
     );
 }
