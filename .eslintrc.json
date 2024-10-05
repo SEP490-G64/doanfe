@@ -1,5 +1,10 @@
 {
-    "extends": ["next/core-web-vitals", "next/typescript", "plugin:tailwindcss/recommended", "prettier"],
+    "extends": [
+        "next/core-web-vitals",
+        "next/typescript",
+        "plugin:tailwindcss/recommended",
+        "prettier"
+    ],
     "rules": {
         "tailwindcss/classnames-order": "off",
         "react/no-unescaped-entities": "off",

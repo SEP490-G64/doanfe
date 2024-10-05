@@ -5,6 +5,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AiOutlineShop } from "react-icons/ai";
+import { GiMedicines } from "react-icons/gi";
 
 import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
@@ -58,6 +59,15 @@ const menuGroups = [
                 children: [
                     { label: "Danh sách chi nhánh", route: "/branches/list" },
                     { label: "Thêm mới chi nhánh", route: "/branches/create" },
+                ],
+            },
+            {
+                icon: <GiMedicines />,
+                label: "Quản lý sản phẩm",
+                route: "#",
+                children: [
+                    { label: "Danh sách sản phẩm", route: "/products/list" },
+                    { label: "Thêm mới sản phẩm", route: "/products/create" },
                 ],
             },
             // {
