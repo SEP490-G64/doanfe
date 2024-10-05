@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 
 const SelectGroupTwo: React.FC = () => {
     const [selectedOption, setSelectedOption] = useState<string>("");
@@ -11,8 +11,6 @@ const SelectGroupTwo: React.FC = () => {
 
     return (
         <div>
-            <label className="mb-3 block text-sm font-medium text-black dark:text-white">Select Country</label>
-
             <div className="relative z-20 bg-white dark:bg-form-input">
                 <span className="absolute left-4 top-1/2 z-30 -translate-y-1/2">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

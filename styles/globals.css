@@ -24,7 +24,7 @@
 
 @layer base {
     body {
-        @apply relative z-1 bg-whiten font-satoshi text-base font-normal text-body;
+        @apply relative z-1 min-h-screen bg-whiten font-satoshi text-base font-normal text-body;
     }
 }
 
