@@ -1,6 +1,12 @@
 export type Branch = {
-    name: string;
+    index: number;
+    id: string;
+    branchName: string;
+    branchType: "Trụ sở chính" | "Chi nhánh";
     location: string;
-    phone: string;
-    status: string;
+    contactPerson: string;
+    phoneNumber: string;
+    capacity: number;
+    activeStatus: boolean;
+    actions: string;
 };
