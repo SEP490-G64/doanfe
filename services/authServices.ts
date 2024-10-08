@@ -10,7 +10,10 @@ export const login = async (user: LoginBodyType) => {
         return res;
     } catch (error: any) {
         if (error.status === 401) toast.error("Sai tên đăng nhập hoặc mật khẩu");
-        else console.log(error);
+        else {
+            toast.error("Đăng nhập thất bại");
+            console.log(error);
+        }
     }
 };
 

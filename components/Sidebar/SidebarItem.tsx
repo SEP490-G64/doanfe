@@ -53,7 +53,7 @@ const SidebarItem = ({ item, pageName, setPageName }: SidebarItemProps) => {
                     {item.children && (
                         <svg
                             className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                                pageName === item.label.toLowerCase() && "rotate-180"
+                                pageName === item.label.toLowerCase() ? "rotate-180" : ""
                             }`}
                             width="20"
                             height="20"
@@ -74,7 +74,7 @@ const SidebarItem = ({ item, pageName, setPageName }: SidebarItemProps) => {
                 {item.children && (
                     <div
                         className={`translate transform overflow-hidden ${
-                            pageName !== item.label.toLowerCase() && "hidden"
+                            pageName !== item.label.toLowerCase() ? "hidden" : ""
                         }`}
                     >
                         <SidebarDropdown item={item.children} />

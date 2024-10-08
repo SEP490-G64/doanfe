@@ -16,4 +16,16 @@ export const post = async (path: string, body: object, options = {}) => {
     return res.data;
 };
 
+export const put = async (path: string, body: object, options = {}) => {
+    const res = await httpRequest.put(path, body, options);
+
+    return res.data;
+};
+
+export const deleteAsync = async (path: string, options = {}) => {
+    const res = await httpRequest.delete(path, options);
+
+    return res.data;
+};
+
 export default httpRequest;

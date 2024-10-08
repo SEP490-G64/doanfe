@@ -1,29 +1,39 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 "use client";
 
-import { useState } from "react";
-
-const SwitcherThree = () => {
-    const [enabled, setEnabled] = useState(false);
-
+const SwitcherThree = ({
+    register,
+    watch,
+    setValue,
+    disabled,
+}: {
+    register: any;
+    watch: any;
+    setValue: any;
+    disabled: boolean;
+}) => {
+    const active = watch("activeStatus");
     return (
         <div>
-            <label htmlFor="toggle3" className="flex h-9 w-9 cursor-pointer select-none items-center">
-                <div className="relative h-full w-full">
+            <label htmlFor="toggle3" className="flex size-9 cursor-pointer select-none items-center">
+                <div className="relative size-full">
                     <input
                         type="checkbox"
                         id="toggle3"
                         className="sr-only"
+                        {...register}
                         onChange={() => {
-                            setEnabled(!enabled);
+                            setValue("activeStatus", !active);
                         }}
+                        disabled={disabled}
                     />
                     <div className="block h-12 w-21 rounded-full bg-meta-9 dark:bg-[#5A616B]"></div>
                     <div
-                        className={`dot absolute left-1.5 top-1.5 flex h-full w-full items-center justify-center rounded-full bg-white transition ${
-                            enabled && "!right-1 !translate-x-full !bg-primary dark:!bg-white"
+                        className={`dot absolute left-1.5 top-1.5 flex size-full items-center justify-center rounded-full bg-white transition ${
+                            active ? "!right-1 !translate-x-full !bg-primary dark:!bg-white" : ""
                         }`}
                     >
-                        <span className={`hidden ${enabled && "!block"}`}>
+                        <span className={`hidden ${active ? "!block" : ""}`}>
                             <svg
                                 className="fill-white dark:fill-black"
                                 width="11"
@@ -40,9 +50,9 @@ const SwitcherThree = () => {
                                 ></path>
                             </svg>
                         </span>
-                        <span className={`${enabled && "hidden"}`}>
+                        <span className={`${active ? "hidden" : ""}`}>
                             <svg
-                                className="h-4 w-4 stroke-current"
+                                className="size-4 stroke-current"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 xmlns="http://www.w3.org/2000/svg"

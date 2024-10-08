@@ -26,6 +26,13 @@
     body {
         @apply relative z-1 min-h-screen bg-whiten font-satoshi text-base font-normal text-body;
     }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"] {
+        -webkit-appearance: none;
+        margin: 0;
+    }
 }
 
 @layer utilities {

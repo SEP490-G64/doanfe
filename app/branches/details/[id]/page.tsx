@@ -9,12 +9,12 @@ export const metadata: Metadata = {
     description: "This is Next.js Tables page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
-const BranchDetails = () => {
+const BranchDetails = ({ params }: { params: { id: string } }) => {
     return (
         <DefaultLayout>
             <Breadcrumb pageName="Chi tiết chi nhánh" />
 
-            <BranchForm viewMode="details" />
+            <BranchForm viewMode="details" branchId={params.id} />
         </DefaultLayout>
     );
 };

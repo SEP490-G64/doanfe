@@ -37,7 +37,6 @@ function LoginForm() {
         try {
             const response = await login(user);
 
-            console.log("response: ", response);
             if (response && response.message === "200 OK") {
                 toast.success("Đăng nhập thành công");
 
@@ -145,7 +144,7 @@ function LoginForm() {
                     <input
                         type="submit"
                         value="Đăng nhập"
-                        className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                        className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-primary/90"
                     />
                 </div>
 
