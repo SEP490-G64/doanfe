@@ -54,14 +54,14 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                     "capacity",
                     "activeStatus",
                 ] = [
-                    "branchName",
-                    "location",
-                    "contactPerson",
-                    "phoneNumber",
-                    "branchType",
-                    "capacity",
-                    "activeStatus",
-                ];
+                        "branchName",
+                        "location",
+                        "contactPerson",
+                        "phoneNumber",
+                        "branchType",
+                        "capacity",
+                        "activeStatus",
+                    ];
 
                 fields.forEach((field) => setValue(field, response.data[field]));
             } else router.push("/not-found");
@@ -192,7 +192,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             <input
                                                 type="radio"
                                                 {...register("branchType")}
-                                                value="Trụ sở chính"
+                                                value="MAIN"
                                                 className="mr-2"
                                                 disabled={viewMode === "details"}
                                             />
@@ -202,7 +202,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             <input
                                                 type="radio"
                                                 {...register("branchType")}
-                                                value="Chi nhánh"
+                                                value="SUB"
                                                 className="mr-2"
                                                 disabled={viewMode === "details"}
                                             />
