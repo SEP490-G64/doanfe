@@ -1,0 +1,146 @@
+"use client";
+import React, { useEffect, useState } from "react";
+
+import { toast } from "react-toastify";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { TypeBody, TypeBodyType } from "@/lib/schemaValidate/typeSchema";
+import { useRouter } from "next/navigation";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import { createType, getTypeById, updateType } from "@/services/typeServices";
+import Loader from "@/components/common/Loader";
+
+const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "create"; typeId?: string }) => {
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const { sessionToken } = useAppContext();
+
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors },
+    } = useForm<TypeBodyType>({
+        resolver: zodResolver(TypeBody),
+        defaultValues: {
+            typeName: undefined,
+            typeDescription: undefined,
+        },
+    });
+
+    const getTypeInfo = async () => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await getTypeById(typeId as string, sessionToken);
+
+            if (response.message === "200 OK") {
+                const fields: [
+                    "typeName",
+                    "typeDescription",
+                ] = [
+                    "typeName",
+                    "typeDescription",
+                ];
+
+                fields.forEach((field) => setValue(field, response.data[field]));
+            } else router.push("/not-found");
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (viewMode != "create") {
+            getTypeInfo();
+        }
+    }, []);
+
+    const onSubmit = async (type: TypeBodyType) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            let response;
+            if (viewMode === "create") response = await createType(type, sessionToken);
+            else response = await updateType(type, typeId as string, sessionToken);
+
+            if (response && response.message === "200 OK") {
+                router.push("/types/list");
+                router.refresh();
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) return <Loader />;
+    else
+        return (
+            <div className="flex flex-col gap-9">
+                {/* <!-- Contact Form --> */}
+                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                        <div className="p-6.5">
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Tên loại sản phẩm <span className="text-meta-1">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    placeholder="Nhập tên loại sản phẩm"
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    {...register("typeName")}
+                                    disabled={viewMode === "details"}
+                                />
+                                {errors.typeName && (
+                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                        {errors.typeName.message}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Mô tả
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Nhập mô tả"
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    {...register("typeDescription")}
+                                    disabled={viewMode === "details"}
+                                />
+                                {errors.typeDescription && (
+                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                        {errors.typeDescription.message}
+                                    </span>
+                                )}
+                            </div>
+
+                            {viewMode !== "details" && (
+                                <button
+                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    type="submit"
+                                >
+                                    {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+};
+
+export default TypeForm;
