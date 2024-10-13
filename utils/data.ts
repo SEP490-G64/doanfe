@@ -7,6 +7,13 @@ export const branchColumns = [
     { name: "Tác vụ", uid: "actions" },
 ];
 
+export const categoryColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Tên nhóm sản phẩm", uid: "categoryName" },
+    { name: "Phần trăm thuế nhập hàng", uid: "taxRate" },
+    { name: "Tác vụ", uid: "actions" },
+];
+
 export const typeColumns = [
     { name: "STT", uid: "no." },
     { name: "Tên loại sản phẩm", uid: "typeName" },

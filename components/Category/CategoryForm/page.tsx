@@ -1,0 +1,168 @@
+﻿"use client";
+import React, { useEffect, useState } from "react";
+
+import { toast } from "react-toastify";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { CategoryBody, CategoryBodyType } from "@/lib/schemaValidate/categorySchema";
+import { useRouter } from "next/navigation";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import { createCategory, getCategoryById, updateCategory } from "@/services/categoryServices";
+import Loader from "@/components/common/Loader";
+
+const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update" | "create"; categoryId?: string }) => {
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const { sessionToken } = useAppContext();
+
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors },
+    } = useForm<CategoryBodyType>({
+        resolver: zodResolver(CategoryBody),
+        defaultValues: {
+            categoryName: undefined,
+            categoryDescription: undefined,
+            taxRate: undefined,
+        },
+    });
+
+    const getCategoryInfo = async () => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await getCategoryById(categoryId as string, sessionToken);
+
+            if (response.message === "200 OK") {
+                const fields: [
+                    "categoryName",
+                    "categoryDescription",
+                    "taxRate",
+                ] = [
+                    "categoryName",
+                    "categoryDescription",
+                    "taxRate",
+                ];
+
+                fields.forEach((field) => setValue(field, response.data[field]));
+            } else router.push("/not-found");
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (viewMode != "create") {
+            getCategoryInfo();
+        }
+    }, []);
+
+    const onSubmit = async (category: CategoryBodyType) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            let response;
+            if (viewMode === "create") response = await createCategory(category, sessionToken);
+            else response = await updateCategory(category, categoryId as string, sessionToken);
+
+            if (response && response.message === "200 OK") {
+                router.push("/categories/list");
+                router.refresh();
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) return <Loader />;
+    else
+        return (
+            <div className="flex flex-col gap-9">
+                {/* <!-- Contact Form --> */}
+                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                        <div className="p-6.5">
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Tên nhóm sản phẩm <span className="text-meta-1">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Nhập tên nhóm sản phẩm"
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    {...register("categoryName")}
+                                    disabled={viewMode === "details"}
+                                />
+                                {errors.categoryName && (
+                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                        {errors.categoryName.message}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Mô tả
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Nhập mô tả"
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    {...register("categoryDescription")}
+                                    disabled={viewMode === "details"}
+                                />
+                                {errors.categoryDescription && (
+                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                        {errors.categoryDescription.message}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Phần trăm thuế nhập hàng
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="Nhập phần trăm thuế nhập hàng (%)"
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    {...register("taxRate")}
+                                    disabled={viewMode === "details"}
+                                />
+                                {errors.taxRate && (
+                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                        {errors.taxRate.message}
+                                    </span>
+                                )}
+                            </div>
+
+                        {viewMode !== "details" && (
+                            <button
+                                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                type="submit"
+                            >
+                                {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
+                            </button>
+                        )}
+                </div>
+            </form>
+</div>
+</div>
+)
+    ;
+};
+
+export default CategoryForm;
