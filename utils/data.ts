@@ -12,18 +12,3 @@ export const typeColumns = [
     { name: "Tên loại sản phẩm", uid: "typeName" },
     { name: "Tác vụ", uid: "actions" },
 ];
-
-export const categoryColumns = [
-    { name: "STT", uid: "no." },
-    { name: "Tên nhóm sản phẩm", uid: "categoryName" },
-    { name: "Phần trăm thuế nhập hàng", uid: "taxRate" },
-    { name: "Tác vụ", uid: "actions" },
-];
-
-export const supplierColumns = [
-    { name: "STT", uid: "no." },
-    { name: "Tên", uid: "supplierName" },
-    { name: "Địa chỉ", uid: "address" },
-    { name: "Trạng thái", uid: "status" },
-    { name: "Tác vụ", uid: "actions" },
-];
