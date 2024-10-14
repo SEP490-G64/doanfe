@@ -253,19 +253,19 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                     )}
                                 </div>
                                 <div className="w-full xl:w-1/2">
-                                    {viewMode == "details" && (
-                                        <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                            type={"button"}
-                                            onClick={() => router.push(`/suppliers/list`)}>
-                                            Hủy
-                                        </button>
-                                    )}
                                     {viewMode !== "details" && (
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
                                             onClick={() => onOpenChange()}>
+                                            Hủy
+                                        </button>
+                                    )}
+                                    {viewMode == "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => router.push(`/suppliers/list`)}>
                                             Quay lại danh sách
                                         </button>
                                     )}
@@ -280,7 +280,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn thực hiện hành động này không?</p>
+                                    <p>Bạn có chắc muốn hủy thực hiện hành động này không?</p>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
@@ -292,7 +292,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                             onClose();
                                         }}
                                     >
-                                        Thực hiện
+                                        Chắc chắn
                                     </Button>
                                 </ModalFooter>
                             </>
