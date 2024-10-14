@@ -1,14 +1,16 @@
+"use client";
+
 import flatpickr from "flatpickr";
 import { useEffect } from "react";
 
-const DatePickerOne = () => {
+const DatePickerOne = ({ disabled }: { disabled: boolean }) => {
     useEffect(() => {
-        // Init flatpickr
         flatpickr(".form-datepicker", {
             mode: "single",
+            allowInput: false,
             static: true,
             monthSelectorType: "static",
-            dateFormat: "M j, Y",
+            dateFormat: "j-m-Y",
             prevArrow:
                 '<svg className="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M5.4 10.8l1.4-1.4-4-4 4-4L5.4 0 0 5.4z" /></svg>',
             nextArrow:
@@ -17,12 +19,12 @@ const DatePickerOne = () => {
     }, []);
 
     return (
-        <div>
-            <label className="mb-3 block text-sm font-medium text-black dark:text-white">Date picker</label>
+        <div className="w-full">
             <div className="relative">
                 <input
-                    className="form-datepicker w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                    placeholder="mm/dd/yyyy"
+                    className="form-datepicker w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                    placeholder="dd-mm-yyyy"
+                    disabled={disabled}
                     data-class="flatpickr-right"
                 />
 

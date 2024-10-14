@@ -1,10 +1,15 @@
+"use client";
+
 import React from "react";
+import { useRouter } from "next/navigation";
 import { FaPlus } from "react-icons/fa6";
 import { FaFileImport } from "react-icons/fa6";
 
 import Button from "@/components/UI/Button";
 
 function HeaderTaskbar({ buttons }: { buttons?: string }) {
+    const router = useRouter();
+
     return (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="">
@@ -44,15 +49,14 @@ function HeaderTaskbar({ buttons }: { buttons?: string }) {
             </div>
             <div className="flex gap-2">
                 {buttons === "import" && (
-                    <Button
-                        label="Nhập file"
-                        size="small"
-                        icon={<FaFileImport />}
-                        type="success"
-                        href="/branches/create"
-                    />
+                    <Button label="Nhập file" size="small" icon={<FaFileImport />} type="success" onClick={() => {}} />
                 )}
-                <Button label="Thêm mới" size="small" icon={<FaPlus />} href="/branches/create" />
+                <Button
+                    label="Thêm mới"
+                    size="small"
+                    icon={<FaPlus />}
+                    onClick={() => router.push("/branches/create")}
+                />
             </div>
         </div>
     );

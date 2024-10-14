@@ -2,38 +2,35 @@
 "use client";
 
 import React from "react";
-import { ButtonProps } from "@/types/button";
+import { IconButtonProps } from "@/types/button";
 
-function Button({ label, type = "primary", size = "medium", rounded = "medium", icon, onClick }: ButtonProps) {
+function IconButton({ type = "primary", size = "medium", rounded = "medium", icon, onClick }: IconButtonProps) {
     let typeClass, sizeClass, roundedClass;
 
     switch (type) {
         case "primary":
-            typeClass = "bg-primary text-white";
+            typeClass = "border border-primary text-primary";
             break;
         case "success":
-            typeClass = "bg-meta-3 text-white";
+            typeClass = " border border-bg-meta-3 text-bg-meta-3";
             break;
         case "danger":
-            typeClass = "bg-danger text-white";
+            typeClass = " border border-danger text-danger";
             break;
         case "cancel":
-            typeClass = "bg-black text-white";
-            break;
-        case "outline":
-            typeClass = "border border-primary text-primary";
+            typeClass = "border border-black text-black";
             break;
     }
 
     switch (size) {
         case "small":
-            sizeClass = "gap-1 px-3 py-1";
+            sizeClass = "px-3 py-1";
             break;
         case "medium":
-            sizeClass = "gap-1.5 px-6 py-2";
+            sizeClass = "px-6 py-2";
             break;
         case "large":
-            sizeClass = "gap-2.5 px-10 py-4";
+            sizeClass = "px-10 py-4";
             break;
     }
 
@@ -56,10 +53,9 @@ function Button({ label, type = "primary", size = "medium", rounded = "medium", 
             className={`inline-flex items-center justify-center text-center font-medium hover:bg-opacity-90 ${typeClass} ${sizeClass} ${roundedClass}`}
             onClick={onClick}
         >
-            {icon && icon}
-            {label}
+            {icon}
         </button>
     );
 }
 
-export default Button;
+export default IconButton;

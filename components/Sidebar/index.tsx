@@ -54,6 +54,15 @@ const menuGroups = [
             },
             {
                 icon: <AiOutlineShop />,
+                label: "Quản lý nhập hàng",
+                route: "#",
+                children: [
+                    { label: "Danh sách phiếu nhập", route: "/inbound/list" },
+                    { label: "Thêm mới phiếu nhập", route: "/inbound/create" },
+                ],
+            },
+            {
+                icon: <AiOutlineShop />,
                 label: "Quản lý chi nhánh",
                 route: "#",
                 children: [
