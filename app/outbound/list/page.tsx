@@ -1,27 +1,27 @@
 import { Metadata } from "next";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import ProductsTable from "@/components/Product/ProductsTable";
+import OutboundTable from "@/components/Outbound/OutboundTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import HeaderTaskbar from "@/components/HeaderTaskbar/page";
 
 export const metadata: Metadata = {
-    title: "Danh sách sản phẩm",
+    title: "Danh sách phiếu xuất hàng",
     description: "This is Next.js Tables page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
-const ProductList = () => {
+const OutboundList = () => {
     return (
         <DefaultLayout>
-            <Breadcrumb pageName="Danh sách sản phẩm" />
+            <Breadcrumb pageName="Danh sách phiếu xuất hàng" />
 
-            <HeaderTaskbar buttons={"import"} />
+            <HeaderTaskbar />
 
             <div className="flex flex-col gap-18">
-                <ProductsTable />
+                <OutboundTable />
             </div>
         </DefaultLayout>
     );
 };
 
-export default ProductList;
+export default OutboundList;

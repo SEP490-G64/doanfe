@@ -4,11 +4,11 @@ import { toast } from "react-toastify";
 import { FaPlus } from "react-icons/fa6";
 import { TfiSupport } from "react-icons/tfi";
 
-import SelectGroupTwo from "../SelectGroup/SelectGroupTwo";
-import DatePickerOne from "../FormElements/DatePicker/DatePickerOne";
-import ProductsTable from "./ProductsTable";
+import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
+import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
+import ProductsTable from "@/components/Tables/ProductsTable";
+import IconButton from "@/components/UI/IconButton";
 import { ProductInfor } from "@/types/inbound";
-import IconButton from "../UI/IconButton";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
     const [products, setProducts] = useState<ProductInfor[]>([
