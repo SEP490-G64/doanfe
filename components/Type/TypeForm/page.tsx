@@ -9,11 +9,13 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createType, getTypeById, updateType } from "@/services/typeServices";
 import Loader from "@/components/common/Loader";
+import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@nextui-org/react";
 
 const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "create"; typeId?: string }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
+    const { isOpen, onOpenChange } = useDisclosure();
 
     const {
         register,
@@ -128,17 +130,71 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
                                 )}
                             </div>
 
-                            {viewMode !== "details" && (
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                >
-                                    {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
-                                </button>
-                            )}
+                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <div className="w-full xl:w-1/2">
+                                    {viewMode !== "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type="submit">
+                                            {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
+                                        </button>
+                                    )}
+                                    {viewMode == "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => router.push(`/types/update/${typeId}`)}>
+                                            Đi đến cập nhật
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="w-full xl:w-1/2">
+                                    {viewMode == "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => router.push(`/types/list`)}>
+                                            Quay lại danh sách
+                                        </button>
+                                    )}
+                                    {viewMode !== "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => onOpenChange()}>
+                                            Hủy
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
+                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                <ModalBody>
+                                    <p>Bạn có chắc muốn hủy thực hiện hành động này không?</p>
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button color="default" variant="light" onPress={onClose}>
+                                        Không
+                                    </Button>
+                                    <Button color="primary"
+                                            onPress={() => {
+                                                router.push(`/types/list`)
+                                                onClose();
+                                            }}
+                                    >
+                                        Chắc chắn
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
             </div>
         );
 };

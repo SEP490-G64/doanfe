@@ -9,11 +9,13 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createCategory, getCategoryById, updateCategory } from "@/services/categoryServices";
 import Loader from "@/components/common/Loader";
+import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@nextui-org/react";
 
 const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update" | "create"; categoryId?: string }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
+    const { isOpen, onOpenChange } = useDisclosure();
 
     const {
         register,
@@ -149,20 +151,74 @@ const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update"
                                 )}
                             </div>
 
-                        {viewMode !== "details" && (
-                            <button
-                                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                type="submit"
-                            >
-                                {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
-                            </button>
-                        )}
+                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <div className="w-full xl:w-1/2">
+                                    {viewMode !== "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type="submit">
+                                            {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
+                                        </button>
+                                    )}
+                                    {viewMode == "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => router.push(`/categories/update/${categoryId}`)}>
+                                            Đi đến cập nhật
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="w-full xl:w-1/2">
+                                    {viewMode == "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => router.push(`/categories/list`)}>
+                                            Quay lại danh sách
+                                        </button>
+                                    )}
+                                    {viewMode !== "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => onOpenChange()}>
+                                            Hủy
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </form>
-</div>
-</div>
-)
-    ;
+                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                <ModalBody>
+                                    <p>Bạn có chắc muốn hủy thực hiện hành động này không?</p>
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button color="default" variant="light" onPress={onClose}>
+                                        Không
+                                    </Button>
+                                    <Button color="primary"
+                                            onPress={() => {
+                                                router.push(`/categories/list`)
+                                                onClose();
+                                            }}
+                                    >
+                                        Chắc chắn
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
+            </div>
+        )
+            ;
 };
 
 export default CategoryForm;
