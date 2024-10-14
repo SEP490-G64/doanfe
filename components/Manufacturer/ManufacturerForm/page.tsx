@@ -1,20 +1,21 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 
 import { toast } from "react-toastify";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { SupplierBody, SupplierBodyType } from "@/lib/schemaValidate/supplierSchema";
+import { ManufacturerBody, ManufacturerBodyType } from "@/lib/schemaValidate/manufacturerSchema";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
-import { createSupplier, getSupplierById, updateSupplier } from "@/services/supplierServices";
+import { createManufacturer, getManufacturerById, updateManufacturer } from "@/services/manufacturerServices";
 import Loader from "@/components/common/Loader";
 import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
 import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@nextui-org/react";
 
-const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update" | "create"; supplierId?: string }) => {
+const ManufacturerForm = ({ viewMode, manufacturerId }: { viewMode: "details" | "update" | "create"; manufacturerId?: string }) => {
     const { isOpen, onOpenChange } = useDisclosure();
     const [loading, setLoading] = useState(false);
+    const [countries, setCountries] = useState<string[]>([]);  // Thêm state để lưu danh sách quốc gia
     const router = useRouter();
     const { sessionToken } = useAppContext();
 
@@ -24,44 +25,44 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
         watch,
         setValue,
         formState: { errors },
-    } = useForm<SupplierBodyType>({
-        resolver: zodResolver(SupplierBody),
+    } = useForm<ManufacturerBodyType>({
+        resolver: zodResolver(ManufacturerBody),
         defaultValues: {
-            supplierName: undefined,
+            manufacturerName: undefined,
             address: undefined,
             email: undefined,
             phoneNumber: undefined,
             taxCode: undefined,
-            faxNumber: undefined,
+            origin: undefined,
             status: undefined,
         },
     });
 
-    const getSupplierInfo = async () => {
+    const getManufacturerInfo = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getSupplierById(supplierId as string, sessionToken);
+            const response = await getManufacturerById(manufacturerId as string, sessionToken);
 
             if (response.message === "200 OK") {
                 const fields: [
-                    "supplierName",
+                    "manufacturerName",
                     "address",
                     "email",
                     "phoneNumber",
                     "taxCode",
-                    "faxNumber",
+                    "origin",
                     "status",
                 ] = [
-                    "supplierName",
+                    "manufacturerName",
                     "address",
                     "email",
                     "phoneNumber",
                     "taxCode",
-                    "faxNumber",
+                    "origin",
                     "status",
                 ];
 
@@ -74,14 +75,31 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
         }
     };
 
+    // Hàm fetch danh sách quốc gia từ API
+    const fetchCountries = async () => {
+        try {
+            const response = await fetch('http://api.geonames.org/countryInfoJSON?username=juncookie&lang=vi');
+            const data = await response.json();
+
+            // Lấy danh sách tên quốc gia từ dữ liệu
+            const countryNames = data.geonames.map((country: any) => country.countryName);
+            console.log(countryNames); // Kiểm tra danh sách tên quốc gia
+
+            setCountries(countryNames);  // Lưu danh sách quốc gia vào state
+        } catch (error) {
+            console.error('Lỗi khi lấy dữ liệu quốc gia:', error);
+        }
+    };
+
     useEffect(() => {
+        fetchCountries();  // Gọi hàm fetch danh sách quốc gia khi component mount
         setValue("status", true);
         if (viewMode != "create") {
-            getSupplierInfo();
+            getManufacturerInfo();
         }
     }, []);
 
-    const onSubmit = async (supplier: SupplierBodyType) => {
+    const onSubmit = async (manufacturer: ManufacturerBodyType) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
@@ -89,11 +107,11 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
         setLoading(true);
         try {
             let response;
-            if (viewMode === "create") response = await createSupplier(supplier, sessionToken);
-            else response = await updateSupplier(supplier, supplierId as string, sessionToken);
+            if (viewMode === "create") response = await createManufacturer(manufacturer, sessionToken);
+            else response = await updateManufacturer(manufacturer, manufacturerId as string, sessionToken);
 
             if (response && response.message === "200 OK") {
-                router.push("/suppliers/list");
+                router.push("/manufacturers/list");
                 router.refresh();
             }
         } catch (error) {
@@ -113,25 +131,25 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                         <div className="p-6.5">
                             <div className="mb-4.5">
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Tên nhà cung cấp <span className="text-meta-1">*</span>
+                                    Tên nhà sản xuất <span className="text-meta-1">*</span>
                                 </label>
                                 <input
                                     type="email"
-                                    placeholder="Nhập tên nhà cung cấp"
+                                    placeholder="Nhập tên nhà sản xuất"
                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                    {...register("supplierName")}
+                                    {...register("manufacturerName")}
                                     disabled={viewMode === "details"}
                                 />
-                                {errors.supplierName && (
+                                {errors.manufacturerName && (
                                     <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.supplierName.message}
+                                        {errors.manufacturerName.message}
                                     </span>
                                 )}
                             </div>
 
                             <div className="mb-4.5">
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Địa chỉ <span className="text-meta-1">*</span>
+                                    Địa chỉ
                                 </label>
                                 <input
                                     type="text"
@@ -168,7 +186,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
 
                                 <div className="w-full xl:w-1/2">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Số điện thoại <span className="text-meta-1">*</span>
+                                        Số điện thoại
                                     </label>
                                     <input
                                         type="text"
@@ -206,18 +224,24 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
 
                                 <div className="w-full xl:w-2/5">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Số fax
+                                        Quốc gia <span className="text-meta-1">*</span>
                                     </label>
-                                    <input
-                                        type="text"
-                                        placeholder="Nhập số fax"
+                                    <select
+                                        {...register("origin")}
+                                        value={watch("origin")} // Use watch to get the current value of origin
                                         className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                        {...register("faxNumber")}
                                         disabled={viewMode === "details"}
-                                    />
-                                    {errors.faxNumber && (
+                                    >
+                                        <option value="">Chọn quốc gia</option>
+                                        {countries.map((country, index) => (
+                                            <option key={index} value={country}>
+                                                {country}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.origin && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.faxNumber.message}
+                                            {errors.origin.message}
                                         </span>
                                     )}
                                 </div>
@@ -227,7 +251,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                         Trạng thái hoạt động
                                     </label>
                                     <SwitcherStatus
-                                        register={{...register("status")}}
+                                        register={{ ...register("status") }}
                                         watch={watch}
                                         setValue={setValue}
                                         disabled={viewMode === "details"}
@@ -240,7 +264,8 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                     {viewMode !== "details" && (
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                            type="submit">
+                                            type="submit"
+                                        >
                                             {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                         </button>
                                     )}
@@ -248,7 +273,8 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/suppliers/update/${supplierId}`)}>
+                                            onClick={() => router.push(`/manufacturers/update/${manufacturerId}`)}
+                                        >
                                             Đi đến cập nhật
                                         </button>
                                     )}
@@ -258,7 +284,8 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
-                                            onClick={() => onOpenChange()}>
+                                            onClick={() => onOpenChange()}
+                                        >
                                             Hủy
                                         </button>
                                     )}
@@ -266,7 +293,8 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/suppliers/list`)}>
+                                            onClick={() => router.push(`/manufacturers/list`)}
+                                        >
                                             Quay lại danh sách
                                         </button>
                                     )}
@@ -287,9 +315,10 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                     <Button color="default" variant="light" onPress={onClose}>
                                         Hủy
                                     </Button>
-                                    <Button color="primary"
+                                    <Button
+                                        color="primary"
                                         onPress={() => {
-                                            router.push(`/suppliers/list`)
+                                            router.push(`/manufacturers/list`);
                                             onClose();
                                         }}
                                     >
@@ -301,7 +330,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                     </ModalContent>
                 </Modal>
             </div>
-);
+        );
 };
 
-export default SupplierForm;
+export default ManufacturerForm;

@@ -2,21 +2,21 @@ import { Metadata } from "next";
 
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import SupplierForm from "@/components/Supplier/SupplierForm/page";
+import ManufacturerForm from "@/components/Manufacturer/ManufacturerForm/page";
 
 export const metadata: Metadata = {
-    title: "Chi tiết nhà cung cấp",
+    title: "Thêm mới nhà sản xuất",
     description: "This is Next.js Tables page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
-const SupplierDetails = ({ params }: { params: { id: string } }) => {
+const CreateManufacturer = () => {
     return (
         <DefaultLayout>
-            <Breadcrumb pageName="Chi tiết nhà cung cấp" />
+            <Breadcrumb pageName="Thêm mới nhà sản xuất" />
 
-            <SupplierForm viewMode="details" supplierId={params.id} />
+            <ManufacturerForm viewMode="create" />
         </DefaultLayout>
     );
 };
 
-export default SupplierDetails;
+export default CreateManufacturer;

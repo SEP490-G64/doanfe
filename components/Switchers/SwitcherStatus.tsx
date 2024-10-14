@@ -1,7 +1,7 @@
 /* eslint-disable tailwindcss/no-custom-classname */
 "use client";
 
-const SwitcherSupplierStatus = ({
+const SwitcherStatus = ({
     register,
     watch,
     setValue,
@@ -72,4 +72,4 @@ const SwitcherSupplierStatus = ({
     );
 };
 
-export default SwitcherSupplierStatus;
+export default SwitcherStatus;
