@@ -37,6 +37,11 @@ export const createBranch = async (branch: BranchBodyType, token: string) => {
             toast.success("Tạo mới chi nhánh thành công");
             return res;
         }
+
+        if (res.errors) {
+            toast.error("Chi nhánh đã tồn tại");
+            return res;
+        }
     } catch (error: any) {
         toast.error("Tạo mới chi nhánh thất bại");
         console.log(error);

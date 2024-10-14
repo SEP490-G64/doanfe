@@ -2,7 +2,7 @@ export type Branch = {
     index: number;
     id: string;
     branchName: string;
-    branchType: "Trụ sở chính" | "Chi nhánh";
+    branchType: "MAIN" | "SUB";
     location: string;
     contactPerson: string;
     phoneNumber: string;

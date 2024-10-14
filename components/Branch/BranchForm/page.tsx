@@ -1,12 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-toastify";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 
 import SwitcherThree from "@/components/Switchers/SwitcherThree";
-import { toast } from "react-toastify";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { BranchBody, BranchBodyType } from "@/lib/schemaValidate/branchSchema";
-import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createBranch, getBranchById, updateBranch } from "@/services/branchServices";
 import Loader from "@/components/common/Loader";
@@ -15,6 +16,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
+    const { isOpen, onOpenChange } = useDisclosure();
 
     const {
         register,
@@ -31,7 +33,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
             phoneNumber: undefined,
             branchType: undefined,
             capacity: undefined,
-            activeStatus: undefined,
+            activeStatus: true,
         },
     });
 
@@ -192,7 +194,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             <input
                                                 type="radio"
                                                 {...register("branchType")}
-                                                value="Trụ sở chính"
+                                                value="MAIN"
                                                 className="mr-2"
                                                 disabled={viewMode === "details"}
                                             />
@@ -202,7 +204,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             <input
                                                 type="radio"
                                                 {...register("branchType")}
-                                                value="Chi nhánh"
+                                                value="SUB"
                                                 className="mr-2"
                                                 disabled={viewMode === "details"}
                                             />
@@ -247,17 +249,76 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                 </div>
                             </div>
 
-                            {viewMode !== "details" && (
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                >
-                                    {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
-                                </button>
-                            )}
+                            <div className="flex flex-col gap-6 xl:flex-row">
+                                <div className="w-full xl:w-1/2">
+                                    {viewMode !== "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type="submit"
+                                        >
+                                            {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
+                                        </button>
+                                    )}
+                                    {viewMode == "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => router.push(`/branches/update/${branchId}`)}
+                                        >
+                                            Đi đến cập nhật
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="w-full xl:w-1/2">
+                                    {viewMode !== "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                            type={"button"}
+                                            onClick={() => onOpenChange()}
+                                        >
+                                            Hủy
+                                        </button>
+                                    )}
+                                    {viewMode == "details" && (
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type={"button"}
+                                            onClick={() => router.push(`/branches/list`)}
+                                        >
+                                            Quay lại danh sách
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
+                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                <ModalBody>
+                                    <p>Bạn có chắc muốn hủy thực hiện hành động này không?</p>
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button color="default" variant="light" onPress={onClose}>
+                                        Không
+                                    </Button>
+                                    <Button
+                                        color="primary"
+                                        onPress={() => {
+                                            router.push(`/branches/list`);
+                                            onClose();
+                                        }}
+                                    >
+                                        Chắc chắn
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
             </div>
         );
 };
