@@ -6,3 +6,9 @@ export const branchColumns = [
     { name: "Trạng thái", uid: "activeStatus" },
     { name: "Tác vụ", uid: "actions" },
 ];
+
+export const unitColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Tên đơn vị", uid: "unitName" },
+    { name: "Tác vụ", uid: "actions" },
+];
