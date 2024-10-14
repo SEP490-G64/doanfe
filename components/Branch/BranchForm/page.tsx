@@ -192,7 +192,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             <input
                                                 type="radio"
                                                 {...register("branchType")}
-                                                value="Trụ sở chính"
+                                                value="MAIN"
                                                 className="mr-2"
                                                 disabled={viewMode === "details"}
                                             />
@@ -202,7 +202,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             <input
                                                 type="radio"
                                                 {...register("branchType")}
-                                                value="Chi nhánh"
+                                                value="SUB"
                                                 className="mr-2"
                                                 disabled={viewMode === "details"}
                                             />

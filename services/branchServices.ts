@@ -37,6 +37,11 @@ export const createBranch = async (branch: BranchBodyType, token: string) => {
             toast.success("Tạo mới chi nhánh thành công");
             return res;
         }
+
+        if (res.errors) {
+            toast.error("Chi nhánh đã tồn tại");
+            return res;
+        }
     } catch (error: any) {
         toast.error("Tạo mới chi nhánh thất bại");
         console.log(error);
@@ -51,6 +56,11 @@ export const updateBranch = async (branch: BranchBodyType, id: string, token: st
 
         if (res.data) {
             toast.success("Cập nhật chi nhánh thành công");
+            return res;
+        }
+
+        if (res.errors) {
+            toast.error("Chi nhánh đã tồn tại");
             return res;
         }
     } catch (error: any) {

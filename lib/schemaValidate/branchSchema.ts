@@ -4,11 +4,17 @@ export const BranchBody = z
     .object({
         branchName: z.string().trim().min(1, "Vui lòng nhập tên chi nhánh").max(256, "Giới hạn 255 kí tự"),
         location: z.string().trim().min(1, "Vui lòng nhập địa chỉ chi nhánh").max(256, "Giới hạn 255 kí tự"),
-        contactPerson: z.string().trim().max(256, "Giới hạn 255 kí tự"),
+        contactPerson: z.string().trim().max(256, "Giới hạn 255 kí tự").optional(),
         phoneNumber: z.string().trim().min(1, "Vui lòng nhập số điện thoại liên hệ").max(50, "Giới hạn 50 kí tự"),
-        branchType: z.coerce.string({ required_error: "Vui lòng chọn kiểu chi nhánh" }),
-        capacity: z.coerce.number({ message: "Vui lòng nhập số" }).int("Vui lòng nhập số nguyên"),
+        capacity: z.coerce.number({ message: "Vui lòng nhập số" }).int("Vui lòng nhập số nguyên").optional(),
         activeStatus: z.boolean(),
+        // Use preprocess to handle null/undefined
+        branchType: z.preprocess(
+            (val) => (val === null || val === undefined || val === "" ? undefined : val), // Turn null to undefined
+            z.enum(["MAIN", "SUB"], {
+                required_error: "Vui lòng chọn kiểu chi nhánh",
+            })
+        ),
     })
     .strict();
 
@@ -24,9 +30,9 @@ export const BranchRes = z.object({
             location: z.string().trim().max(256),
             contactPerson: z.string().trim().max(256),
             phoneNumber: z.string().trim().min(6).max(50),
-            branchType: z.string(),
             capacity: z.number(),
             activeStatus: z.boolean(),
+            branchType: z.enum(["MAIN", "SUB"]),
         }),
     }),
     message: z.string(),
