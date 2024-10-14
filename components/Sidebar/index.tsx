@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { AiOutlineShop } from "react-icons/ai";
 import { GiMedicines } from "react-icons/gi";
+import { BiExport, BiImport } from "react-icons/bi";
 
 import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
@@ -53,12 +54,21 @@ const menuGroups = [
                 children: [{ label: "eCommerce", route: "/" }],
             },
             {
-                icon: <AiOutlineShop />,
+                icon: <BiImport />,
                 label: "Quản lý nhập hàng",
                 route: "#",
                 children: [
                     { label: "Danh sách phiếu nhập", route: "/inbound/list" },
                     { label: "Thêm mới phiếu nhập", route: "/inbound/create" },
+                ],
+            },
+            {
+                icon: <BiExport />,
+                label: "Quản lý xuất hàng",
+                route: "#",
+                children: [
+                    { label: "Danh sách phiếu xuất", route: "/outbound/list" },
+                    { label: "Thêm mới phiếu xuất", route: "/outbound/create" },
                 ],
             },
             {
