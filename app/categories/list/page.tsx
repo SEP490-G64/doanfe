@@ -1,9 +1,9 @@
 ﻿import { Metadata } from "next";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import TableThree from "@/components/Tables/CategoriesTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import CategoryHeaderTaskbar from "@/components/HeaderTaskbar/CategoryHeaderTaskbar/page";
+import CategoryesTable from "@/components/Category/CategoryTable/page";
 
 export const metadata: Metadata = {
     title: "Danh sách nhóm sản phẩm",
@@ -18,7 +18,7 @@ const CategoryList = () => {
             <CategoryHeaderTaskbar />
 
             <div className="flex flex-col gap-18">
-                <TableThree />
+                <CategoryesTable />
             </div>
         </DefaultLayout>
     );

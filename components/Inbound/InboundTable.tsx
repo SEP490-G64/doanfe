@@ -29,7 +29,7 @@ import Loader from "@/components/common/Loader";
 import { branchColumns } from "@/utils/data";
 import { Branch } from "@/types/branch";
 
-const BranchesTable = () => {
+const InboundTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
@@ -299,4 +299,4 @@ const BranchesTable = () => {
         );
 };
 
-export default BranchesTable;
+export default InboundTable;

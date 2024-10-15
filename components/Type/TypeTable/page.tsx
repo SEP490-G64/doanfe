@@ -23,18 +23,18 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteBranch, getListBranch } from "@/services/branchServices";
-import { useAppContext } from "../AppProvider/AppProvider";
-import Loader from "../common/Loader";
-import { branchColumns } from "@/utils/data";
-import { Branch } from "@/types/branch";
+import { deleteType, getListType } from "@/services/typeServices";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import Loader from "@/components/common/Loader";
+import { typeColumns } from "@/utils/data";
+import { Type } from "@/types/type";
 
-const BranchesTable = () => {
+const TypesTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [branchData, setBranchData] = useState<Branch[]>([]);
+    const [typeData, setTypeData] = useState<Type[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -44,18 +44,18 @@ const BranchesTable = () => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
 
-    const getListBranchByPage = async () => {
+    const getListTypeByPage = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getListBranch(page - 1, rowsPerPage, sessionToken);
+            const response = await getListType(page - 1, rowsPerPage, sessionToken);
 
             if (response.message === "200 OK") {
-                setBranchData(
-                    response.data.map((item: Branch, index: number) => ({
+                setTypeData(
+                    response.data.map((item: Type, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
                     }))
@@ -69,22 +69,22 @@ const BranchesTable = () => {
         }
     };
 
-    const handleOpenModal = (branchId: string) => {
-        setSelectedId(branchId);
+    const handleOpenModal = (typeId: string) => {
+        setSelectedId(typeId);
         onOpen();
     };
 
-    const handleDelete = async (branchId: string) => {
+    const handleDelete = async (typeId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteBranch(branchId, sessionToken);
+            const response = await deleteType(typeId, sessionToken);
 
             if (response === "200 OK") {
-                await getListBranchByPage();
+                await getListTypeByPage();
             }
         } catch (error) {
             console.log(error);
@@ -94,46 +94,29 @@ const BranchesTable = () => {
     };
 
     useEffect(() => {
-        getListBranchByPage();
+        getListTypeByPage();
     }, [page, rowsPerPage]);
 
-    const renderCell = useCallback((branch: Branch, columnKey: React.Key) => {
+    const renderCell = useCallback((type: Type, columnKey: React.Key) => {
         const cellValue =
-            branch[
+            type[
                 columnKey as
                     | "id"
-                    | "branchName"
-                    | "location"
-                    | "contactPerson"
-                    | "phoneNumber"
-                    | "branchType"
-                    | "capacity"
-                    | "activeStatus"
-                    | "actions"
+                    | "typeName"
             ];
 
         switch (columnKey) {
             case "no.":
-                return <h5 className="text-black dark:text-white">{branch.index}</h5>;
-            case "branchName":
-                return <h5 className="font-normal text-black dark:text-white">{branch.branchName}</h5>;
-            case "activeStatus":
-                return (
-                    <p
-                        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                            branch.activeStatus ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                        }`}
-                    >
-                        {branch.activeStatus ? "Đang hoạt động" : "Không hoạt động"}
-                    </p>
-                );
+                return <h5 className="text-black dark:text-white">{type.index}</h5>;
+            case "typeName":
+                return <h5 className="font-normal text-black dark:text-white">{type.typeName}</h5>;
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
                         <Tooltip content="Chi tiết">
                             <button
                                 className="hover:text-primary"
-                                onClick={() => router.push(`/branches/details/${branch.id}`)}
+                                onClick={() => router.push(`/types/details/${type.id}`)}
                             >
                                 <svg
                                     className="fill-current"
@@ -157,13 +140,13 @@ const BranchesTable = () => {
                         <Tooltip color="secondary" content="Cập nhật">
                             <button
                                 className="hover:text-secondary"
-                                onClick={() => router.push(`/branches/update/${branch.id}`)}
+                                onClick={() => router.push(`/types/update/${type.id}`)}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(branch.id)}>
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(type.id)}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -239,10 +222,10 @@ const BranchesTable = () => {
                                 </div>
                             ) : null
                         }
-                        aria-label="Branch Table"
+                        aria-label="Type Table"
                     >
                         <TableHeader>
-                            <TableHeader columns={branchColumns}>
+                            <TableHeader columns={typeColumns}>
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
@@ -254,12 +237,12 @@ const BranchesTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={branchData ?? []}>
+                        <TableBody items={typeData ?? []}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["branchName", "location"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["typeName"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>
@@ -275,7 +258,7 @@ const BranchesTable = () => {
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa chi nhánh này không</p>
+                                    <p>Bạn có chắc muốn xóa loại sản phẩm này không?</p>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
@@ -299,4 +282,4 @@ const BranchesTable = () => {
         );
 };
 
-export default BranchesTable;
+export default TypesTable;

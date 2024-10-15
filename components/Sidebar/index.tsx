@@ -6,7 +6,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { AiOutlineShop } from "react-icons/ai";
 import { GiMedicines } from "react-icons/gi";
-import { BiExport, BiImport } from "react-icons/bi";
+import { BiCategory, BiExport, BiImport } from "react-icons/bi";
+import { MdOutlineBloodtype, MdOutlinePrecisionManufacturing } from "react-icons/md";
+import { TfiSupport } from "react-icons/tfi";
 
 import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
@@ -87,6 +89,42 @@ const menuGroups = [
                 children: [
                     { label: "Danh sách sản phẩm", route: "/products/list" },
                     { label: "Thêm mới sản phẩm", route: "/products/create" },
+                ],
+            },
+            {
+                icon: <BiCategory />,
+                label: "Quản lý nhóm sản phẩm",
+                route: "#",
+                children: [
+                    { label: "Danh sách nhóm sản phẩm", route: "/categories/list" },
+                    { label: "Thêm mới nhóm sản phẩm", route: "/categories/create" },
+                ],
+            },
+            {
+                icon: <MdOutlineBloodtype />,
+                label: "Quản lý loại sản phẩm",
+                route: "#",
+                children: [
+                    { label: "Danh sách loại sản phẩm", route: "/types/list" },
+                    { label: "Thêm mới loại sản phẩm", route: "/types/create" },
+                ],
+            },
+            {
+                icon: <TfiSupport />,
+                label: "Quản lý nhà cung cấp",
+                route: "#",
+                children: [
+                    { label: "Danh sách nhà cung cấp", route: "/suppliers/list" },
+                    { label: "Thêm mới nhà cung cấp", route: "/suppliers/create" },
+                ],
+            },
+            {
+                icon: <MdOutlinePrecisionManufacturing />,
+                label: "Quản lý nhà sản xuất",
+                route: "#",
+                children: [
+                    { label: "Danh sách nhà sản xuất", route: "/manufacturers/list" },
+                    { label: "Thêm mới nhà sản xuất", route: "/manufacturers/create" },
                 ],
             },
             // {

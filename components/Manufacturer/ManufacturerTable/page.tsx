@@ -24,8 +24,8 @@ import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
 import { deleteManufacturer, getListManufacturer } from "@/services/manufacturerServices";
-import { useAppContext } from "../AppProvider/AppProvider";
-import Loader from "../common/Loader";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import Loader from "@/components/common/Loader";
 import { manufacturerColumns } from "@/utils/data";
 import { Manufacturer } from "@/types/manufacturer";
 
@@ -98,14 +98,7 @@ const ManufacturersTable = () => {
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((manufacturer: Manufacturer, columnKey: React.Key) => {
-        const cellValue =
-            manufacturer[
-                columnKey as
-                    | "id"
-                    | "manufacturerName"
-                    | "origin"
-                    | "status"
-            ];
+        const cellValue = manufacturer[columnKey as "id" | "manufacturerName" | "origin" | "status"];
 
         switch (columnKey) {
             case "no.":

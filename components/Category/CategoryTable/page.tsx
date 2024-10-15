@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Table,
@@ -23,18 +23,18 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteSupplier, getListSupplier } from "@/services/supplierServices";
-import { useAppContext } from "../AppProvider/AppProvider";
-import Loader from "../common/Loader";
-import { supplierColumns } from "@/utils/data";
-import { Supplier } from "@/types/supplier";
+import { deleteCategory, getListCategory } from "@/services/categoryServices";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import Loader from "@/components/common/Loader";
+import { categoryColumns } from "@/utils/data";
+import { Category } from "@/types/category";
 
-const SuppliersTable = () => {
+const CategoryesTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [SupplierData, setSupplierData] = useState<Supplier[]>([]);
+    const [CategoryData, setCategoryData] = useState<Category[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -44,18 +44,18 @@ const SuppliersTable = () => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
 
-    const getListSupplierByPage = async () => {
+    const getListCategoryByPage = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getListSupplier(page - 1, rowsPerPage, sessionToken);
+            const response = await getListCategory(page - 1, rowsPerPage, sessionToken);
 
             if (response.message === "200 OK") {
-                setSupplierData(
-                    response.data.map((item: Supplier, index: number) => ({
+                setCategoryData(
+                    response.data.map((item: Category, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
                     }))
@@ -69,22 +69,22 @@ const SuppliersTable = () => {
         }
     };
 
-    const handleOpenModal = (SupplierId: string) => {
-        setSelectedId(SupplierId);
+    const handleOpenModal = (CategoryId: string) => {
+        setSelectedId(CategoryId);
         onOpen();
     };
 
-    const handleDelete = async (SupplierId: string) => {
+    const handleDelete = async (CategoryId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteSupplier(SupplierId, sessionToken);
+            const response = await deleteCategory(CategoryId, sessionToken);
 
             if (response === "200 OK") {
-                await getListSupplierByPage();
+                await getListCategoryByPage();
             }
         } catch (error) {
             console.log(error);
@@ -94,46 +94,26 @@ const SuppliersTable = () => {
     };
 
     useEffect(() => {
-        getListSupplierByPage();
+        getListCategoryByPage();
     }, [page, rowsPerPage]);
 
-    const renderCell = useCallback((supplier: Supplier, columnKey: React.Key) => {
-        const cellValue =
-            supplier[
-                columnKey as
-                    | "id"
-                    | "supplierName"
-                    | "address"
-                    | "phoneNumber"
-                    | "status"
-            ];
+    const renderCell = useCallback((category: Category, columnKey: React.Key) => {
+        const cellValue = category[columnKey as "id" | "categoryName" | "taxRate"];
 
         switch (columnKey) {
             case "no.":
-                return <h5 className="text-black dark:text-white">{supplier.index}</h5>;
-            case "supplierName":
-                return <h5 className="font-normal text-black dark:text-white">{supplier.supplierName}</h5>;
-            case "address":
-                return <h5 className="font-normal text-black dark:text-white">{supplier.address}</h5>;
-            case "phoneNumber":
-                return <h5 className="font-normal text-black dark:text-white">{supplier.phoneNumber}</h5>;
-            case "status":
-                return (
-                    <p
-                        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                            supplier.status ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                        }`}
-                    >
-                        {supplier.status ? "Đang giao dịch" : "Ngừng giao dịch"}
-                    </p>
-                );
+                return <h5 className="text-black dark:text-white">{category.index}</h5>;
+            case "categoryName":
+                return <h5 className="font-normal text-black dark:text-white">{category.categoryName}</h5>;
+            case "taxRate":
+                return <h5> {category.taxRate == 0 ? "Không mất thuế" : category.taxRate + "%"} </h5>;
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
                         <Tooltip content="Chi tiết">
                             <button
                                 className="hover:text-primary"
-                                onClick={() => router.push(`/suppliers/details/${supplier.id}`)}
+                                onClick={() => router.push(`/categories/details/${category.id}`)}
                             >
                                 <svg
                                     className="fill-current"
@@ -157,13 +137,13 @@ const SuppliersTable = () => {
                         <Tooltip color="secondary" content="Cập nhật">
                             <button
                                 className="hover:text-secondary"
-                                onClick={() => router.push(`/suppliers/update/${supplier.id}`)}
+                                onClick={() => router.push(`/categories/update/${category.id}`)}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(supplier.id)}>
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(category.id)}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -239,10 +219,10 @@ const SuppliersTable = () => {
                                 </div>
                             ) : null
                         }
-                        aria-label="Supplier Table"
+                        aria-label="Category Table"
                     >
                         <TableHeader>
-                            <TableHeader columns={supplierColumns}>
+                            <TableHeader columns={categoryColumns}>
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
@@ -254,12 +234,12 @@ const SuppliersTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={SupplierData ?? []}>
+                        <TableBody items={CategoryData ?? []}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["supplierName", "address"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["categoryName", "taxRate"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>
@@ -275,7 +255,7 @@ const SuppliersTable = () => {
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa nhà cung cấp này không?</p>
+                                    <p>Bạn có chắc muốn xóa nhóm sản phẩm này không?</p>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
@@ -299,4 +279,4 @@ const SuppliersTable = () => {
         );
 };
 
-export default SuppliersTable;
+export default CategoryesTable;

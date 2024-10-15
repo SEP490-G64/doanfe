@@ -1,5 +1,5 @@
 "use client";
-import React, {useEffect, useRef, useState} from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "react-toastify";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,12 +10,18 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createManufacturer, getManufacturerById, updateManufacturer } from "@/services/manufacturerServices";
 import Loader from "@/components/common/Loader";
 import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
-import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@nextui-org/react";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 
-const ManufacturerForm = ({ viewMode, manufacturerId }: { viewMode: "details" | "update" | "create"; manufacturerId?: string }) => {
+const ManufacturerForm = ({
+    viewMode,
+    manufacturerId,
+}: {
+    viewMode: "details" | "update" | "create";
+    manufacturerId?: string;
+}) => {
     const { isOpen, onOpenChange } = useDisclosure();
     const [loading, setLoading] = useState(false);
-    const [countries, setCountries] = useState<string[]>([]);  // Thêm state để lưu danh sách quốc gia
+    const [countries, setCountries] = useState<string[]>([]); // Thêm state để lưu danh sách quốc gia
     const router = useRouter();
     const { sessionToken } = useAppContext();
 
@@ -48,15 +54,7 @@ const ManufacturerForm = ({ viewMode, manufacturerId }: { viewMode: "details" | 
             const response = await getManufacturerById(manufacturerId as string, sessionToken);
 
             if (response.message === "200 OK") {
-                const fields: [
-                    "manufacturerName",
-                    "address",
-                    "email",
-                    "phoneNumber",
-                    "taxCode",
-                    "origin",
-                    "status",
-                ] = [
+                const fields: ["manufacturerName", "address", "email", "phoneNumber", "taxCode", "origin", "status"] = [
                     "manufacturerName",
                     "address",
                     "email",
@@ -78,21 +76,21 @@ const ManufacturerForm = ({ viewMode, manufacturerId }: { viewMode: "details" | 
     // Hàm fetch danh sách quốc gia từ API
     const fetchCountries = async () => {
         try {
-            const response = await fetch('http://api.geonames.org/countryInfoJSON?username=juncookie&lang=vi');
+            const response = await fetch("http://api.geonames.org/countryInfoJSON?username=juncookie&lang=vi");
             const data = await response.json();
 
             // Lấy danh sách tên quốc gia từ dữ liệu
             const countryNames = data.geonames.map((country: any) => country.countryName);
             console.log(countryNames); // Kiểm tra danh sách tên quốc gia
 
-            setCountries(countryNames);  // Lưu danh sách quốc gia vào state
+            setCountries(countryNames); // Lưu danh sách quốc gia vào state
         } catch (error) {
-            console.error('Lỗi khi lấy dữ liệu quốc gia:', error);
+            console.error("Lỗi khi lấy dữ liệu quốc gia:", error);
         }
     };
 
     useEffect(() => {
-        fetchCountries();  // Gọi hàm fetch danh sách quốc gia khi component mount
+        fetchCountries(); // Gọi hàm fetch danh sách quốc gia khi component mount
         setValue("status", true);
         if (viewMode != "create") {
             getManufacturerInfo();
@@ -259,7 +257,7 @@ const ManufacturerForm = ({ viewMode, manufacturerId }: { viewMode: "details" | 
                                 </div>
                             </div>
 
-                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                            <div className="flex flex-col gap-6 xl:flex-row">
                                 <div className="w-full xl:w-1/2">
                                     {viewMode !== "details" && (
                                         <button
@@ -282,7 +280,7 @@ const ManufacturerForm = ({ viewMode, manufacturerId }: { viewMode: "details" | 
                                 <div className="w-full xl:w-1/2">
                                     {viewMode !== "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
                                             onClick={() => onOpenChange()}
                                         >
@@ -291,7 +289,7 @@ const ManufacturerForm = ({ viewMode, manufacturerId }: { viewMode: "details" | 
                                     )}
                                     {viewMode == "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
                                             onClick={() => router.push(`/manufacturers/list`)}
                                         >

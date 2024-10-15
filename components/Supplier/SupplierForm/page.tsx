@@ -10,7 +10,7 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createSupplier, getSupplierById, updateSupplier } from "@/services/supplierServices";
 import Loader from "@/components/common/Loader";
 import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
-import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@nextui-org/react";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 
 const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update" | "create"; supplierId?: string }) => {
     const { isOpen, onOpenChange } = useDisclosure();
@@ -47,15 +47,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
             const response = await getSupplierById(supplierId as string, sessionToken);
 
             if (response.message === "200 OK") {
-                const fields: [
-                    "supplierName",
-                    "address",
-                    "email",
-                    "phoneNumber",
-                    "taxCode",
-                    "faxNumber",
-                    "status",
-                ] = [
+                const fields: ["supplierName", "address", "email", "phoneNumber", "taxCode", "faxNumber", "status"] = [
                     "supplierName",
                     "address",
                     "email",
@@ -227,7 +219,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                         Trạng thái hoạt động
                                     </label>
                                     <SwitcherStatus
-                                        register={{...register("status")}}
+                                        register={{ ...register("status") }}
                                         watch={watch}
                                         setValue={setValue}
                                         disabled={viewMode === "details"}
@@ -235,12 +227,13 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                 </div>
                             </div>
 
-                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                            <div className="flex flex-col gap-6 xl:flex-row">
                                 <div className="w-full xl:w-1/2">
                                     {viewMode !== "details" && (
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                            type="submit">
+                                            type="submit"
+                                        >
                                             {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                         </button>
                                     )}
@@ -248,7 +241,8 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/suppliers/update/${supplierId}`)}>
+                                            onClick={() => router.push(`/suppliers/update/${supplierId}`)}
+                                        >
                                             Đi đến cập nhật
                                         </button>
                                     )}
@@ -256,17 +250,19 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                 <div className="w-full xl:w-1/2">
                                     {viewMode !== "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
-                                            onClick={() => onOpenChange()}>
+                                            onClick={() => onOpenChange()}
+                                        >
                                             Hủy
                                         </button>
                                     )}
                                     {viewMode == "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/suppliers/list`)}>
+                                            onClick={() => router.push(`/suppliers/list`)}
+                                        >
                                             Quay lại danh sách
                                         </button>
                                     )}
@@ -287,9 +283,10 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                     <Button color="default" variant="light" onPress={onClose}>
                                         Hủy
                                     </Button>
-                                    <Button color="primary"
+                                    <Button
+                                        color="primary"
                                         onPress={() => {
-                                            router.push(`/suppliers/list`)
+                                            router.push(`/suppliers/list`);
                                             onClose();
                                         }}
                                     >
@@ -301,7 +298,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                     </ModalContent>
                 </Modal>
             </div>
-);
+        );
 };
 
 export default SupplierForm;

@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import ManufacturersTable from "@/components/Tables/ManufacturersTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import HeaderTaskbar from "@/components/HeaderTaskbar/ManufacturerHeaderTaskbar/page";
+import ManufacturersTable from "@/components/Manufacturer/ManufacturerTable/page";
 
 export const metadata: Metadata = {
     title: "Danh sách nhà sản xuất",
