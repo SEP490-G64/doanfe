@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Table,
@@ -23,18 +23,18 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteCategory, getListCategory } from "@/services/categoryServices";
-import { useAppContext } from "../AppProvider/AppProvider";
-import Loader from "../common/Loader";
-import { categoryColumns } from "@/utils/data";
-import { Category } from "@/types/category";
+import { deleteBranch, getListBranch } from "@/services/branchServices";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import Loader from "@/components/common/Loader";
+import { branchColumns } from "@/utils/data";
+import { Branch } from "@/types/branch";
 
-const CategoryesTable = () => {
+const BranchesTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [CategoryData, setCategoryData] = useState<Category[]>([]);
+    const [branchData, setBranchData] = useState<Branch[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -44,18 +44,18 @@ const CategoryesTable = () => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
 
-    const getListCategoryByPage = async () => {
+    const getListBranchByPage = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getListCategory(page - 1, rowsPerPage, sessionToken);
+            const response = await getListBranch(page - 1, rowsPerPage, sessionToken);
 
             if (response.message === "200 OK") {
-                setCategoryData(
-                    response.data.map((item: Category, index: number) => ({
+                setBranchData(
+                    response.data.map((item: Branch, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
                     }))
@@ -69,22 +69,22 @@ const CategoryesTable = () => {
         }
     };
 
-    const handleOpenModal = (CategoryId: string) => {
-        setSelectedId(CategoryId);
+    const handleOpenModal = (branchId: string) => {
+        setSelectedId(branchId);
         onOpen();
     };
 
-    const handleDelete = async (CategoryId: string) => {
+    const handleDelete = async (branchId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteCategory(CategoryId, sessionToken);
+            const response = await deleteBranch(branchId, sessionToken);
 
             if (response === "200 OK") {
-                await getListCategoryByPage();
+                await getListBranchByPage();
             }
         } catch (error) {
             console.log(error);
@@ -94,32 +94,46 @@ const CategoryesTable = () => {
     };
 
     useEffect(() => {
-        getListCategoryByPage();
+        getListBranchByPage();
     }, [page, rowsPerPage]);
 
-    const renderCell = useCallback((category: Category, columnKey: React.Key) => {
+    const renderCell = useCallback((branch: Branch, columnKey: React.Key) => {
         const cellValue =
-            category[
+            branch[
                 columnKey as
                     | "id"
-                    | "categoryName"
-                    | "taxRate"
-                ];
+                    | "branchName"
+                    | "location"
+                    | "contactPerson"
+                    | "phoneNumber"
+                    | "branchType"
+                    | "capacity"
+                    | "activeStatus"
+                    | "actions"
+            ];
 
         switch (columnKey) {
             case "no.":
-                return <h5 className="text-black dark:text-white">{category.index}</h5>;
-            case "categoryName":
-                return <h5 className="font-normal text-black dark:text-white">{category.categoryName}</h5>;
-            case "taxRate":
-                return <h5> {category.taxRate == 0 ? "Không mất thuế" : category.taxRate + "%"} </h5>;
+                return <h5 className="text-black dark:text-white">{branch.index}</h5>;
+            case "branchName":
+                return <h5 className="font-normal text-black dark:text-white">{branch.branchName}</h5>;
+            case "activeStatus":
+                return (
+                    <p
+                        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
+                            branch.activeStatus ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                        }`}
+                    >
+                        {branch.activeStatus ? "Đang hoạt động" : "Không hoạt động"}
+                    </p>
+                );
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
                         <Tooltip content="Chi tiết">
                             <button
                                 className="hover:text-primary"
-                                onClick={() => router.push(`/categories/details/${category.id}`)}
+                                onClick={() => router.push(`/branches/details/${branch.id}`)}
                             >
                                 <svg
                                     className="fill-current"
@@ -143,13 +157,13 @@ const CategoryesTable = () => {
                         <Tooltip color="secondary" content="Cập nhật">
                             <button
                                 className="hover:text-secondary"
-                                onClick={() => router.push(`/categories/update/${category.id}`)}
+                                onClick={() => router.push(`/branches/update/${branch.id}`)}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(category.id)}>
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(branch.id)}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -225,10 +239,10 @@ const CategoryesTable = () => {
                                 </div>
                             ) : null
                         }
-                        aria-label="Category Table"
+                        aria-label="Branch Table"
                     >
                         <TableHeader>
-                            <TableHeader columns={categoryColumns}>
+                            <TableHeader columns={branchColumns}>
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
@@ -240,12 +254,12 @@ const CategoryesTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={CategoryData ?? []}>
+                        <TableBody items={branchData ?? []}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["categoryName", "taxRate"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["branchName", "location"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>
@@ -261,7 +275,7 @@ const CategoryesTable = () => {
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa nhóm sản phẩm này không?</p>
+                                    <p>Bạn có chắc muốn xóa chi nhánh này không</p>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
@@ -285,4 +299,4 @@ const CategoryesTable = () => {
         );
 };
 
-export default CategoryesTable;
+export default BranchesTable;

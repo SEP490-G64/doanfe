@@ -23,18 +23,18 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteType, getListType } from "@/services/typeServices";
-import { useAppContext } from "../AppProvider/AppProvider";
-import Loader from "../common/Loader";
-import { typeColumns } from "@/utils/data";
-import { Type } from "@/types/type";
+import { deleteSupplier, getListSupplier } from "@/services/supplierServices";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import Loader from "@/components/common/Loader";
+import { supplierColumns } from "@/utils/data";
+import { Supplier } from "@/types/supplier";
 
-const TypesTable = () => {
+const SuppliersTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [typeData, setTypeData] = useState<Type[]>([]);
+    const [SupplierData, setSupplierData] = useState<Supplier[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -44,18 +44,18 @@ const TypesTable = () => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
 
-    const getListTypeByPage = async () => {
+    const getListSupplierByPage = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getListType(page - 1, rowsPerPage, sessionToken);
+            const response = await getListSupplier(page - 1, rowsPerPage, sessionToken);
 
             if (response.message === "200 OK") {
-                setTypeData(
-                    response.data.map((item: Type, index: number) => ({
+                setSupplierData(
+                    response.data.map((item: Supplier, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
                     }))
@@ -69,22 +69,22 @@ const TypesTable = () => {
         }
     };
 
-    const handleOpenModal = (typeId: string) => {
-        setSelectedId(typeId);
+    const handleOpenModal = (SupplierId: string) => {
+        setSelectedId(SupplierId);
         onOpen();
     };
 
-    const handleDelete = async (typeId: string) => {
+    const handleDelete = async (SupplierId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteType(typeId, sessionToken);
+            const response = await deleteSupplier(SupplierId, sessionToken);
 
             if (response === "200 OK") {
-                await getListTypeByPage();
+                await getListSupplierByPage();
             }
         } catch (error) {
             console.log(error);
@@ -94,29 +94,38 @@ const TypesTable = () => {
     };
 
     useEffect(() => {
-        getListTypeByPage();
+        getListSupplierByPage();
     }, [page, rowsPerPage]);
 
-    const renderCell = useCallback((type: Type, columnKey: React.Key) => {
-        const cellValue =
-            type[
-                columnKey as
-                    | "id"
-                    | "typeName"
-            ];
+    const renderCell = useCallback((supplier: Supplier, columnKey: React.Key) => {
+        const cellValue = supplier[columnKey as "id" | "supplierName" | "address" | "phoneNumber" | "status"];
 
         switch (columnKey) {
             case "no.":
-                return <h5 className="text-black dark:text-white">{type.index}</h5>;
-            case "typeName":
-                return <h5 className="font-normal text-black dark:text-white">{type.typeName}</h5>;
+                return <h5 className="text-black dark:text-white">{supplier.index}</h5>;
+            case "supplierName":
+                return <h5 className="font-normal text-black dark:text-white">{supplier.supplierName}</h5>;
+            case "address":
+                return <h5 className="font-normal text-black dark:text-white">{supplier.address}</h5>;
+            case "phoneNumber":
+                return <h5 className="font-normal text-black dark:text-white">{supplier.phoneNumber}</h5>;
+            case "status":
+                return (
+                    <p
+                        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
+                            supplier.status ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                        }`}
+                    >
+                        {supplier.status ? "Đang giao dịch" : "Ngừng giao dịch"}
+                    </p>
+                );
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
                         <Tooltip content="Chi tiết">
                             <button
                                 className="hover:text-primary"
-                                onClick={() => router.push(`/types/details/${type.id}`)}
+                                onClick={() => router.push(`/suppliers/details/${supplier.id}`)}
                             >
                                 <svg
                                     className="fill-current"
@@ -140,13 +149,13 @@ const TypesTable = () => {
                         <Tooltip color="secondary" content="Cập nhật">
                             <button
                                 className="hover:text-secondary"
-                                onClick={() => router.push(`/types/update/${type.id}`)}
+                                onClick={() => router.push(`/suppliers/update/${supplier.id}`)}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(type.id)}>
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(supplier.id)}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -222,10 +231,10 @@ const TypesTable = () => {
                                 </div>
                             ) : null
                         }
-                        aria-label="Type Table"
+                        aria-label="Supplier Table"
                     >
                         <TableHeader>
-                            <TableHeader columns={typeColumns}>
+                            <TableHeader columns={supplierColumns}>
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
@@ -237,12 +246,12 @@ const TypesTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={typeData ?? []}>
+                        <TableBody items={SupplierData ?? []}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["typeName"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["supplierName", "address"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>
@@ -258,7 +267,7 @@ const TypesTable = () => {
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa loại sản phẩm này không?</p>
+                                    <p>Bạn có chắc muốn xóa nhà cung cấp này không?</p>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
@@ -282,4 +291,4 @@ const TypesTable = () => {
         );
 };
 
-export default TypesTable;
+export default SuppliersTable;

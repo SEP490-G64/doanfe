@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createType, getTypeById, updateType } from "@/services/typeServices";
 import Loader from "@/components/common/Loader";
-import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@nextui-org/react";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 
 const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "create"; typeId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -41,13 +41,7 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
             const response = await getTypeById(typeId as string, sessionToken);
 
             if (response.message === "200 OK") {
-                const fields: [
-                    "typeName",
-                    "typeDescription",
-                ] = [
-                    "typeName",
-                    "typeDescription",
-                ];
+                const fields: ["typeName", "typeDescription"] = ["typeName", "typeDescription"];
 
                 fields.forEach((field) => setValue(field, response.data[field]));
             } else router.push("/not-found");
@@ -130,12 +124,13 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
                                 )}
                             </div>
 
-                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                            <div className="flex flex-col gap-6 xl:flex-row">
                                 <div className="w-full xl:w-1/2">
                                     {viewMode !== "details" && (
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                            type="submit">
+                                            type="submit"
+                                        >
                                             {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                         </button>
                                     )}
@@ -143,7 +138,8 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/types/update/${typeId}`)}>
+                                            onClick={() => router.push(`/types/update/${typeId}`)}
+                                        >
                                             Đi đến cập nhật
                                         </button>
                                     )}
@@ -151,17 +147,19 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
                                 <div className="w-full xl:w-1/2">
                                     {viewMode == "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/types/list`)}>
+                                            onClick={() => router.push(`/types/list`)}
+                                        >
                                             Quay lại danh sách
                                         </button>
                                     )}
                                     {viewMode !== "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
-                                            onClick={() => onOpenChange()}>
+                                            onClick={() => onOpenChange()}
+                                        >
                                             Hủy
                                         </button>
                                     )}
@@ -182,11 +180,12 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
                                     <Button color="default" variant="light" onPress={onClose}>
                                         Không
                                     </Button>
-                                    <Button color="primary"
-                                            onPress={() => {
-                                                router.push(`/types/list`)
-                                                onClose();
-                                            }}
+                                    <Button
+                                        color="primary"
+                                        onPress={() => {
+                                            router.push(`/types/list`);
+                                            onClose();
+                                        }}
                                     >
                                         Chắc chắn
                                     </Button>

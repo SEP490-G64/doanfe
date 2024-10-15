@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import BranchTable from "@/components/Tables/BranchesTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import HeaderTaskbar from "@/components/HeaderTaskbar/page";
+import BranchesTable from "@/components/Branch/BranchTable/page";
 
 export const metadata: Metadata = {
     title: "Danh sách chi nhánh",
@@ -18,7 +18,7 @@ const BranchList = () => {
             <HeaderTaskbar />
 
             <div className="flex flex-col gap-18">
-                <BranchTable />
+                <BranchesTable />
             </div>
         </DefaultLayout>
     );

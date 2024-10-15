@@ -281,7 +281,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                     )}
                                     {viewMode == "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
                                             onClick={() => router.push(`/branches/list`)}
                                         >

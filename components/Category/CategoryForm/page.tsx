@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createCategory, getCategoryById, updateCategory } from "@/services/categoryServices";
 import Loader from "@/components/common/Loader";
-import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@nextui-org/react";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 
 const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update" | "create"; categoryId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -42,11 +42,7 @@ const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update"
             const response = await getCategoryById(categoryId as string, sessionToken);
 
             if (response.message === "200 OK") {
-                const fields: [
-                    "categoryName",
-                    "categoryDescription",
-                    "taxRate",
-                ] = [
+                const fields: ["categoryName", "categoryDescription", "taxRate"] = [
                     "categoryName",
                     "categoryDescription",
                     "taxRate",
@@ -151,12 +147,13 @@ const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update"
                                 )}
                             </div>
 
-                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                            <div className="flex flex-col gap-6 xl:flex-row">
                                 <div className="w-full xl:w-1/2">
                                     {viewMode !== "details" && (
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                            type="submit">
+                                            type="submit"
+                                        >
                                             {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                         </button>
                                     )}
@@ -164,7 +161,8 @@ const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update"
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/categories/update/${categoryId}`)}>
+                                            onClick={() => router.push(`/categories/update/${categoryId}`)}
+                                        >
                                             Đi đến cập nhật
                                         </button>
                                     )}
@@ -172,17 +170,19 @@ const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update"
                                 <div className="w-full xl:w-1/2">
                                     {viewMode == "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/categories/list`)}>
+                                            onClick={() => router.push(`/categories/list`)}
+                                        >
                                             Quay lại danh sách
                                         </button>
                                     )}
                                     {viewMode !== "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
-                                            onClick={() => onOpenChange()}>
+                                            onClick={() => onOpenChange()}
+                                        >
                                             Hủy
                                         </button>
                                     )}
@@ -203,11 +203,12 @@ const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update"
                                     <Button color="default" variant="light" onPress={onClose}>
                                         Không
                                     </Button>
-                                    <Button color="primary"
-                                            onPress={() => {
-                                                router.push(`/categories/list`)
-                                                onClose();
-                                            }}
+                                    <Button
+                                        color="primary"
+                                        onPress={() => {
+                                            router.push(`/categories/list`);
+                                            onClose();
+                                        }}
                                     >
                                         Chắc chắn
                                     </Button>
@@ -217,8 +218,7 @@ const CategoryForm = ({ viewMode, categoryId }: { viewMode: "details" | "update"
                     </ModalContent>
                 </Modal>
             </div>
-        )
-            ;
+        );
 };
 
 export default CategoryForm;
