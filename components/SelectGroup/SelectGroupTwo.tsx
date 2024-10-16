@@ -5,10 +5,12 @@ const SelectGroupTwo = ({
     icon,
     placeholder,
     disabled,
+    data,
 }: {
     icon: ReactElement;
     placeholder: string;
     disabled?: boolean;
+    data: { label: string; value: string }[];
 }) => {
     const [selectedOption, setSelectedOption] = useState<string>("");
     const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
@@ -36,15 +38,11 @@ const SelectGroupTwo = ({
                     <option value="" disabled className="text-body dark:text-bodydark">
                         {placeholder}
                     </option>
-                    <option value="USA" className="text-body dark:text-bodydark">
-                        USA
-                    </option>
-                    <option value="UK" className="text-body dark:text-bodydark">
-                        UK
-                    </option>
-                    <option value="Canada" className="text-body dark:text-bodydark">
-                        Canada
-                    </option>
+                    {data.map((opt) => (
+                        <option key={opt.value} value={opt.value} className="text-body dark:text-bodydark">
+                            {opt.label}
+                        </option>
+                    ))}
                 </select>
 
                 {!disabled && (
