@@ -24,8 +24,8 @@ import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
 import { deleteUnit, getListUnit } from "@/services/unitServices";
-import { useAppContext } from "../AppProvider/AppProvider";
-import Loader from "../common/Loader";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import Loader from "@/components/common/Loader";
 import { unitColumns } from "@/utils/data";
 import { Unit } from "@/types/unit";
 

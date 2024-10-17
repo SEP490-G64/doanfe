@@ -8,6 +8,7 @@ import { AiOutlineShop } from "react-icons/ai";
 import { GiMedicines } from "react-icons/gi";
 import { BiCategory, BiExport, BiImport } from "react-icons/bi";
 import { MdOutlineBloodtype, MdOutlinePrecisionManufacturing } from "react-icons/md";
+import { TbRulerMeasure } from "react-icons/tb";
 import { TfiSupport } from "react-icons/tfi";
 
 import SidebarItem from "@/components/Sidebar/SidebarItem";
@@ -125,6 +126,15 @@ const menuGroups = [
                 children: [
                     { label: "Danh sách nhà sản xuất", route: "/manufacturers/list" },
                     { label: "Thêm mới nhà sản xuất", route: "/manufacturers/create" },
+                ],
+            },
+            {
+                icon: <TbRulerMeasure />,
+                label: "Quản lý đơn vị",
+                route: "#",
+                children: [
+                    { label: "Danh sách đơn vị", route: "/units/list" },
+                    { label: "Thêm mới đơn vị", route: "/units/create" },
                 ],
             },
             // {

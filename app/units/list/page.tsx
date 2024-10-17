@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import UnitTable from "@/components/Tables/UnitsTable";
+import UnitTable from "@/components/Unit/UnitTable/page";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import UnitHeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
 
