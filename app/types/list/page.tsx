@@ -2,26 +2,26 @@ import { Metadata } from "next";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import HeaderTaskbar from "@/components/HeaderTaskbar/page";
-import BranchesTable from "@/components/Branch/BranchTable/page";
+import TypeHeaderTaskbar from "@/components/HeaderTaskbar/TypeHeaderTaskbar/page";
+import TypesTable from "@/components/Type/TypeTable/page";
 
 export const metadata: Metadata = {
-    title: "Danh sách chi nhánh",
+    title: "Danh sách loại sản phẩm",
     description: "This is Next.js Tables page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
-const BranchList = () => {
+const TypeList = () => {
     return (
         <DefaultLayout>
-            <Breadcrumb pageName="Danh sách chi nhánh" />
+            <Breadcrumb pageName="Danh sách loại sản phẩm" />
 
-            <HeaderTaskbar />
+            <TypeHeaderTaskbar />
 
             <div className="flex flex-col gap-18">
-                <BranchesTable />
+                <TypesTable />
             </div>
         </DefaultLayout>
     );
 };
 
-export default BranchList;
+export default TypeList;

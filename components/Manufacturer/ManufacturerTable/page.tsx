@@ -23,18 +23,18 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteBranch, getListBranch } from "@/services/branchServices";
+import { deleteManufacturer, getListManufacturer } from "@/services/manufacturerServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
-import { branchColumns } from "@/utils/data";
-import { Branch } from "@/types/branch";
+import { manufacturerColumns } from "@/utils/data";
+import { Manufacturer } from "@/types/manufacturer";
 
-const InboundTable = () => {
+const ManufacturersTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [branchData, setBranchData] = useState<Branch[]>([]);
+    const [ManufacturerData, setManufacturerData] = useState<Manufacturer[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -44,18 +44,18 @@ const InboundTable = () => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
 
-    const getListBranchByPage = async () => {
+    const getListManufacturerByPage = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getListBranch(page - 1, rowsPerPage, sessionToken);
+            const response = await getListManufacturer(page - 1, rowsPerPage, sessionToken);
 
             if (response.message === "200 OK") {
-                setBranchData(
-                    response.data.map((item: Branch, index: number) => ({
+                setManufacturerData(
+                    response.data.map((item: Manufacturer, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
                     }))
@@ -69,22 +69,22 @@ const InboundTable = () => {
         }
     };
 
-    const handleOpenModal = (branchId: string) => {
-        setSelectedId(branchId);
+    const handleOpenModal = (ManufacturerId: string) => {
+        setSelectedId(ManufacturerId);
         onOpen();
     };
 
-    const handleDelete = async (branchId: string) => {
+    const handleDelete = async (ManufacturerId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteBranch(branchId, sessionToken);
+            const response = await deleteManufacturer(ManufacturerId, sessionToken);
 
             if (response === "200 OK") {
-                await getListBranchByPage();
+                await getListManufacturerByPage();
             }
         } catch (error) {
             console.log(error);
@@ -94,37 +94,25 @@ const InboundTable = () => {
     };
 
     useEffect(() => {
-        getListBranchByPage();
+        getListManufacturerByPage();
     }, [page, rowsPerPage]);
 
-    const renderCell = useCallback((branch: Branch, columnKey: React.Key) => {
-        const cellValue =
-            branch[
-                columnKey as
-                    | "id"
-                    | "branchName"
-                    | "location"
-                    | "contactPerson"
-                    | "phoneNumber"
-                    | "branchType"
-                    | "capacity"
-                    | "activeStatus"
-                    | "actions"
-            ];
+    const renderCell = useCallback((manufacturer: Manufacturer, columnKey: React.Key) => {
+        const cellValue = manufacturer[columnKey as "id" | "manufacturerName" | "origin" | "status"];
 
         switch (columnKey) {
             case "no.":
-                return <h5 className="text-black dark:text-white">{branch.index}</h5>;
-            case "branchName":
-                return <h5 className="font-normal text-black dark:text-white">{branch.branchName}</h5>;
-            case "activeStatus":
+                return <h5 className="text-black dark:text-white">{manufacturer.index}</h5>;
+            case "manufacturerName":
+                return <h5 className="font-normal text-black dark:text-white">{manufacturer.manufacturerName}</h5>;
+            case "status":
                 return (
                     <p
                         className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                            branch.activeStatus ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                            manufacturer.status ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
                         }`}
                     >
-                        {branch.activeStatus ? "Đang hoạt động" : "Không hoạt động"}
+                        {manufacturer.status ? "Đang hoạt động" : "Ngừng hoạt động"}
                     </p>
                 );
             case "actions":
@@ -133,7 +121,7 @@ const InboundTable = () => {
                         <Tooltip content="Chi tiết">
                             <button
                                 className="hover:text-primary"
-                                onClick={() => router.push(`/branches/details/${branch.id}`)}
+                                onClick={() => router.push(`/manufacturers/details/${manufacturer.id}`)}
                             >
                                 <svg
                                     className="fill-current"
@@ -157,13 +145,13 @@ const InboundTable = () => {
                         <Tooltip color="secondary" content="Cập nhật">
                             <button
                                 className="hover:text-secondary"
-                                onClick={() => router.push(`/branches/update/${branch.id}`)}
+                                onClick={() => router.push(`/manufacturers/update/${manufacturer.id}`)}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(branch.id)}>
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(manufacturer.id)}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -239,10 +227,10 @@ const InboundTable = () => {
                                 </div>
                             ) : null
                         }
-                        aria-label="Branch Table"
+                        aria-label="Manufacturer Table"
                     >
                         <TableHeader>
-                            <TableHeader columns={branchColumns}>
+                            <TableHeader columns={manufacturerColumns}>
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
@@ -254,12 +242,12 @@ const InboundTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={branchData ?? []}>
+                        <TableBody items={ManufacturerData ?? []}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["branchName", "location"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["manufacturerName"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>
@@ -275,7 +263,7 @@ const InboundTable = () => {
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa chi nhánh này không</p>
+                                    <p>Bạn có chắc muốn xóa nhà sản xuất này không?</p>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
@@ -299,4 +287,4 @@ const InboundTable = () => {
         );
 };
 
-export default InboundTable;
+export default ManufacturersTable;

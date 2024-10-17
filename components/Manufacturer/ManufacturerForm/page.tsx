@@ -1,22 +1,29 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect, useRef, useState } from "react";
+
 import { toast } from "react-toastify";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { ManufacturerBody, ManufacturerBodyType } from "@/lib/schemaValidate/manufacturerSchema";
+import { useRouter } from "next/navigation";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import { createManufacturer, getManufacturerById, updateManufacturer } from "@/services/manufacturerServices";
+import Loader from "@/components/common/Loader";
+import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 
-import SwitcherThree from "@/components/Switchers/SwitcherThree";
-import { BranchBody, BranchBodyType } from "@/lib/schemaValidate/branchSchema";
-import { useAppContext } from "@/components/AppProvider/AppProvider";
-import { createBranch, getBranchById, updateBranch } from "@/services/branchServices";
-import Loader from "@/components/common/Loader";
-
-const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "create"; branchId?: string }) => {
+const ManufacturerForm = ({
+    viewMode,
+    manufacturerId,
+}: {
+    viewMode: "details" | "update" | "create";
+    manufacturerId?: string;
+}) => {
+    const { isOpen, onOpenChange } = useDisclosure();
     const [loading, setLoading] = useState(false);
+    const [countries, setCountries] = useState<string[]>([]); // Thêm state để lưu danh sách quốc gia
     const router = useRouter();
     const { sessionToken } = useAppContext();
-    const { isOpen, onOpenChange } = useDisclosure();
 
     const {
         register,
@@ -24,45 +31,37 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
         watch,
         setValue,
         formState: { errors },
-    } = useForm<BranchBodyType>({
-        resolver: zodResolver(BranchBody),
+    } = useForm<ManufacturerBodyType>({
+        resolver: zodResolver(ManufacturerBody),
         defaultValues: {
-            branchName: undefined,
-            location: undefined,
-            contactPerson: undefined,
+            manufacturerName: undefined,
+            address: undefined,
+            email: undefined,
             phoneNumber: undefined,
-            branchType: undefined,
-            capacity: undefined,
-            activeStatus: true,
+            taxCode: undefined,
+            origin: undefined,
+            status: undefined,
         },
     });
 
-    const getBranchInfo = async () => {
+    const getManufacturerInfo = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getBranchById(branchId as string, sessionToken);
+            const response = await getManufacturerById(manufacturerId as string, sessionToken);
 
             if (response.message === "200 OK") {
-                const fields: [
-                    "branchName",
-                    "location",
-                    "contactPerson",
+                const fields: ["manufacturerName", "address", "email", "phoneNumber", "taxCode", "origin", "status"] = [
+                    "manufacturerName",
+                    "address",
+                    "email",
                     "phoneNumber",
-                    "branchType",
-                    "capacity",
-                    "activeStatus",
-                ] = [
-                    "branchName",
-                    "location",
-                    "contactPerson",
-                    "phoneNumber",
-                    "branchType",
-                    "capacity",
-                    "activeStatus",
+                    "taxCode",
+                    "origin",
+                    "status",
                 ];
 
                 fields.forEach((field) => setValue(field, response.data[field]));
@@ -74,13 +73,31 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
         }
     };
 
+    // Hàm fetch danh sách quốc gia từ API
+    const fetchCountries = async () => {
+        try {
+            const response = await fetch("http://api.geonames.org/countryInfoJSON?username=juncookie&lang=vi");
+            const data = await response.json();
+
+            // Lấy danh sách tên quốc gia từ dữ liệu
+            const countryNames = data.geonames.map((country: any) => country.countryName);
+            console.log(countryNames); // Kiểm tra danh sách tên quốc gia
+
+            setCountries(countryNames); // Lưu danh sách quốc gia vào state
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu quốc gia:", error);
+        }
+    };
+
     useEffect(() => {
+        fetchCountries(); // Gọi hàm fetch danh sách quốc gia khi component mount
+        setValue("status", true);
         if (viewMode != "create") {
-            getBranchInfo();
+            getManufacturerInfo();
         }
     }, []);
 
-    const onSubmit = async (branch: BranchBodyType) => {
+    const onSubmit = async (manufacturer: ManufacturerBodyType) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
@@ -88,11 +105,11 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
         setLoading(true);
         try {
             let response;
-            if (viewMode === "create") response = await createBranch(branch, sessionToken);
-            else response = await updateBranch(branch, branchId as string, sessionToken);
+            if (viewMode === "create") response = await createManufacturer(manufacturer, sessionToken);
+            else response = await updateManufacturer(manufacturer, manufacturerId as string, sessionToken);
 
             if (response && response.message === "200 OK") {
-                router.push("/branches/list");
+                router.push("/manufacturers/list");
                 router.refresh();
             }
         } catch (error) {
@@ -112,36 +129,36 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                         <div className="p-6.5">
                             <div className="mb-4.5">
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Tên chi nhánh <span className="text-meta-1">*</span>
+                                    Tên nhà sản xuất <span className="text-meta-1">*</span>
                                 </label>
                                 <input
                                     type="email"
-                                    placeholder="Nhập tên chi nhánh"
+                                    placeholder="Nhập tên nhà sản xuất"
                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                    {...register("branchName")}
+                                    {...register("manufacturerName")}
                                     disabled={viewMode === "details"}
                                 />
-                                {errors.branchName && (
+                                {errors.manufacturerName && (
                                     <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.branchName.message}
+                                        {errors.manufacturerName.message}
                                     </span>
                                 )}
                             </div>
 
                             <div className="mb-4.5">
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Địa chỉ <span className="text-meta-1">*</span>
+                                    Địa chỉ
                                 </label>
                                 <input
                                     type="text"
                                     placeholder="Nhập địa chỉ"
                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                    {...register("location")}
+                                    {...register("address")}
                                     disabled={viewMode === "details"}
                                 />
-                                {errors.location && (
+                                {errors.address && (
                                     <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.location.message}
+                                        {errors.address.message}
                                     </span>
                                 )}
                             </div>
@@ -149,29 +166,29 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                 <div className="w-full xl:w-1/2">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Người liên hệ
+                                        Mã số thuế
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="Nhập tên người liên hệ"
+                                        placeholder="Nhập mã số thuế"
                                         className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                        {...register("contactPerson")}
+                                        {...register("taxCode")}
                                         disabled={viewMode === "details"}
                                     />
-                                    {errors.contactPerson && (
+                                    {errors.taxCode && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.contactPerson.message}
+                                            {errors.taxCode.message}
                                         </span>
                                     )}
                                 </div>
 
                                 <div className="w-full xl:w-1/2">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Số điện thoại <span className="text-meta-1">*</span>
+                                        Số điện thoại
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="Nhập số điện thoại người liên hệ"
+                                        placeholder="Nhập số điện thoại"
                                         className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                         {...register("phoneNumber")}
                                         disabled={viewMode === "details"}
@@ -185,63 +202,54 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                             </div>
 
                             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                <div className="w-full xl:w-1/3">
+                                <div className="w-full xl:w-2/5">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Kiểu chi nhánh <span className="text-meta-1">*</span>
-                                    </label>
-                                    <div className="mt-6 flex flex-row gap-3">
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                {...register("branchType")}
-                                                value="MAIN"
-                                                className="mr-2"
-                                                disabled={viewMode === "details"}
-                                            />
-                                            Trụ sở chính
-                                        </label>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                {...register("branchType")}
-                                                value="SUB"
-                                                className="mr-2"
-                                                disabled={viewMode === "details"}
-                                            />
-                                            Chi nhánh
-                                        </label>
-                                    </div>
-                                    {errors.branchType && (
-                                        <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.branchType.message}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="w-full xl:w-1/3">
-                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Quy mô
+                                        Email
                                     </label>
                                     <input
-                                        type="number"
-                                        placeholder="Nhập quy mô"
+                                        type="text"
+                                        placeholder="Nhập email"
                                         className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                        {...register("capacity")}
+                                        {...register("email")}
                                         disabled={viewMode === "details"}
                                     />
-                                    {errors.capacity && (
+                                    {errors.email && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.capacity.message}
+                                            {errors.email.message}
                                         </span>
                                     )}
                                 </div>
 
-                                <div className="w-full xl:w-1/3">
+                                <div className="w-full xl:w-2/5">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Quốc gia <span className="text-meta-1">*</span>
+                                    </label>
+                                    <select
+                                        {...register("origin")}
+                                        value={watch("origin")} // Use watch to get the current value of origin
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        disabled={viewMode === "details"}
+                                    >
+                                        <option value="">Chọn quốc gia</option>
+                                        {countries.map((country, index) => (
+                                            <option key={index} value={country}>
+                                                {country}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.origin && (
+                                        <span className="mt-1 block w-full text-sm text-rose-500">
+                                            {errors.origin.message}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="w-full xl:w-1/5">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                         Trạng thái hoạt động
                                     </label>
-                                    <SwitcherThree
-                                        register={{ ...register("activeStatus") }}
+                                    <SwitcherStatus
+                                        register={{ ...register("status") }}
                                         watch={watch}
                                         setValue={setValue}
                                         disabled={viewMode === "details"}
@@ -263,7 +271,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/branches/update/${branchId}`)}
+                                            onClick={() => router.push(`/manufacturers/update/${manufacturerId}`)}
                                         >
                                             Đi đến cập nhật
                                         </button>
@@ -283,7 +291,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         <button
                                             className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}
-                                            onClick={() => router.push(`/branches/list`)}
+                                            onClick={() => router.push(`/manufacturers/list`)}
                                         >
                                             Quay lại danh sách
                                         </button>
@@ -303,12 +311,12 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
-                                        Không
+                                        Hủy
                                     </Button>
                                     <Button
                                         color="primary"
                                         onPress={() => {
-                                            router.push(`/branches/list`);
+                                            router.push(`/manufacturers/list`);
                                             onClose();
                                         }}
                                     >
@@ -323,4 +331,4 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
         );
 };
 
-export default BranchForm;
+export default ManufacturerForm;
