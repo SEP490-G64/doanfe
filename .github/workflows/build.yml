@@ -1,0 +1,30 @@
+name: GitHub Actions CI
+run-name: CI for NextJS
+on: [pull_request, workflow_dispatch]
+jobs:
+    NextJS-Build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set Node.js 20
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 20
+                  cache: "yarn"
+
+            - name: Setup yarn
+              run: npm install -g yarn
+
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile
+
+            - name: Check linting
+              run: yarn lint
+
+            # - name: Run test
+            #   run: yarn test
+
+            - name: Build Next.js app
+              run: yarn build
