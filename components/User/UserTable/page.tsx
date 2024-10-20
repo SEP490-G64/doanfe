@@ -99,7 +99,7 @@ const UsersTable = () => {
 
     const renderCell = useCallback((user: User, columnKey: React.Key) => {
         const cellValue = user[columnKey as "id" | "userName" | "email" | "branch" | "roles" | "status" | "actions"];
-        console.log(user)
+        console.log(user);
 
         switch (columnKey) {
             case "no.":
@@ -114,7 +114,7 @@ const UsersTable = () => {
                 return <h5 className="font-normal text-black dark:text-white">{user.roles?.at(0)?.type}</h5>;
             case "status":
                 return (
-    <p 
+    <p
         className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${(() => {
             switch (user.status) {
                 case "Từ chối":
