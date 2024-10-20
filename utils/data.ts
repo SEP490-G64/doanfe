@@ -36,3 +36,12 @@ export const manufacturerColumns = [
     { name: "Trạng thái", uid: "status" },
     { name: "Tác vụ", uid: "actions" },
 ];
+
+export const userColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Tên người dùng", uid: "userName" },
+    { name: "Email", uid: "email" },
+    { name: "Chi nhánh làm việc", uid: "phoneNumber" },
+    { name: "Vai Trò", uid: "role" },
+    { name: "Trạng thái", uid: "status" },
+];
