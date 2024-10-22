@@ -19,7 +19,6 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
-    const { branches};
 
     const {
         register,
@@ -63,7 +62,7 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
                     "branch"
                 ];
 
-                fields.forEach((field) => branchessetValue(field, response.data[field]));
+                fields.forEach((field) => setValue(field, response.data[field]));
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -99,7 +98,7 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
     useEffect(() => {
         if (viewMode != "create") {
             getUserInfo();
-            getBranches();
+            //getBranches();
         }
     }, []);
 
