@@ -11,12 +11,15 @@ import Loader from "@/components/common/Loader";
 import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import { createUser, getUserById, updateUser } from "@/services/userServices";
+import { getListBranch } from "@/services/branchServices";
+import { array, object, string, z} from "zod";
 
 const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "create"; userId?: string }) => {
     const { isOpen, onOpenChange } = useDisclosure();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
+    const { branches};
 
     const {
         register,
@@ -33,6 +36,8 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
             firstName: undefined,
             lastName: undefined,
             status: undefined,
+            branch: undefined,
+            roles: undefined
         },
     });
 
@@ -44,18 +49,21 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
         setLoading(true);
         try {
             const response = await getUserById(userId as string, sessionToken);
+            console.log(response)
 
             if (response.message === "200 OK") {
-                const fields: ["userName", "email", "phone", "firstName", "lastName", "status"] = [
+                const fields: ["userName", "email", "phone", "firstName", "lastName", "status", "roles", "branch"] = [
                     "userName",
                     "email",
                     "phone",
                     "firstName",
                     "lastName",
                     "status",
+                    "roles",
+                    "branch"
                 ];
 
-                fields.forEach((field) => setValue(field, response.data[field]));
+                fields.forEach((field) => branchessetValue(field, response.data[field]));
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -64,10 +72,34 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
         }
     };
 
+    const getBranches = async () => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await getListBranch(0, 10, sessionToken);
+            console.log(response)
+
+            if (response.message === "200 OK") {
+                const fields: ["location"] = [
+                    "location",
+                ];
+
+
+            } else router.push("/not-found");
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     useEffect(() => {
-        setValue("status", true);
         if (viewMode != "create") {
             getUserInfo();
+            getBranches();
         }
     }, []);
 
@@ -119,43 +151,63 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
                                 )}
                             </div>
 
-                            <div className="mb-4.5">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Họ <span className="text-meta-1">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Nhập họ"
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                    {...register("firstName")}
-                                    disabled={viewMode === "details"}
-                                />
-                                {errors.firstName && (
-                                    <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.firstName.message}
-                                    </span>
-                                )}
-                            </div>
+                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Họ <span className="text-meta-1">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Nhập họ"
+                                        className="rounded border-1.5 w-full border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        {...register("firstName")}
+                                        disabled={viewMode === "details"}
+                                    />
+                                    {errors.firstName && (
+                                        <span className="mt-1 block text-sm text-rose-500">
+                                            {errors.firstName.message}
+                                        </span>
+                                    )}
+                                </div>
 
-                            <div className="mb-4.5">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Tên <span className="text-meta-1">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Nhập tên"
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                    {...register("lastName")}
-                                    disabled={viewMode === "details"}
-                                />
-                                {errors.lastName && (
-                                    <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.lastName.message}
-                                    </span>
-                                )}
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Tên <span className="text-meta-1">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Nhập tên"
+                                        className="rounded border-1.5 w-full border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        {...register("lastName")}
+                                        disabled={viewMode === "details"}
+                                    />
+                                    {errors.lastName && (
+                                        <span className="mt-1 block text-sm text-rose-500">
+                                            {errors.lastName.message}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Email
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Nhập email"
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        {...register("email")}
+                                        disabled={viewMode === "details"}
+                                    />
+                                    {errors.email && (
+                                        <span className="mt-1 block w-full text-sm text-rose-500">
+                                            {errors.email.message}
+                                        </span>
+                                    )}
+                                </div>
+
                                 <div className="w-full xl:w-1/2">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                         Số điện thoại <span className="text-meta-1">*</span>
@@ -176,54 +228,44 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
                             </div>
 
                             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                <div className="w-full xl:w-2/5">
-                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Email
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="Nhập email"
-                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                        {...register("email")}
-                                        disabled={viewMode === "details"}
-                                    />
-                                    {errors.email && (
-                                        <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.email.message}
-                                        </span>
-                                    )}
+                                <div className="w-full xl:w-1/2">
+                                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Vai Trò</label>
+                                    <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" {...register("roles.${0}.type")} disabled={viewMode === "details"}>
+                                        <option value="ADMIN">ADMIN</option>
+                                        <option value="MANAGER">MANAGER</option>
+                                        <option value="STAFF">STAFF</option>
+                                        <option value="UNDEFINE">UNDEFINE</option>
+                                    </select>
                                 </div>
-
-                                <div className="w-full xl:w-2/5">
-                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Số fax
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="Nhập số fax"
-                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                        {...register("faxNumber")}
-                                        disabled={viewMode === "details"}
-                                    />
-                                    {errors.faxNumber && (
-                                        <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.faxNumber.message}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="w-full xl:w-1/5">
-                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Trạng thái hoạt động
-                                    </label>
-                                    <SwitcherStatus
-                                        register={{ ...register("status") }}
-                                        watch={watch}
-                                        setValue={setValue}
-                                        disabled={viewMode === "details"}
-                                    />
+                                <div className="w-full xl:w-1/2">
+                                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Trạng thái hoạt động</label>
+                                    <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" {...register("status")} disabled={viewMode === "details"}>
+                                        <option value="ACTIVATE">ACTIVATE</option>
+                                        <option value="DEACTIVATE">DEACTIVATE</option>
+                                        <option value="PENDING">PENDING</option>
+                                        <option value="REJECTED">REJECTED</option>
+                                    </select>
                                 </div>
                             </div>
+
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Làm việc tại chi nhánh <span className="text-meta-1">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Nhập tên chi nhánh"
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    {...register("branch.location")}
+                                    disabled={viewMode === "details"}
+                                />
+                                {errors.branch && (
+                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                        {errors.branch?.message}
+                                    </span>
+                                )}
+                            </div>
+
 
                             <div className="flex flex-col gap-6 xl:flex-row">
                                 <div className="w-full xl:w-1/2">
@@ -284,7 +326,7 @@ const SupplierForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "
                                     <Button
                                         color="primary"
                                         onPress={() => {
-                                            router.push(`/suppliers/list`);
+                                            router.push(`/users/list`);
                                             onClose();
                                         }}
                                     >

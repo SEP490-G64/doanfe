@@ -1,13 +1,14 @@
 import z from "zod";
 import { BranchBody } from "./branchSchema";
+import RoleBody from "./roleSchema";
 
 // Biểu thức chính quy cho số điện thoại Việt Nam
 const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7}|(0[2-9]\d{7}))$/;
 
 export const UserBody = z
     .object({
-        userName: z.string().trim().min(1, "Vui lòng nhập tên nhà cung cấp").max(100, "Giới hạn 100 kí tự"),
-        password: z.string().trim().min(1, "Vui lòng nhập địa chỉ nhà cung cấp").max(256, "Giới hạn 255 kí tự"),
+        userName: z.string().trim().min(1, "Vui lòng nhập tên người dùng").max(100, "Giới hạn 100 kí tự"),
+        password: z.string().trim().min(1, "Vui lòng nhập mật khẩu người dùng").min(8).max(16, "Giới hạn 16 kí tự"),
         email: z
             .string()
             .trim()
@@ -24,14 +25,7 @@ export const UserBody = z
         firstName: z.string().trim().max(14, "Giới hạn 14 kí tự").optional(),
         lastName: z.string().trim().max(20, "Giới hạn 20 kí tự").optional(),
         branch: BranchBody.optional(),
-        roles: z
-            .array(
-                z.object({
-                    name: z.string(),
-                    type: z.string(),
-                })
-            )
-            .optional(),
+        roles: RoleBody.optional(),
         status: z.string(),
     })
     .strict();
