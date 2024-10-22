@@ -98,7 +98,8 @@ const UsersTable = () => {
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((user: User, columnKey: React.Key) => {
-        const cellValue = user[columnKey as "id" | "userName" | "email" | "phone" | "role" | "branch" | "status"];
+        const cellValue = user[columnKey as "id" | "userName" | "email" | "branch" | "roles" | "status" | "actions"];
+        console.log(user)
 
         switch (columnKey) {
             case "no.":
@@ -107,22 +108,29 @@ const UsersTable = () => {
                 return <h5 className="font-normal text-black dark:text-white">{user.userName}</h5>;
             case "email":
                 return <h5 className="font-normal text-black dark:text-white">{user.email}</h5>;
-            case "phone":
-                return <h5 className="font-normal text-black dark:text-white">{user.phone}</h5>;
-            case "role":
-                return <h5 className="font-normal text-black dark:text-white">{user.role.at(0)?.roleType}</h5>;
             case "branch":
-                return <h5 className="font-normal text-black dark:text-white">{user.branch.location}</h5>;
+                return <h5 className="font-normal text-black dark:text-white">{user.branch?.location}</h5>;
+            case "roles":
+                return <h5 className="font-normal text-black dark:text-white">{user.roles?.at(0)?.type}</h5>;
             case "status":
                 return (
-                    <p
-                        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                            user.status ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                        }`}
-                    >
-                        {user.status}
-                    </p>
-                );
+    <p 
+        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${(() => {
+            switch (user.status) {
+                case "Từ chối":
+                    return "bg-danger/10 text-danger";
+                case "Đang kích hoạt":
+                    return "bg-success/10 text-success";
+                case "Vô hiệu hoá":
+                case "Chờ duyệt":
+                    return "bg-warning/10 text-warning";
+                default:
+                    return "bg-secondary/10 text-secondary";
+            }
+        })()}`}
+    >{user.status}
+    </p>
+);
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
@@ -159,7 +167,7 @@ const UsersTable = () => {
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(user.id)}>
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(user.id.toString())}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -255,7 +263,7 @@ const UsersTable = () => {
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["supplierName", "address"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["userName", "email"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>

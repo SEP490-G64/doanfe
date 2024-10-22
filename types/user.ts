@@ -3,15 +3,14 @@ import { Role } from "./role";
 
 export type User = {
     index: number;
-    id: string;
+    id: number;
     userName: string;
     email: string;
-    password: string;
     phone: string;
     firstName: string;
     lastName: string;
-    // createdTime:
+    createdDate: string;
     status: string;
+    roles: Role[];
     branch: Branch;
-    role: Array<Role>;
 };

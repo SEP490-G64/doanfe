@@ -41,7 +41,8 @@ export const userColumns = [
     { name: "STT", uid: "no." },
     { name: "Tên người dùng", uid: "userName" },
     { name: "Email", uid: "email" },
-    { name: "Chi nhánh làm việc", uid: "phoneNumber" },
-    { name: "Vai Trò", uid: "role" },
+    { name: "Chi nhánh làm việc", uid: "branch" },
+    { name: "Vai Trò", uid: "roles" },
     { name: "Trạng thái", uid: "status" },
+    { name: "Tác vụ", uid: "actions" },
 ];
