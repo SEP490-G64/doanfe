@@ -19,7 +19,7 @@ const DropdownUser = () => {
             <Link onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-4" href="#">
                 <span className="hidden text-right lg:block">
                     <span className="block text-sm font-medium text-black dark:text-white">{userInfo?.userName}</span>
-                    <span className="block text-xs">{userInfo?.roles[1].type}</span>
+                    <span className="block text-xs">{userInfo?.roles[0].type}</span>
                 </span>
 
                 {/* <span className="h-12 w-12 rounded-full">
