@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import ProductsTable from "@/components/Product/ProductsTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import HeaderTaskbar from "@/components/HeaderTaskbar/page";
+import HeaderTaskbar from "@/components/HeaderTaskbar/ProductHeaderTaskbar/page";
 
 export const metadata: Metadata = {
     title: "Danh sách sản phẩm",

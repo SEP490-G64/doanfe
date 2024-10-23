@@ -1,9 +1,23 @@
 export type Product = {
-    image?: string;
-    name: string;
-    category: string;
-    type: string;
-    saleable: string;
-    inventory: string;
-    price: string;
+    index: number;
+    id: string;
+    productBaseDTO: {
+        id: string;
+        productName: string;
+        registrationCode: string;
+        urlImage: string;
+        activeIngredient: string;
+        excipient: string;
+        formulation: string;
+        inboundPrice: number;
+        sellPrice: number;
+        status: string;
+        baseUnit: string;
+        categoryName: string;
+        typeName: string;
+        manufacturerName: string;
+    };
+    minQuantity: number;
+    maxQuantity: number;
+    quantity: number;
 };

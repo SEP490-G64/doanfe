@@ -1,16 +1,16 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
 import { toast } from "react-toastify";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { SupplierBody, SupplierBodyType } from "@/lib/schemaValidate/supplierSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
+
+import { SupplierBody, SupplierBodyType } from "@/lib/schemaValidate/supplierSchema";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createSupplier, getSupplierById, updateSupplier } from "@/services/supplierServices";
 import Loader from "@/components/common/Loader";
 import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
-import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 
 const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update" | "create"; supplierId?: string }) => {
     const { isOpen, onOpenChange } = useDisclosure();
@@ -227,19 +227,19 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-6 xl:flex-row">
+                            <div className="flex flex-col items-center gap-6 xl:flex-row">
                                 <div className="w-full xl:w-1/2">
                                     {viewMode !== "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-primary bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type="submit"
                                         >
                                             {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                         </button>
                                     )}
-                                    {viewMode == "details" && (
+                                    {viewMode === "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-primary bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
                                             onClick={() => router.push(`/suppliers/update/${supplierId}`)}
                                         >
@@ -257,7 +257,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                                             Hủy
                                         </button>
                                     )}
-                                    {viewMode == "details" && (
+                                    {viewMode === "details" && (
                                         <button
                                             className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}

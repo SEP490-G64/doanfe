@@ -4,21 +4,28 @@
 import React from "react";
 import { IconButtonProps } from "@/types/button";
 
-function IconButton({ type = "primary", size = "medium", rounded = "medium", icon, onClick }: IconButtonProps) {
+function IconButton({
+    type = "primary",
+    size = "medium",
+    rounded = "medium",
+    icon,
+    classNames,
+    onClick,
+}: IconButtonProps) {
     let typeClass, sizeClass, roundedClass;
 
     switch (type) {
         case "primary":
-            typeClass = "border border-primary text-primary";
+            typeClass = "border border-primary text-primary hover:bg-gray/90";
             break;
         case "success":
-            typeClass = " border border-bg-meta-3 text-bg-meta-3";
+            typeClass = "border border-bg-meta-3 text-bg-meta-3 hover:bg-gray/90";
             break;
         case "danger":
-            typeClass = " border border-danger text-danger";
+            typeClass = "border border-danger text-danger hover:bg-gray/90";
             break;
         case "cancel":
-            typeClass = "border border-black text-black";
+            typeClass = "border border-black text-black hover:bg-gray/90";
             break;
     }
 
@@ -50,7 +57,7 @@ function IconButton({ type = "primary", size = "medium", rounded = "medium", ico
 
     return (
         <button
-            className={`inline-flex items-center justify-center text-center font-medium hover:bg-opacity-90 ${typeClass} ${sizeClass} ${roundedClass}`}
+            className={`inline-flex items-center justify-center text-center font-medium hover:bg-opacity-90 ${typeClass} ${sizeClass} ${roundedClass} ${classNames}`}
             onClick={onClick}
         >
             {icon}

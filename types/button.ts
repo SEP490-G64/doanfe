@@ -6,6 +6,7 @@ export type ButtonProps = {
     size?: "small" | "medium" | "large";
     rounded?: "none" | "medium" | "full";
     icon?: ReactElement;
+    classNames?: string;
     onClick: () => void;
 };
 
@@ -14,5 +15,6 @@ export type IconButtonProps = {
     size?: "small" | "medium" | "large";
     rounded?: "none" | "medium" | "full";
     icon: ReactElement;
+    classNames?: string;
     onClick: (e?: React.MouseEvent) => void;
 };
