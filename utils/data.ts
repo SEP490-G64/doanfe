@@ -37,6 +37,12 @@ export const manufacturerColumns = [
     { name: "Tác vụ", uid: "actions" },
 ];
 
+export const unitColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Tên đơn vị", uid: "unitName" },
+    { name: "Tác vụ", uid: "actions" },
+];
+
 export const productColumns = [
     { name: "STT", uid: "no." },
     { name: "Hình ảnh", uid: "urlImage" },

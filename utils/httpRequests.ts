@@ -16,6 +16,12 @@ export const post = async (path: string, body: object, options = {}) => {
     return res.data;
 };
 
+export const postResetPassword = async (path: string, body: string, options = {}) => {
+    const res = await httpRequest.post(path, body, options);
+
+    return res.data;
+};
+
 export const put = async (path: string, body: object, options = {}) => {
     const res = await httpRequest.put(path, body, options);
 

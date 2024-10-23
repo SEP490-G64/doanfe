@@ -104,7 +104,12 @@ function LoginForm() {
                 </div>
 
                 <div className="mb-6">
-                    <label className="mb-2.5 block font-medium text-black dark:text-white">Mật khẩu</label>
+                    <label className="mb-2.5 flex justify-between font-medium text-black dark:text-white">
+                        Mật khẩu
+                        <Link href="/forgot-password" className="text-primary">
+                            Quên mật khẩu?
+                        </Link>
+                    </label>
                     <div className="relative">
                         <input
                             type="password"
@@ -151,7 +156,7 @@ function LoginForm() {
                 <div className="mt-6 text-center">
                     <p>
                         Chưa có tài khoản?{" "}
-                        <Link href="/auth/signup" className="text-primary">
+                        <Link href="/register" className="text-primary">
                             Đăng ký
                         </Link>
                     </p>

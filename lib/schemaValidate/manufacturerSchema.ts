@@ -22,7 +22,7 @@ export const ManufacturerBody = z
             .max(11, "Giới hạn 11 kí tự")
             .optional()
             .refine((value) => value === undefined || value.trim().length === 0 || phoneNumberRegex.test(value), {
-                message: "Số điện thoại đúng định dạng",
+                message: "Số điện thoại không đúng định dạng",
             }),
         taxCode: z
             .string()
