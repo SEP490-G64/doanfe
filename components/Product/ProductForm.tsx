@@ -1,22 +1,39 @@
 "use client";
-import React, { useState } from "react";
-import SwitcherThree from "@/components/Switchers/SwitcherThree";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { BsLifePreserver } from "react-icons/bs";
+import { IoInformationCircle, IoTrashBinOutline } from "react-icons/io5";
+import { BiCategory } from "react-icons/bi";
+import { MdOutlineBloodtype, MdOutlinePrecisionManufacturing } from "react-icons/md";
+import { FaPlus } from "react-icons/fa6";
 
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 import UploadImage from "@/components/UI/UploadImage";
 import Loader from "@/components/common/Loader";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
+import { ProductBody, ProductBodyType } from "@/lib/schemaValidate/productSchema";
+import { createProduct, updateProduct } from "@/services/productServices";
+import { getAllCategory } from "@/services/categoryServices";
+import { getAllType } from "@/services/typeServices";
+import { getAllManufacturer } from "@/services/manufacturerServices";
+import IconButton from "@/components/UI/IconButton";
+import { Category } from "@/types/category";
+import { Type } from "@/types/type";
+import { Manufacturer } from "@/types/manufacturer";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
     const { isOpen, onOpenChange } = useDisclosure();
-    const optsData = [
+    const [cateOpts, setCateOpts] = useState([]);
+    const [typeOpts, setTypeOpts] = useState([]);
+    const [manOpts, setManOpts] = useState([]);
+    const specialConditionOpts = [
         {
             value: "NHIET_DO",
             label: "Nhiệt độ",
@@ -39,16 +56,120 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         },
     ];
 
-    const handleOnClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        toast.success("Ok roi!");
+    const statusOpts = [
+        {
+            value: "CON_HANG",
+            label: "Còn hàng",
+        },
+        {
+            value: "HET_HANG",
+            label: "Hết hàng",
+        },
+        {
+            value: "NGUNG_KINH_DOANH",
+            label: "Ngừng kinh doanh",
+        },
+    ];
+
+    const getDataOptions = async () => {
+        setLoading(true);
+        try {
+            const response = await Promise.all([
+                getAllCategory(sessionToken),
+                getAllType(sessionToken),
+                getAllManufacturer(sessionToken),
+            ]);
+
+            if (response) {
+                setCateOpts(response[0].data.map((c: Category) => ({ value: c.id, label: c.categoryName })));
+                setTypeOpts(response[1].data.map((t: Type) => ({ value: t.id, label: t.typeName })));
+                setManOpts(response[2].data.map((m: Manufacturer) => ({ value: m.id, label: m.manufacturerName })));
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const {
+        register,
+        handleSubmit,
+        watch,
+        getValues,
+        setValue,
+        control,
+        formState: { errors },
+    } = useForm<ProductBodyType>({
+        resolver: zodResolver(ProductBody),
+        defaultValues: {
+            productName: undefined,
+            productCode: undefined,
+            registrationCode: undefined,
+            urlImage: undefined,
+            activeIngredient: undefined,
+            excipient: undefined,
+            formulation: undefined,
+            status: "",
+            category: undefined,
+            type: undefined,
+            manufacturer: undefined,
+            baseUnit: undefined,
+            branchProducts: [
+                {
+                    branchId: undefined,
+                    storageLocation: { selfName: "Chi nhánh số 2" },
+                    maxQuantity: undefined,
+                    minQuantity: undefined,
+                    quantity: undefined,
+                },
+            ],
+            specialConditions: undefined,
+        },
+    });
+
+    const specialConditionsForm = useFieldArray({
+        control,
+        name: "specialConditions",
+    });
+
+    const branchProductForm = useFieldArray({
+        control,
+        name: "branchProducts",
+    });
+
+    useEffect(() => {
+        getDataOptions();
+    }, []);
+
+    const onSubmit = async (product: ProductBodyType) => {
+        console.log(product);
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            let response;
+            if (viewMode === "create") response = await createProduct(product, sessionToken);
+            else response = await updateProduct(product, productId as string, sessionToken);
+
+            if (response && response.message === "200 OK") {
+                router.push("/products/list");
+                router.refresh();
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (loading) return <Loader />;
     else
         return (
             <>
-                <form>
+                <form onSubmit={handleSubmit(onSubmit)} noValidate>
                     <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
                         <div className="flex flex-col gap-9">
                             {/* <!-- Input Fields --> */}
@@ -62,10 +183,16 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             Tên sản phẩm <span className="text-meta-1">*</span>
                                         </label>
                                         <input
+                                            {...register("productName")}
                                             type="email"
                                             placeholder="Nhập tên sản phẩm"
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                         />
+                                        {errors.productName && (
+                                            <span className="mt-1 block w-full text-sm text-rose-500">
+                                                {errors.productName.message}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
@@ -74,62 +201,92 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 Mã sản phẩm <span className="text-meta-1">*</span>
                                             </label>
                                             <input
+                                                {...register("productCode")}
                                                 type="text"
                                                 placeholder="Nhập mã sản phẩm"
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
+                                            {errors.productCode && (
+                                                <span className="mt-1 block w-full text-sm text-rose-500">
+                                                    {errors.productCode.message}
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="w-full xl:w-1/2">
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Số đăng ký
+                                                Số đăng ký <span className="text-meta-1">*</span>
                                             </label>
                                             <input
+                                                {...register("registrationCode")}
                                                 type="text"
                                                 placeholder="Nhập số đăng ký"
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
+                                            {errors.registrationCode && (
+                                                <span className="mt-1 block w-full text-sm text-rose-500">
+                                                    {errors.registrationCode.message}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full xl:w-1/2">
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Đơn vị <span className="text-meta-1">*</span>
+                                                Bào chế <span className="text-meta-1">*</span>
                                             </label>
                                             <input
+                                                {...register("formulation")}
                                                 type="text"
-                                                placeholder="Nhập đơn vị"
+                                                placeholder="Nhập bào chế"
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
+                                            {errors.formulation && (
+                                                <span className="mt-1 block w-full text-sm text-rose-500">
+                                                    {errors.formulation.message}
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="w-full xl:w-1/2">
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Hoạt chất
+                                                Hoạt chất <span className="text-meta-1">*</span>
                                             </label>
                                             <input
+                                                {...register("activeIngredient")}
                                                 type="text"
                                                 placeholder="Nhập hoạt chất"
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
+                                            {errors.activeIngredient && (
+                                                <span className="mt-1 block w-full text-sm text-rose-500">
+                                                    {errors.activeIngredient.message}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
                                     <div className="mb-4.5">
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Tá dược
+                                            Tá dược <span className="text-meta-1">*</span>
                                         </label>
                                         <input
+                                            {...register("excipient")}
                                             type="text"
                                             placeholder="Nhập tá dược"
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                         />
+                                        {errors.excipient && (
+                                            <span className="mt-1 block w-full text-sm text-rose-500">
+                                                {errors.excipient.message}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div>
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Quy cách đóng gói
+                                            Quy cách đóng gói <span className="text-meta-1">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -140,7 +297,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 </div>
                             </div>
 
-                            {/* <!-- Toggle switch input --> */}
+                            {/* <!-- Giá sản phẩm --> */}
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Giá sản phẩm</h3>
@@ -174,33 +331,75 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             </div>
 
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                                <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                                <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Điều kiện đặc biệt</h3>
+                                    <IconButton
+                                        icon={<FaPlus />}
+                                        rounded="full"
+                                        size="small"
+                                        onClick={(e) => {
+                                            e?.preventDefault();
+                                            specialConditionsForm.append({
+                                                conditionType: "",
+                                                handlingInstruction: "",
+                                            });
+                                        }}
+                                    />
                                 </div>
                                 <div className="p-6.5">
-                                    <div className="flex flex-col gap-6 xl:flex-row">
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Kiểu điều kiện
-                                            </label>
-                                            <SelectGroupTwo
-                                                icon={<BsLifePreserver />}
-                                                placeholder="Chọn điều kiện"
-                                                data={optsData}
-                                            />
-                                        </div>
+                                    {specialConditionsForm.fields.map((field, index) => (
+                                        <div key={field.id} className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                            <div className="w-6/12">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Kiểu điều kiện
+                                                </label>
+                                                <SelectGroupTwo
+                                                    register={{
+                                                        ...register(`specialConditions.${index}.conditionType`),
+                                                    }}
+                                                    watch={watch("specialConditions")}
+                                                    icon={<BsLifePreserver />}
+                                                    placeholder="Chọn điều kiện"
+                                                    data={specialConditionOpts}
+                                                />
+                                                {errors.specialConditions?.[index]?.conditionType && (
+                                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                                        {errors.specialConditions?.[index]?.conditionType.message}
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Hướng dẫn xử lý (Nếu cần)
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Nhập hướng dẫn xử lý"
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
+                                            <div className="w-5/12">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Hướng dẫn xử lý (Nếu cần)
+                                                </label>
+                                                <input
+                                                    {...register(`specialConditions.${index}.handlingInstruction`)}
+                                                    type="text"
+                                                    placeholder="Hướng dẫn xử lý"
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                                {errors.specialConditions?.[index]?.handlingInstruction && (
+                                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                                        {errors.specialConditions?.[index]?.handlingInstruction.message}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="m-auto w-1/12 text-center">
+                                                <IconButton
+                                                    icon={<IoTrashBinOutline />}
+                                                    rounded="full"
+                                                    size="small"
+                                                    type="danger"
+                                                    onClick={(e) => {
+                                                        e?.preventDefault();
+                                                        specialConditionsForm.remove(index);
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -244,7 +443,11 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     <h3 className="font-medium text-black dark:text-white">Ảnh sản phẩm</h3>
                                 </div>
                                 <div className="p-6.5">
-                                    <UploadImage sessionToken={sessionToken} />
+                                    <UploadImage
+                                        sessionToken={sessionToken}
+                                        urlImage={getValues("urlImage")}
+                                        setValue={setValue}
+                                    />
                                 </div>
                             </div>
                             {/* <!-- Textarea Fields --> */}
@@ -255,35 +458,56 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <div className="flex flex-col gap-5.5 p-6.5">
                                     <div>
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Thuộc nhóm sản phâm
+                                            Thuộc nhóm sản phẩm <span className="text-meta-1">*</span>
                                         </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Nhập nhóm sản phẩm"
-                                            className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        <SelectGroupTwo
+                                            register={{ ...register("category.id") }}
+                                            watch={watch("category.id")}
+                                            icon={<BiCategory />}
+                                            placeholder="Chọn nhóm sản phẩm"
+                                            data={cateOpts}
                                         />
+                                        {errors.category?.id && (
+                                            <span className="mt-1 block w-full text-sm text-rose-500">
+                                                {errors.category.id.message}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div>
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Thuộc loại sản phẩm
+                                            Thuộc loại sản phẩm <span className="text-meta-1">*</span>
                                         </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Nhập loại sản phẩm"
-                                            className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        <SelectGroupTwo
+                                            register={{ ...register("type.id") }}
+                                            watch={watch("type.id")}
+                                            icon={<MdOutlineBloodtype />}
+                                            placeholder="Chọn loại sản phẩm"
+                                            data={typeOpts}
                                         />
+                                        {errors.type?.id && (
+                                            <span className="mt-1 block w-full text-sm text-rose-500">
+                                                {errors.type.id.message}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div>
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Thuộc nhà sản xuất
+                                            Thuộc nhà sản xuất <span className="text-meta-1">*</span>
                                         </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Nhập nhà sản xuất"
-                                            className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        <SelectGroupTwo
+                                            register={{ ...register("manufacturer.id") }}
+                                            watch={watch("manufacturer.id")}
+                                            icon={<MdOutlinePrecisionManufacturing />}
+                                            placeholder="Chọn nhà sản xuất"
+                                            data={manOpts}
                                         />
+                                        {errors.manufacturer?.id && (
+                                            <span className="mt-1 block w-full text-sm text-rose-500">
+                                                {errors.manufacturer.id.message}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -299,11 +523,18 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Tình trạng
                                             </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Còn hàng"
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                            <SelectGroupTwo
+                                                register={{ ...register("status") }}
+                                                watch={watch("status")}
+                                                icon={<IoInformationCircle size={20} />}
+                                                placeholder="Chọn tình trạng"
+                                                data={statusOpts}
                                             />
+                                            {errors.status && (
+                                                <span className="mt-1 block w-full text-sm text-rose-500">
+                                                    {errors.status.message}
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="w-full xl:w-1/2">
@@ -344,57 +575,69 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             {/* <!-- Select input --> */}
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-                                    <h3 className="font-medium text-black dark:text-white">Vị trí trong kho</h3>
+                                    <h3 className="font-medium text-black dark:text-white">
+                                        Thông tin sản phẩm trong kho
+                                    </h3>
                                 </div>
 
-                                <div className="p-6.5">
-                                    <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Chi nhánh
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Chi nhánh số 2"
-                                                disabled
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
+                                {branchProductForm.fields.map((field, index) => (
+                                    <div className="p-6.5" key={field.id}>
+                                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                            <div className="w-full xl:w-1/2">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Chi nhánh
+                                                </label>
+                                                <input
+                                                    {...register(`branchProducts.${index}.storageLocation.selfName`)}
+                                                    type="text"
+                                                    disabled
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                            </div>
+                                            <div className="w-full xl:w-1/2">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Vị trí
+                                                </label>
+                                                <input
+                                                    {...register(`branchProducts.${index}.branchId`)}
+                                                    type="text"
+                                                    placeholder="Nhập vị trí"
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                                {errors.branchProducts?.[index]?.branchId && (
+                                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                                        {errors.branchProducts?.[index]?.branchId.message}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Vị trí
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Nhập vị trí"
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
-                                        </div>
-                                    </div>
 
-                                    <div className="flex flex-col gap-6 xl:flex-row">
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Số lượng tối thiểu
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Nhập số lượng tối thiểu"
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
-                                        </div>
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Số lượng tối đa
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Nhập số lượng tối đa"
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
+                                        <div className="flex flex-col gap-6 xl:flex-row">
+                                            <div className="w-full xl:w-1/2">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Số lượng tối thiểu
+                                                </label>
+                                                <input
+                                                    {...register(`branchProducts.${index}.minQuantity`)}
+                                                    type="text"
+                                                    placeholder="Nhập số lượng tối thiểu"
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                            </div>
+                                            <div className="w-full xl:w-1/2">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Số lượng tối đa
+                                                </label>
+                                                <input
+                                                    {...register(`branchProducts.${index}.maxQuantity`)}
+                                                    type="text"
+                                                    placeholder="Nhập số lượng tối đa"
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>

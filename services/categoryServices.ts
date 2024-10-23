@@ -3,6 +3,18 @@ import { CategoryBodyType } from "@/lib/schemaValidate/categorySchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 
+export const getAllCategory = async (token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/category`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return res;
+    } catch (error: any) {
+        console.log(error);
+    }
+};
+
 export const getListCategory = async (page: number, size: number, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/category`, {

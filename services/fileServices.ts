@@ -1,15 +1,11 @@
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 
-export const uploadFile = async (file: File, token: string) => {
+export const uploadFile = async (formData: FormData, token: string) => {
     try {
-        const res = await httpRequest.post(
-            "dsd/api/v1/staff/file/save",
-            { file },
-            {
-                headers: { Authorization: `Bearer ${token}` },
-            }
-        );
+        const res = await httpRequest.post("dsd/api/v1/staff/file/save", formData, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (res.data) {
             toast.success("Upload ảnh thành công");

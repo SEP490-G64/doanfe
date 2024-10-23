@@ -2,8 +2,8 @@ import z from "zod";
 
 const BranchProduct = z
     .object({
-        branchId: z.string().trim(),
-        storageLocation: z.string().trim(),
+        branchId: z.string().trim().min(1, "Vui lòng nhập mã chi nhánh"),
+        storageLocation: z.object({ selfName: z.string().trim() }),
         minQuantity: z.coerce.number().optional(),
         maxQuantity: z.coerce.number().optional(),
         quantity: z.coerce.number().optional(),
@@ -14,11 +14,11 @@ const SpecialCondition = z
     .object({
         conditionType: z.preprocess(
             (val) => (val === null || val === undefined || val === "" ? undefined : val), // Turn null to undefined
-            z.enum(["NHIET_DO", "DO_AM", "ANH_SANG", "KHONG_KHI", "KHAC"], {
+            z.enum(["NHIET_DO", "DO_AM", "ANH_SANG", "KHONG_KHI", "KHAC", ""], {
                 required_error: "Vui lòng chọn điều kiện đặc biệt",
             })
         ),
-        handlingInstruction: z.string().trim(),
+        handlingInstruction: z.string().trim().min(1, "Vui lòng nhập hướng dẫn xử lý"),
     })
     .strict();
 
@@ -28,17 +28,21 @@ export const ProductBody = z
         productCode: z.string().trim().min(1, "Vui lòng nhập mã sản phẩm"),
         registrationCode: z.string().trim().min(1, "Vui lòng nhập mã đăng ký sản phẩm"),
         urlImage: z.string().trim().optional(),
-        activeIngredient: z.string().trim().max(100, "Giới hạn 100 kí tự").optional(),
-        excipient: z.string().trim(),
-        formulation: z.string().trim(),
+        activeIngredient: z.string().trim().min(1, "Vui lòng nhập hoạt chất").max(256, "Giới hạn 255 kí tự"),
+        excipient: z.string().trim().min(1, "Vui lòng nhập tá dược"),
+        formulation: z.string().trim().min(1, "Vui lòng nhập đơn vị"),
         status: z.preprocess(
             (val) => (val === null || val === undefined || val === "" ? undefined : val), // Turn null to undefined
-            z.enum(["CON_HANG", "HET_HANG", "NGUNG_KINH_DOANH"], {
+            z.enum(["CON_HANG", "HET_HANG", "NGUNG_KINH_DOANH", ""], {
                 required_error: "Vui lòng chọn trạng thái sản phẩm",
             })
         ),
-        branchProducts: z.array(BranchProduct),
-        specialConditions: z.array(SpecialCondition),
+        category: z.object({ id: z.string().trim().min(1, "Vui lòng chọn nhóm sản phẩm") }),
+        type: z.object({ id: z.string().trim().min(1, "Vui lòng chọn loại sản phẩm") }),
+        manufacturer: z.object({ id: z.string().trim().min(1, "Vui lòng chọn nhà sản xuất") }),
+        baseUnit: z.object({ id: z.string().trim() }).optional(),
+        branchProducts: z.array(BranchProduct).optional(),
+        specialConditions: z.array(SpecialCondition).optional(),
     })
     .strict();
 
