@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import TableThree from "@/components/Tables/BranchesTable";
+import TableThree from "@/components/Branch/BranchTable/page";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import HeaderTaskbar from "@/components/HeaderTaskbar/page";
 

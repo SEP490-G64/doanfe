@@ -3,6 +3,18 @@ import { TypeBodyType } from "@/lib/schemaValidate/typeSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 
+export const getAllType = async (token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/type`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return res;
+    } catch (error: any) {
+        console.log(error);
+    }
+};
+
 export const getListType = async (page: number, size: number, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/type`, {
