@@ -44,5 +44,22 @@ export const userColumns = [
     { name: "Chi nhánh làm việc", uid: "branch" },
     { name: "Vai Trò", uid: "roles" },
     { name: "Trạng thái", uid: "status" },
+
+export const unitColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Tên đơn vị", uid: "unitName" },
+    { name: "Tác vụ", uid: "actions" },
+];
+
+export const productColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Hình ảnh", uid: "urlImage" },
+    { name: "Tên sản phẩm", uid: "productName" },
+    { name: "Mã đăng ký", uid: "registrationCode" },
+    { name: "Giá nhập", uid: "no." },
+    { name: "Giá xuất", uid: "no." },
+    { name: "Trạng thái", uid: "status" },
+    { name: "Số lượng tối thiểu", uid: "minQuantity" },
+    { name: "Số lượng tối đa", uid: "maxQuantity" },
     { name: "Tác vụ", uid: "actions" },
 ];

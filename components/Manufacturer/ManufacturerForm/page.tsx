@@ -1,16 +1,18 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { ManufacturerBody, ManufacturerBodyType } from "@/lib/schemaValidate/manufacturerSchema";
 import { useRouter } from "next/navigation";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
+import { FaEarthAsia } from "react-icons/fa6";
+
+import { ManufacturerBody, ManufacturerBodyType } from "@/lib/schemaValidate/manufacturerSchema";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createManufacturer, getManufacturerById, updateManufacturer } from "@/services/manufacturerServices";
 import Loader from "@/components/common/Loader";
 import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
-import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
+import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 
 const ManufacturerForm = ({
     viewMode,
@@ -40,7 +42,7 @@ const ManufacturerForm = ({
             phoneNumber: undefined,
             taxCode: undefined,
             origin: undefined,
-            status: undefined,
+            status: true,
         },
     });
 
@@ -75,23 +77,24 @@ const ManufacturerForm = ({
 
     // Hàm fetch danh sách quốc gia từ API
     const fetchCountries = async () => {
+        setLoading(true);
         try {
             const response = await fetch("http://api.geonames.org/countryInfoJSON?username=juncookie&lang=vi");
             const data = await response.json();
 
             // Lấy danh sách tên quốc gia từ dữ liệu
             const countryNames = data.geonames.map((country: any) => country.countryName);
-            console.log(countryNames); // Kiểm tra danh sách tên quốc gia
 
             setCountries(countryNames); // Lưu danh sách quốc gia vào state
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu quốc gia:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchCountries(); // Gọi hàm fetch danh sách quốc gia khi component mount
-        setValue("status", true);
         if (viewMode != "create") {
             getManufacturerInfo();
         }
@@ -224,19 +227,13 @@ const ManufacturerForm = ({
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                         Quốc gia <span className="text-meta-1">*</span>
                                     </label>
-                                    <select
-                                        {...register("origin")}
-                                        value={watch("origin")} // Use watch to get the current value of origin
-                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                        disabled={viewMode === "details"}
-                                    >
-                                        <option value="">Chọn quốc gia</option>
-                                        {countries.map((country, index) => (
-                                            <option key={index} value={country}>
-                                                {country}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <SelectGroupTwo
+                                        icon={<FaEarthAsia />}
+                                        placeholder="Chọn quốc gia"
+                                        register={{ ...register("origin") }}
+                                        watch={watch("origin")}
+                                        data={countries.map((c) => ({ label: c, value: c }))}
+                                    />
                                     {errors.origin && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
                                             {errors.origin.message}
@@ -257,19 +254,19 @@ const ManufacturerForm = ({
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-6 xl:flex-row">
+                            <div className="flex flex-col items-center gap-6 xl:flex-row">
                                 <div className="w-full xl:w-1/2">
                                     {viewMode !== "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-primary bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type="submit"
                                         >
                                             {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                         </button>
                                     )}
-                                    {viewMode == "details" && (
+                                    {viewMode === "details" && (
                                         <button
-                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            className="flex w-full justify-center rounded border border-primary bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type={"button"}
                                             onClick={() => router.push(`/manufacturers/update/${manufacturerId}`)}
                                         >
@@ -287,7 +284,7 @@ const ManufacturerForm = ({
                                             Hủy
                                         </button>
                                     )}
-                                    {viewMode == "details" && (
+                                    {viewMode === "details" && (
                                         <button
                                             className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                             type={"button"}

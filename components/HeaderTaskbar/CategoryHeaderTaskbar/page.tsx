@@ -1,10 +1,14 @@
-﻿import React from "react";
+﻿"use client";
+
+import React from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaFileImport } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
 
 import Button from "@/components/UI/Button";
 
 function HeaderTaskbar({ buttons }: { buttons?: string }) {
+    const router = useRouter();
     return (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="">
@@ -44,15 +48,14 @@ function HeaderTaskbar({ buttons }: { buttons?: string }) {
             </div>
             <div className="flex gap-2">
                 {buttons === "import" && (
-                    <Button
-                        label="Nhập file"
-                        size="small"
-                        icon={<FaFileImport />}
-                        type="success"
-                        href="/categories/create"
-                    />
+                    <Button label="Nhập file" size="small" icon={<FaFileImport />} type="success" onClick={() => {}} />
                 )}
-                <Button label="Thêm mới" size="small" icon={<FaPlus />} href="/categories/create" />
+                <Button
+                    label="Thêm mới"
+                    size="small"
+                    icon={<FaPlus />}
+                    onClick={() => router.push("/categories/create")}
+                />
             </div>
         </div>
     );
