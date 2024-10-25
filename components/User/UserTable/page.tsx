@@ -23,7 +23,7 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteUser, getListUser } from "@/services/userServices";
+import {activateUser, deleteUser, getListUser} from "@/services/userServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { userColumns } from "@/utils/data";
@@ -33,6 +33,7 @@ const UsersTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
+    const [action, setAction] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [UserData, setUserData] = useState<User[]>([]);
     const [total, setTotal] = useState(0);
@@ -69,8 +70,9 @@ const UsersTable = () => {
         }
     };
 
-    const handleOpenModal = (UserId: string) => {
+    const handleOpenModal = (UserId: string, Action: string) => {
         setSelectedId(UserId);
+        setAction(Action);
         onOpen();
     };
 
@@ -93,12 +95,31 @@ const UsersTable = () => {
         }
     };
 
+    const handleActivate = async (UserId: string) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await activateUser(UserId, sessionToken);
+
+            if (response.message === "200 OK") {
+                await getListUserByPage();
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         getListUserByPage();
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((user: User, columnKey: React.Key) => {
-        const cellValue = user[columnKey as "id" | "userName" | "email" | "branch" | "roles" | "status" | "actions"];
+        const cellValue = user[columnKey as "id" | "userName" | "email" | "branch" | "roles" | "status" ];
         console.log(user);
 
         switch (columnKey) {
@@ -109,7 +130,7 @@ const UsersTable = () => {
             case "email":
                 return <h5 className="font-normal text-black dark:text-white">{user.email}</h5>;
             case "branch":
-                return <h5 className="font-normal text-black dark:text-white">{user.branch?.location}</h5>;
+                return <h5 className="font-normal text-black dark:text-white">{user.branch ? user.branch?.location : "Người dùng không thuộc chi nhánh nào"}</h5>;
             case "roles":
                 return <h5 className="font-normal text-black dark:text-white">{user.roles?.at(0)?.type}</h5>;
             case "status":
@@ -117,18 +138,25 @@ const UsersTable = () => {
     <p
         className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${(() => {
             switch (user.status) {
-                case "Từ chối":
+                case "REJECTED":
                     return "bg-danger/10 text-danger";
-                case "Đang kích hoạt":
+                case "ACTIVATE":
                     return "bg-success/10 text-success";
-                case "Vô hiệu hoá":
-                case "Chờ duyệt":
+                case "DEACTIVATE":
                     return "bg-warning/10 text-warning";
-                default:
-                    return "bg-secondary/10 text-secondary";
             }
         })()}`}
-    >{user.status}
+    >
+        {(() => {
+        switch (user.status) {
+            case "REJECTED":
+                return "Từ chối";
+            case "ACTIVATE":
+                return "Đang kích hoạt";
+            case "DEACTIVATE":
+                return "Vô hiệu hóa";
+        }
+        })()}
     </p>
 );
             case "actions":
@@ -162,12 +190,59 @@ const UsersTable = () => {
                             <button
                                 className="hover:text-secondary"
                                 onClick={() => router.push(`/users/update/${user.id}`)}
+                                hidden={user.status === "REJECTED"}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
+                        <Tooltip
+                            color={user.status === "ACTIVATE" ? "warning" : "success"}
+                            content={user.status === "ACTIVATE" ? "Vô hiệu hóa" : "Kích hoạt"}
+                        >
+                            <button
+                                className={`hover:text-${user.status === "ACTIVATE" ? "warning" : "success"}`}
+                                hidden={user.status === "REJECTED" || user.roles?.at(0)?.type === "ADMIN"}
+                                onClick={() => handleOpenModal(user.id.toString(), (user.status === "ACTIVATE" ? "DEACTIVATE" : "ACTIVATE"))}
+                            >
+                                {user.status === "ACTIVATE" ? (
+                                    <svg
+                                        className="fill-current"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-7V8a6 6 0 10-12 0v2H5v11h14V10h-1zm-8 0V8a4 4 0 018 0v2H10z"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                ) : (
+                                    <svg
+                                        className="fill-current"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-7V8a6 6 0 10-12 0v2H5v11h14V10h-1zm-4-4V8a4 4 0 10-8 0v2h8z"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                )}
+                            </button>
+                        </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(user.id.toString())}>
+                            <button className="hover:text-danger"
+                                    hidden={user.roles?.at(0)?.type === "ADMIN"}
+                                    onClick={() => handleOpenModal(user.id.toString(), "DELETE")}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -279,20 +354,55 @@ const UsersTable = () => {
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa người dùng này không?</p>
+                                    {(() => {
+                                        switch (action) {
+                                            case "DELETE":
+                                                return <p>Bạn có chắc muốn xóa người dùng này không?</p>;
+                                            case "ACTIVATE":
+                                                return <p>Bạn có chắc muốn kích hoạt người dùng này không?</p>;
+                                            case "DEACTIVATE":
+                                                return <p>Bạn có chắc muốn vô hiệu hóa người dùng này không?</p>;
+                                        }
+                                    })()}
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
                                         Hủy
                                     </Button>
                                     <Button
-                                        color="danger"
+                                        color={(() => {
+                                            switch (action) {
+                                                case "DELETE":
+                                                    return "danger";
+                                                case "ACTIVATE":
+                                                    return "success";
+                                                case "DEACTIVATE":
+                                                    return "warning";
+                                            }
+                                        })()}
                                         onPress={() => {
-                                            handleDelete(selectedId);
+                                            {(() => {
+                                                switch (action) {
+                                                    case "DELETE":
+                                                        handleDelete(selectedId);
+                                                    case "ACTIVATE":
+                                                    case "DEACTIVATE":
+                                                        handleActivate(selectedId);
+                                                }
+                                            })()}
                                             onClose();
                                         }}
                                     >
-                                        Xóa
+                                        {(() => {
+                                            switch (action) {
+                                                case "DELETE":
+                                                    return "Xóa";
+                                                case "ACTIVATE":
+                                                    return "Kích hoạt";
+                                                case "DEACTIVATE":
+                                                    return "Vô hiệu hóa";
+                                            }
+                                        })()}
                                     </Button>
                                 </ModalFooter>
                             </>

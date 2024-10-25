@@ -1,6 +1,6 @@
 export type Branch = {
     index: number;
-    id: string;
+    id: number;
     branchName: string;
     branchType: "MAIN" | "SUB";
     location: string;

@@ -98,13 +98,19 @@ const CategoryesTable = () => {
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((category: Category, columnKey: React.Key) => {
-        const cellValue = category[columnKey as "id" | "categoryName" | "taxRate"];
+        const cellValue = category[columnKey as "id" | "categoryName" | "categoryDescription" | "taxRate"];
 
         switch (columnKey) {
             case "no.":
                 return <h5 className="text-black dark:text-white">{category.index}</h5>;
             case "categoryName":
                 return <h5 className="font-normal text-black dark:text-white">{category.categoryName}</h5>;
+            case "categoryDescription":
+                return <h5 className="font-normal text-black dark:text-white">{category.categoryDescription ?
+                    (category.categoryDescription.length > 100 ?
+                        category.categoryDescription.substring(0, 100) + "..." : category.categoryDescription)
+                    : "Không mô tả"}
+                </h5>;
             case "taxRate":
                 return <h5> {category.taxRate == 0 ? "Không mất thuế" : category.taxRate + "%"} </h5>;
             case "actions":

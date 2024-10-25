@@ -61,7 +61,7 @@ function ChangePasswordForm() {
             <>
                 <div className="flex flex-col gap-9">
                     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                        <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                             <div className="p-6.5">
                                 <div className="mb-4.5">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">

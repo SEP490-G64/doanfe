@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: "This is Next.js Tables page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
-const CreateSupplier = () => {
+const CreateUser = () => {
     return (
         <DefaultLayout>
             <Breadcrumb pageName="Thêm mới người dùng" />
@@ -19,4 +19,4 @@ const CreateSupplier = () => {
     );
 };
 
-export default CreateSupplier;
+export default CreateUser;

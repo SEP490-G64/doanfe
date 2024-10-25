@@ -4,7 +4,6 @@ import { Role } from "./role";
 export type User = {
     index: number;
     id: number;
-    id: string;
     userName: string;
     email: string;
     password: string;

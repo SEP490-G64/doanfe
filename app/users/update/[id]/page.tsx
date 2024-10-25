@@ -9,14 +9,14 @@ export const metadata: Metadata = {
     description: "This is Next.js Tables page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
-const UpdateSupplier = ({ params }: { params: { id: string } }) => {
+const UpdateUser = ({ params }: { params: { id: string } }) => {
     return (
         <DefaultLayout>
-            <Breadcrumb pageName="Cập nhật nhà cung cấp" />
+            <Breadcrumb pageName="Cập nhật người dùng" />
 
             <UserForm viewMode="update" userId={params.id} />
         </DefaultLayout>
     );
 };
 
-export default UpdateSupplier;
+export default UpdateUser;
