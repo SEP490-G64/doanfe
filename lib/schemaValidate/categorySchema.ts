@@ -3,8 +3,12 @@
 export const CategoryBody = z
     .object({
         categoryName: z.string().trim().min(1, "Vui lòng nhập tên nhóm sản phẩm").max(100, "Giới hạn 100 kí tự"),
-        categoryDescription: z.string().trim().max(1000, "Giới hạn 1000 kí tự").optional(),
-        taxRate: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
+        categoryDescription: z.string().trim().max(256, "Giới hạn 1000 kí tự").optional(),
+        taxRate: z.coerce
+            .number({ message: "Vui lòng nhập số" })
+            .min(0, "Phần trăm thuế không thể âm")
+            .max(100, "Phần trăm thuế không thể lớn hơn 100")
+            .optional(),
     })
     .strict();
 

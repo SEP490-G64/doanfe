@@ -103,6 +103,7 @@ const TypesTable = () => {
                 columnKey as
                     | "id"
                     | "typeName"
+                    | "typeDescription"
             ];
 
         switch (columnKey) {
@@ -110,6 +111,12 @@ const TypesTable = () => {
                 return <h5 className="text-black dark:text-white">{type.index}</h5>;
             case "typeName":
                 return <h5 className="font-normal text-black dark:text-white">{type.typeName}</h5>;
+            case "typeDescription":
+                return <h5 className="font-normal text-black dark:text-white">{type.typeDescription ?
+                    (type.typeDescription.length > 100 ?
+                        type.typeDescription.substring(0, 100) + "..." : type.typeDescription)
+                    : "Không mô tả"}
+                </h5>;
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">

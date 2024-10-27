@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Table,
@@ -23,18 +23,19 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteCategory, getListCategory } from "@/services/categoryServices";
+import {activateUser, deleteUser, getListUser} from "@/services/userServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
-import { categoryColumns } from "@/utils/data";
-import { Category } from "@/types/category";
+import { userColumns } from "@/utils/data";
+import { User } from "@/types/user";
 
-const CategoryesTable = () => {
+const UsersTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
+    const [action, setAction] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [CategoryData, setCategoryData] = useState<Category[]>([]);
+    const [UserData, setUserData] = useState<User[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -44,18 +45,18 @@ const CategoryesTable = () => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
 
-    const getListCategoryByPage = async () => {
+    const getListUserByPage = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getListCategory(page - 1, rowsPerPage, sessionToken);
+            const response = await getListUser(page - 1, rowsPerPage, sessionToken);
 
             if (response.message === "200 OK") {
-                setCategoryData(
-                    response.data.map((item: Category, index: number) => ({
+                setUserData(
+                    response.data.map((item: User, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
                     }))
@@ -69,22 +70,42 @@ const CategoryesTable = () => {
         }
     };
 
-    const handleOpenModal = (CategoryId: string) => {
-        setSelectedId(CategoryId);
+    const handleOpenModal = (UserId: string, Action: string) => {
+        setSelectedId(UserId);
+        setAction(Action);
         onOpen();
     };
 
-    const handleDelete = async (CategoryId: string) => {
+    const handleDelete = async (UserId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteCategory(CategoryId, sessionToken);
+            const response = await deleteUser(UserId, sessionToken);
 
             if (response === "200 OK") {
-                await getListCategoryByPage();
+                await getListUserByPage();
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleActivate = async (UserId: string) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await activateUser(UserId, sessionToken);
+
+            if (response.message === "200 OK") {
+                await getListUserByPage();
             }
         } catch (error) {
             console.log(error);
@@ -94,32 +115,57 @@ const CategoryesTable = () => {
     };
 
     useEffect(() => {
-        getListCategoryByPage();
+        getListUserByPage();
     }, [page, rowsPerPage]);
 
-    const renderCell = useCallback((category: Category, columnKey: React.Key) => {
-        const cellValue = category[columnKey as "id" | "categoryName" | "categoryDescription" | "taxRate"];
+    const renderCell = useCallback((user: User, columnKey: React.Key) => {
+        const cellValue = user[columnKey as "id" | "userName" | "email" | "branch" | "roles" | "status" ];
+        console.log(user);
 
         switch (columnKey) {
             case "no.":
-                return <h5 className="text-black dark:text-white">{category.index}</h5>;
-            case "categoryName":
-                return <h5 className="font-normal text-black dark:text-white">{category.categoryName}</h5>;
-            case "categoryDescription":
-                return <h5 className="font-normal text-black dark:text-white">{category.categoryDescription ?
-                    (category.categoryDescription.length > 100 ?
-                        category.categoryDescription.substring(0, 100) + "..." : category.categoryDescription)
-                    : "Không mô tả"}
-                </h5>;
-            case "taxRate":
-                return <h5> {category.taxRate == 0 ? "Không mất thuế" : category.taxRate + "%"} </h5>;
+                return <h5 className="text-black dark:text-white">{user.index}</h5>;
+            case "userName":
+                return <h5 className="font-normal text-black dark:text-white">{user.userName}</h5>;
+            case "email":
+                return <h5 className="font-normal text-black dark:text-white">{user.email}</h5>;
+            case "branch":
+                return <h5 className="font-normal text-black dark:text-white">{user.branch ? user.branch?.location : "Người dùng không thuộc chi nhánh nào"}</h5>;
+            case "roles":
+                return <h5 className="font-normal text-black dark:text-white">{user.roles?.at(0)?.type}</h5>;
+            case "status":
+                return (
+    <p
+        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${(() => {
+            switch (user.status) {
+                case "REJECTED":
+                    return "bg-danger/10 text-danger";
+                case "ACTIVATE":
+                    return "bg-success/10 text-success";
+                case "DEACTIVATE":
+                    return "bg-warning/10 text-warning";
+            }
+        })()}`}
+    >
+        {(() => {
+        switch (user.status) {
+            case "REJECTED":
+                return "Từ chối";
+            case "ACTIVATE":
+                return "Đang kích hoạt";
+            case "DEACTIVATE":
+                return "Vô hiệu hóa";
+        }
+        })()}
+    </p>
+);
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
                         <Tooltip content="Chi tiết">
                             <button
                                 className="hover:text-primary"
-                                onClick={() => router.push(`/categories/details/${category.id}`)}
+                                onClick={() => router.push(`/users/details/${user.id}`)}
                             >
                                 <svg
                                     className="fill-current"
@@ -143,13 +189,60 @@ const CategoryesTable = () => {
                         <Tooltip color="secondary" content="Cập nhật">
                             <button
                                 className="hover:text-secondary"
-                                onClick={() => router.push(`/categories/update/${category.id}`)}
+                                onClick={() => router.push(`/users/update/${user.id}`)}
+                                hidden={user.status === "REJECTED"}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
+                        <Tooltip
+                            color={user.status === "ACTIVATE" ? "warning" : "success"}
+                            content={user.status === "ACTIVATE" ? "Vô hiệu hóa" : "Kích hoạt"}
+                        >
+                            <button
+                                className={`hover:text-${user.status === "ACTIVATE" ? "warning" : "success"}`}
+                                hidden={user.status === "REJECTED" || user.roles?.at(0)?.type === "ADMIN"}
+                                onClick={() => handleOpenModal(user.id.toString(), (user.status === "ACTIVATE" ? "DEACTIVATE" : "ACTIVATE"))}
+                            >
+                                {user.status === "ACTIVATE" ? (
+                                    <svg
+                                        className="fill-current"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-7V8a6 6 0 10-12 0v2H5v11h14V10h-1zm-8 0V8a4 4 0 018 0v2H10z"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                ) : (
+                                    <svg
+                                        className="fill-current"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-7V8a6 6 0 10-12 0v2H5v11h14V10h-1zm-4-4V8a4 4 0 10-8 0v2h8z"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                )}
+                            </button>
+                        </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(category.id)}>
+                            <button className="hover:text-danger"
+                                    hidden={user.roles?.at(0)?.type === "ADMIN"}
+                                    onClick={() => handleOpenModal(user.id.toString(), "DELETE")}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -225,10 +318,10 @@ const CategoryesTable = () => {
                                 </div>
                             ) : null
                         }
-                        aria-label="Category Table"
+                        aria-label="User Table"
                     >
                         <TableHeader>
-                            <TableHeader columns={categoryColumns}>
+                            <TableHeader columns={userColumns}>
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
@@ -240,12 +333,12 @@ const CategoryesTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={CategoryData ?? []}>
+                        <TableBody items={UserData ?? []}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["categoryName", "taxRate"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["userName", "email"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>
@@ -261,20 +354,55 @@ const CategoryesTable = () => {
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa nhóm sản phẩm này không?</p>
+                                    {(() => {
+                                        switch (action) {
+                                            case "DELETE":
+                                                return <p>Bạn có chắc muốn xóa người dùng này không?</p>;
+                                            case "ACTIVATE":
+                                                return <p>Bạn có chắc muốn kích hoạt người dùng này không?</p>;
+                                            case "DEACTIVATE":
+                                                return <p>Bạn có chắc muốn vô hiệu hóa người dùng này không?</p>;
+                                        }
+                                    })()}
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>
                                         Hủy
                                     </Button>
                                     <Button
-                                        color="danger"
+                                        color={(() => {
+                                            switch (action) {
+                                                case "DELETE":
+                                                    return "danger";
+                                                case "ACTIVATE":
+                                                    return "success";
+                                                case "DEACTIVATE":
+                                                    return "warning";
+                                            }
+                                        })()}
                                         onPress={() => {
-                                            handleDelete(selectedId);
+                                            {(() => {
+                                                switch (action) {
+                                                    case "DELETE":
+                                                        handleDelete(selectedId);
+                                                    case "ACTIVATE":
+                                                    case "DEACTIVATE":
+                                                        handleActivate(selectedId);
+                                                }
+                                            })()}
                                             onClose();
                                         }}
                                     >
-                                        Xóa
+                                        {(() => {
+                                            switch (action) {
+                                                case "DELETE":
+                                                    return "Xóa";
+                                                case "ACTIVATE":
+                                                    return "Kích hoạt";
+                                                case "DEACTIVATE":
+                                                    return "Vô hiệu hóa";
+                                            }
+                                        })()}
                                     </Button>
                                 </ModalFooter>
                             </>
@@ -285,4 +413,4 @@ const CategoryesTable = () => {
         );
 };
 
-export default CategoryesTable;
+export default UsersTable;

@@ -1,7 +1,7 @@
 import z from "zod";
 
 // Biểu thức chính quy cho số điện thoại Việt Nam
-const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7}|(0[2-9]\d{7}))$/;
+const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7}|(0[2-9]\d{7, 8}))$/;
 
 export const BranchBody = z
     .object({
@@ -14,7 +14,12 @@ export const BranchBody = z
             .min(1, "Vui lòng nhập số điện thoại liên hệ")
             .max(11, "Giới hạn 11 kí tự")
             .regex(phoneNumberRegex, "Số điện thoại không đúng định dạng"), // Kiểm tra định dạng,
-        capacity: z.coerce.number({ message: "Vui lòng nhập số" }).int("Vui lòng nhập số nguyên").optional(),
+        capacity: z.coerce
+            .number({ message: "Vui lòng nhập số" })
+            .int("Vui lòng nhập số nguyên")
+            .min(1, "Quy mô chi nhánh không thể nhỏ hơn 1")
+            .max(100000, "Quy mô chi nhánh không thể lớn hơn 100,000")
+            .optional(),
         activeStatus: z.boolean(),
         // Use preprocess to handle null/undefined
         branchType: z.preprocess(
@@ -27,6 +32,21 @@ export const BranchBody = z
     .strict();
 
 export type BranchBodyType = z.TypeOf<typeof BranchBody>;
+
+export const BranchDtoBody = z
+    .object({
+        id: z.coerce.number().int("Vui lòng chọn chi nhánh").min(1, "Vui lòng chọn chi nhánh"),
+        branchName: z.string().optional(),
+        location: z.string().optional(),
+        contactPerson: z.string().optional(),
+        phoneNumber: z.string().optional(),
+        capacity: z.coerce.number().int().optional(),
+        activeStatus: z.boolean().optional(),
+        branchType: z.enum(["MAIN", "SUB"]).optional(),
+    })
+    .strict();
+
+export type BranchDtoType = z.TypeOf<typeof BranchDtoBody>;
 
 export const BranchRes = z.object({
     data: z.object({
