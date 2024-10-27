@@ -3,7 +3,6 @@ import { Metadata } from "next";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import ProductsTable from "@/components/Product/ProductsTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import HeaderTaskbar from "@/components/HeaderTaskbar/ProductHeaderTaskbar/page";
 
 export const metadata: Metadata = {
     title: "Danh sách sản phẩm",
@@ -15,11 +14,7 @@ const ProductList = () => {
         <DefaultLayout>
             <Breadcrumb pageName="Danh sách sản phẩm" />
 
-            <HeaderTaskbar buttons={"import"} />
-
-            <div className="flex flex-col gap-18">
-                <ProductsTable />
-            </div>
+            <ProductsTable />
         </DefaultLayout>
     );
 };

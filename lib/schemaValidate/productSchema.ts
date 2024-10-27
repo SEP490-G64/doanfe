@@ -4,9 +4,9 @@ const BranchProduct = z
     .object({
         branchId: z.string().trim().min(1, "Vui lòng nhập mã chi nhánh"),
         storageLocation: z.object({ selfName: z.string().trim() }),
-        minQuantity: z.coerce.number().optional(),
-        maxQuantity: z.coerce.number().optional(),
-        quantity: z.coerce.number().optional(),
+        minQuantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
+        maxQuantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
+        quantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
     })
     .strict();
 
@@ -21,6 +21,8 @@ const SpecialCondition = z
         handlingInstruction: z.string().trim().min(1, "Vui lòng nhập hướng dẫn xử lý"),
     })
     .strict();
+
+const BaseUnit = z.object({ id: z.string().trim(), quantity: z.coerce.number() }).strict();
 
 export const ProductBody = z
     .object({
@@ -40,7 +42,7 @@ export const ProductBody = z
         category: z.object({ id: z.string().trim().min(1, "Vui lòng chọn nhóm sản phẩm") }),
         type: z.object({ id: z.string().trim().min(1, "Vui lòng chọn loại sản phẩm") }),
         manufacturer: z.object({ id: z.string().trim().min(1, "Vui lòng chọn nhà sản xuất") }),
-        baseUnit: z.object({ id: z.string().trim() }).optional(),
+        baseUnits: z.array(BaseUnit).optional(),
         branchProducts: z.array(BranchProduct).optional(),
         specialConditions: z.array(SpecialCondition).optional(),
     })

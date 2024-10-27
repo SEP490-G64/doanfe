@@ -16,7 +16,7 @@ import UploadImage from "@/components/UI/UploadImage";
 import Loader from "@/components/common/Loader";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { ProductBody, ProductBodyType } from "@/lib/schemaValidate/productSchema";
-import { createProduct, updateProduct } from "@/services/productServices";
+import { createProduct, getProductById, updateProduct } from "@/services/productServices";
 import { getAllCategory } from "@/services/categoryServices";
 import { getAllType } from "@/services/typeServices";
 import { getAllManufacturer } from "@/services/manufacturerServices";
@@ -24,6 +24,8 @@ import IconButton from "@/components/UI/IconButton";
 import { Category } from "@/types/category";
 import { Type } from "@/types/type";
 import { Manufacturer } from "@/types/manufacturer";
+import { getAllUnit } from "@/services/unitServices";
+import { Unit } from "@/types/unit";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -33,6 +35,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     const [cateOpts, setCateOpts] = useState([]);
     const [typeOpts, setTypeOpts] = useState([]);
     const [manOpts, setManOpts] = useState([]);
+    const [unitOpts, setUnitOpts] = useState([]);
     const specialConditionOpts = [
         {
             value: "NHIET_DO",
@@ -78,12 +81,14 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                 getAllCategory(sessionToken),
                 getAllType(sessionToken),
                 getAllManufacturer(sessionToken),
+                getAllUnit(sessionToken),
             ]);
 
             if (response) {
                 setCateOpts(response[0].data.map((c: Category) => ({ value: c.id, label: c.categoryName })));
                 setTypeOpts(response[1].data.map((t: Type) => ({ value: t.id, label: t.typeName })));
                 setManOpts(response[2].data.map((m: Manufacturer) => ({ value: m.id, label: m.manufacturerName })));
+                setUnitOpts(response[3].data.map((u: Unit) => ({ value: u.id, label: u.unitName })));
             }
         } catch (error) {
             console.log(error);
@@ -114,7 +119,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
             category: undefined,
             type: undefined,
             manufacturer: undefined,
-            baseUnit: undefined,
+            baseUnits: undefined,
             branchProducts: [
                 {
                     branchId: undefined,
@@ -128,6 +133,11 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         },
     });
 
+    const baseUnitForm = useFieldArray({
+        control,
+        name: "baseUnits",
+    });
+
     const specialConditionsForm = useFieldArray({
         control,
         name: "specialConditions",
@@ -138,12 +148,65 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         name: "branchProducts",
     });
 
+    const getProductInfo = async () => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await getProductById(productId as string, sessionToken);
+
+            if (response.message === "200 OK") {
+                const fields: [
+                    "productName",
+                    "productCode",
+                    "registrationCode",
+                    "urlImage",
+                    "activeIngredient",
+                    "excipient",
+                    "formulation",
+                    "status",
+                    "category",
+                    "type",
+                    "manufacturer",
+                    "baseUnits",
+                    "branchProducts",
+                    "specialConditions",
+                ] = [
+                    "productName",
+                    "productCode",
+                    "registrationCode",
+                    "urlImage",
+                    "activeIngredient",
+                    "excipient",
+                    "formulation",
+                    "status",
+                    "category",
+                    "type",
+                    "manufacturer",
+                    "baseUnits",
+                    "branchProducts",
+                    "specialConditions",
+                ];
+
+                fields.forEach((field) => setValue(field, response.data[field]));
+            } else router.push("/not-found");
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         getDataOptions();
+        if (viewMode != "create") {
+            getProductInfo();
+        }
     }, []);
 
     const onSubmit = async (product: ProductBodyType) => {
-        console.log(product);
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
@@ -404,34 +467,75 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             </div>
 
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                                <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                                <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Đơn vị quy đổi</h3>
+                                    <IconButton
+                                        icon={<FaPlus />}
+                                        rounded="full"
+                                        size="small"
+                                        onClick={(e) => {
+                                            e?.preventDefault();
+                                            baseUnitForm.append({
+                                                id: "",
+                                                quantity: 0,
+                                            });
+                                        }}
+                                    />
                                 </div>
                                 <div className="p-6.5">
-                                    <div className="flex flex-col gap-6 xl:flex-row">
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Đơn vị <span className="text-meta-1">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Nhập đơn vị"
-                                                disabled
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
-                                        </div>
+                                    {baseUnitForm.fields.map((field, index) => (
+                                        <div key={field.id} className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                            <div className="w-6/12">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Đơn vị <span className="text-meta-1">*</span>
+                                                </label>
+                                                <SelectGroupTwo
+                                                    register={{
+                                                        ...register(`baseUnits.${index}.id`),
+                                                    }}
+                                                    watch={watch("baseUnits")}
+                                                    icon={<BsLifePreserver />}
+                                                    placeholder="Chọn đơn vị"
+                                                    data={unitOpts}
+                                                />
+                                                {errors.baseUnits?.[index]?.id && (
+                                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                                        {errors.baseUnits?.[index]?.id.message}
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Số lượng <span className="text-meta-1">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Nhập số lượng"
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
+                                            <div className="w-5/12">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Số lượng <span className="text-meta-1">*</span>
+                                                </label>
+                                                <input
+                                                    {...register(`baseUnits.${index}.quantity`)}
+                                                    type="text"
+                                                    placeholder="Nhập số lượng"
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                                {errors.baseUnits?.[index]?.quantity && (
+                                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                                        {errors.baseUnits?.[index]?.quantity.message}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="m-auto w-1/12 text-center">
+                                                <IconButton
+                                                    icon={<IoTrashBinOutline />}
+                                                    rounded="full"
+                                                    size="small"
+                                                    type="danger"
+                                                    onClick={(e) => {
+                                                        e?.preventDefault();
+                                                        baseUnitForm.remove(index);
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -623,6 +727,11 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     placeholder="Nhập số lượng tối thiểu"
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
+                                                {errors.branchProducts?.[index]?.minQuantity && (
+                                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                                        {errors.branchProducts?.[index]?.minQuantity.message}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="w-full xl:w-1/2">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
@@ -634,6 +743,11 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     placeholder="Nhập số lượng tối đa"
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
+                                                {errors.branchProducts?.[index]?.maxQuantity && (
+                                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                                        {errors.branchProducts?.[index]?.maxQuantity.message}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
