@@ -21,3 +21,11 @@ export type Product = {
     maxQuantity: number;
     quantity: number;
 };
+
+export type DataSearch = {
+    keyword?: string;
+    typeId?: string;
+    categoryId?: string;
+    manufacturerId?: string;
+    status?: string;
+};

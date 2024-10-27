@@ -1,23 +1,23 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    Pagination,
-    Tooltip,
-    Modal,
-    ModalContent,
-    useDisclosure,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
     Button,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Pagination,
     Select,
     SelectItem,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+    Tooltip,
+    useDisclosure,
 } from "@nextui-org/react";
 import Image from "next/image";
 import { toast } from "react-toastify";
@@ -25,9 +25,10 @@ import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
 import { useAppContext } from "@/components/AppProvider/AppProvider";
+import ProductHeaderTaskbar from "@/components/HeaderTaskbar/ProductHeaderTaskbar/page";
 import Loader from "@/components/common/Loader";
 import { productColumns } from "@/utils/data";
-import { Product } from "@/types/product";
+import { DataSearch, Product } from "@/types/product";
 import { deleteProduct, getListProduct } from "@/services/productServices";
 
 const ProductsTable = () => {
@@ -36,6 +37,13 @@ const ProductsTable = () => {
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [productData, setProductData] = useState<Product[]>([]);
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        typeId: "",
+        categoryId: "",
+        manufacturerId: "",
+        status: "",
+    });
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -52,7 +60,12 @@ const ProductsTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListProduct(page - 1, rowsPerPage, sessionToken);
+            const response = await getListProduct(
+                (page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setProductData(
@@ -70,19 +83,23 @@ const ProductsTable = () => {
         }
     };
 
-    const handleOpenModal = (branchId: string) => {
-        setSelectedId(branchId);
+    const handleSearch = async () => {
+        await getListProductByPage();
+    };
+
+    const handleOpenModal = (productId: string) => {
+        setSelectedId(productId);
         onOpen();
     };
 
-    const handleDelete = async (branchId: string) => {
+    const handleDelete = async (productId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteProduct(branchId, sessionToken);
+            const response = await deleteProduct(productId, sessionToken);
 
             if (response === "200 OK") {
                 await getListProductByPage();
@@ -105,9 +122,37 @@ const ProductsTable = () => {
             case "no.":
                 return <h5 className="text-black dark:text-white">{product.index}</h5>;
             case "urlImage":
-                return <Image src={product.productBaseDTO.urlImage} alt="product-image" width={64} height={64} />;
+                return product.productBaseDTO.urlImage ? (
+                    <img
+                        src={product.productBaseDTO.urlImage}
+                        loading={"lazy"}
+                        alt="product-image"
+                        width={64}
+                        height={64}
+                    />
+                ) : (
+                    <Image src={"/images/no-image.png"} loading={"lazy"} alt="product-image" width={64} height={64} />
+                );
             case "productName":
                 return <h5 className="font-normal text-black dark:text-white">{product.productBaseDTO.productName}</h5>;
+            case "registrationCode":
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {product.productBaseDTO.registrationCode}
+                    </h5>
+                );
+            case "inboundPrice":
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {product.productBaseDTO.inboundPrice?.toLocaleString()}
+                    </h5>
+                );
+            case "sellPrice":
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {product.productBaseDTO.sellPrice?.toLocaleString()}
+                    </h5>
+                );
             case "status":
                 return (
                     <p
@@ -194,101 +239,110 @@ const ProductsTable = () => {
     if (loading) return <Loader />;
     else
         return (
-            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
-                <div className="max-w-full overflow-x-auto">
-                    <Table
-                        bottomContent={
-                            totalPages > 0 ? (
-                                <div className="flex w-full justify-between">
-                                    <Select
-                                        label="Số bản ghi / trang"
-                                        selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
-                                        size="sm"
-                                        className="max-w-xs"
-                                    >
-                                        <SelectItem key={5} value={5}>
-                                            5
-                                        </SelectItem>
-                                        <SelectItem key={10} value={10}>
-                                            10
-                                        </SelectItem>
-                                        <SelectItem key={15} value={15}>
-                                            15
-                                        </SelectItem>
-                                        <SelectItem key={20} value={20}>
-                                            20
-                                        </SelectItem>
-                                    </Select>
-                                    <Pagination
-                                        isCompact
-                                        showControls
-                                        showShadow
-                                        color="primary"
-                                        page={page}
-                                        total={totalPages}
-                                        onChange={(page) => setPage(page)}
-                                    />
-                                </div>
-                            ) : null
-                        }
-                        aria-label="Branch Table"
-                    >
-                        <TableHeader>
-                            <TableHeader columns={productColumns}>
-                                {(column) => (
-                                    <TableColumn
-                                        key={column.uid}
-                                        className="py-4 text-sm font-medium text-black"
-                                        align="center"
-                                    >
-                                        {column.name}
-                                    </TableColumn>
-                                )}
-                            </TableHeader>
-                        </TableHeader>
-                        <TableBody items={productData ?? []}>
-                            {(item) => (
-                                <TableRow key={item?.id}>
-                                    {(columnKey) => (
-                                        <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["branchName", "location"].includes(columnKey as string) ? "text-left" : ""}`}
+            <>
+                <ProductHeaderTaskbar
+                    sessionToken={sessionToken}
+                    buttons={"import"}
+                    dataSearch={dataSearch}
+                    setDataSearch={setDataSearch}
+                    handleSearch={handleSearch}
+                />
+                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                    <div className="max-w-full overflow-x-auto">
+                        <Table
+                            bottomContent={
+                                totalPages > 0 ? (
+                                    <div className="flex w-full justify-between">
+                                        <Select
+                                            label="Số bản ghi / trang"
+                                            selectedKeys={[rowsPerPage.toString()]}
+                                            onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                            size="sm"
+                                            className="max-w-xs"
                                         >
-                                            {renderCell(item, columnKey)}
-                                        </TableCell>
+                                            <SelectItem key={5} value={5}>
+                                                5
+                                            </SelectItem>
+                                            <SelectItem key={10} value={10}>
+                                                10
+                                            </SelectItem>
+                                            <SelectItem key={15} value={15}>
+                                                15
+                                            </SelectItem>
+                                            <SelectItem key={20} value={20}>
+                                                20
+                                            </SelectItem>
+                                        </Select>
+                                        <Pagination
+                                            isCompact
+                                            showControls
+                                            showShadow
+                                            color="primary"
+                                            page={page}
+                                            total={totalPages}
+                                            onChange={(page) => setPage(page)}
+                                        />
+                                    </div>
+                                ) : null
+                            }
+                            aria-label="Branch Table"
+                        >
+                            <TableHeader>
+                                <TableHeader columns={productColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            className="py-4 text-sm font-medium text-black"
+                                            align="center"
+                                        >
+                                            {column.name}
+                                        </TableColumn>
                                     )}
-                                </TableRow>
+                                </TableHeader>
+                            </TableHeader>
+                            <TableBody items={productData ?? []} emptyContent={"Không có dữ liệu"}>
+                                {(item) => (
+                                    <TableRow key={item?.id}>
+                                        {(columnKey) => (
+                                            <TableCell
+                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["productName", "registrationCode"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            >
+                                                {renderCell(item, columnKey)}
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                        <ModalContent>
+                            {(onClose) => (
+                                <>
+                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                    <ModalBody>
+                                        <p>Bạn có chắc muốn xóa sản phẩm này không</p>
+                                    </ModalBody>
+                                    <ModalFooter>
+                                        <Button color="default" variant="light" onPress={onClose}>
+                                            Hủy
+                                        </Button>
+                                        <Button
+                                            color="danger"
+                                            onPress={() => {
+                                                handleDelete(selectedId);
+                                                onClose();
+                                            }}
+                                        >
+                                            Xóa
+                                        </Button>
+                                    </ModalFooter>
+                                </>
                             )}
-                        </TableBody>
-                    </Table>
+                        </ModalContent>
+                    </Modal>
                 </div>
-                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                <ModalBody>
-                                    <p>Bạn có chắc muốn xóa sản phẩm này không</p>
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button color="default" variant="light" onPress={onClose}>
-                                        Hủy
-                                    </Button>
-                                    <Button
-                                        color="danger"
-                                        onPress={() => {
-                                            handleDelete(selectedId);
-                                            onClose();
-                                        }}
-                                    >
-                                        Xóa
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
-            </div>
+            </>
         );
 };
 

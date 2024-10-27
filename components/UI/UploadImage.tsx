@@ -24,7 +24,7 @@ function UploadImage({
 
             if (response && response.message === "200 OK") {
                 setImageUrl(response.data);
-                setValue("urlImage", imageUrl);
+                setValue("urlImage", response.data);
             }
         } catch (error) {
             console.log(error);

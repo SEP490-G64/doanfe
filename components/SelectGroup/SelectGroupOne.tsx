@@ -1,48 +1,55 @@
 "use client";
 import React, { useState } from "react";
 
-const SelectGroupOne: React.FC = () => {
-    const [selectedOption, setSelectedOption] = useState<string>("");
-    const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
+const SelectGroupOne = ({
+    placeHolder,
+    optsData,
+    setDataSearch,
+    dataSearch,
+    dataKey,
+}: {
+    placeHolder: string;
+    optsData: { value: string; label: string }[];
+    setDataSearch: any;
+    dataSearch: any;
+    dataKey: string;
+}) => {
+    const [isOptionSelected, setIsOptionSelected] = useState<boolean>(dataSearch[dataKey]);
 
     const changeTextColor = () => {
         setIsOptionSelected(true);
     };
 
     return (
-        <div className="mb-4.5">
-            <label className="mb-2.5 block text-black dark:text-white"> Subject </label>
-
-            <div className="relative z-20 bg-transparent dark:bg-form-input">
+        <div className={"w-full"}>
+            <div className="relative z-20 w-full bg-transparent dark:bg-form-input">
                 <select
-                    value={selectedOption}
+                    value={dataSearch[dataKey]}
                     onChange={(e) => {
-                        setSelectedOption(e.target.value);
+                        dataSearch[dataKey] = e.target.value;
+                        setDataSearch(dataSearch);
                         changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
+                    className={`relative z-20 w-full appearance-none rounded border border-strokedark bg-transparent px-2 py-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
                         isOptionSelected ? "text-black dark:text-white" : ""
                     }`}
                 >
                     <option value="" disabled className="text-body dark:text-bodydark">
-                        Select your subject
+                        {placeHolder}
                     </option>
-                    <option value="USA" className="text-body dark:text-bodydark">
-                        USA
-                    </option>
-                    <option value="UK" className="text-body dark:text-bodydark">
-                        UK
-                    </option>
-                    <option value="Canada" className="text-body dark:text-bodydark">
-                        Canada
-                    </option>
+
+                    {optsData.map((opt) => (
+                        <option key={opt.value} value={opt.value} className="text-body dark:text-bodydark">
+                            {opt.label}
+                        </option>
+                    ))}
                 </select>
 
-                <span className="absolute right-4 top-1/2 z-30 -translate-y-1/2">
+                <span className="absolute right-2 top-1/2 z-30 -translate-y-1/2">
                     <svg
                         className="fill-current"
-                        width="24"
-                        height="24"
+                        width="18"
+                        height="18"
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"

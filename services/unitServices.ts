@@ -3,6 +3,18 @@ import { UnitBodyType } from "@/lib/schemaValidate/unitSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 
+export const getAllUnit = async (token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/unit-of-measurement`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return res;
+    } catch (error: any) {
+        console.log(error);
+    }
+};
+
 export const getListUnit = async (page: number, size: number, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/unit-of-measurement`, {

@@ -122,11 +122,11 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                     Tên nhà cung cấp <span className="text-meta-1">*</span>
                                 </label>
-                                <SelectGroupTwo
-                                    icon={<TfiSupport />}
-                                    placeholder="Chọn nhà cung cấp"
-                                    disabled={viewMode === "details"}
-                                />
+                                {/*<SelectGroupTwo*/}
+                                {/*    icon={<TfiSupport />}*/}
+                                {/*    placeholder="Chọn nhà cung cấp"*/}
+                                {/*    disabled={viewMode === "details"}*/}
+                                {/*/>*/}
                             </div>
 
                             <div className="w-full xl:w-1/2">
