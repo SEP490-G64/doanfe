@@ -4,3 +4,7 @@ export type Type = {
     typeName: string;
     typeDescription: string;
 };
+
+export type DataSearch = {
+    keyword?: string;
+};

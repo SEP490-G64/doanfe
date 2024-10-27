@@ -2,12 +2,29 @@
 import { BranchBodyType } from "@/lib/schemaValidate/branchSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
+import { DataSearch } from "@/types/supplier";
 
-export const getListBranch = async (page: number, size: number, token: string) => {
+interface Params extends DataSearch {
+    page?: string;
+    size?: string;
+}
+
+export const getListBranch = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    for (const searchKey in dataSearch) {
+        if (dataSearch[searchKey as keyof typeof dataSearch]) {
+            params[searchKey as keyof typeof params] = dataSearch[searchKey as keyof typeof dataSearch];
+        }
+    }
+
     try {
         const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { page, size },
+            params,
         });
 
         return res;

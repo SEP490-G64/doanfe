@@ -2,6 +2,7 @@
 import { CategoryBodyType } from "@/lib/schemaValidate/categorySchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
+import { DataSearch } from "@/types/supplier";
 
 export const getAllCategory = async (token: string) => {
     try {
@@ -15,11 +16,27 @@ export const getAllCategory = async (token: string) => {
     }
 };
 
-export const getListCategory = async (page: number, size: number, token: string) => {
+interface Params extends DataSearch {
+    page?: string;
+    size?: string;
+}
+
+export const getListCategory = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    for (const searchKey in dataSearch) {
+        if (dataSearch[searchKey as keyof typeof dataSearch]) {
+            params[searchKey as keyof typeof params] = dataSearch[searchKey as keyof typeof dataSearch];
+        }
+    }
+
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/category`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { page, size },
+            params,
         });
 
         return res;

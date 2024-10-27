@@ -1,13 +1,15 @@
-﻿import React from "react";
+"use client";
+
+import React from "react";
+import { useRouter } from "next/navigation";
 import { FaPlus } from "react-icons/fa6";
 import { FaFileImport } from "react-icons/fa6";
 
 import Button from "@/components/UI/Button";
 import { DataSearch } from "@/types/product";
-import { useRouter } from "next/navigation";
 import SelectGroupOne from "@/components/SelectGroup/SelectGroupOne";
 
-function UserHeaderTaskbar ({
+function HeaderTaskbar({
                            sessionToken,
                            buttons,
                            dataSearch,
@@ -20,15 +22,15 @@ function UserHeaderTaskbar ({
     setDataSearch?: any;
     handleSearch?: any;
 }) {
-    const router = useRouter();
     const statusOpts = [
-        { value: "ACTIVATE", label: "Đang kích hoạt" },
-        { value: "DEACTIVATE", label: "Vô hiệu hóa" },
-        { value: "REJECTED", label: "Từ chối" },
+        { value: "true", label: "Đang hoạt động" },
+        { value: "false", label: "Không hoạt động" },
     ];
 
+    const router = useRouter();
+
     return (
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex-1">
                 <div className="relative">
                     <button
@@ -66,31 +68,28 @@ function UserHeaderTaskbar ({
                         className="w-full bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125"
                     />
                 </div>
-
-                <div className="mt-2 flex gap-2">
-                    <SelectGroupOne
-                        placeHolder={"Chọn trạng thái"}
-                        optsData={statusOpts}
-                        dataSearch={dataSearch}
-                        setDataSearch={setDataSearch}
-                        dataKey="status"
-                    />
-                </div>
             </div>
+
+            <div className="mt-2 flex gap-2">
+                <SelectGroupOne
+                    placeHolder={"Chọn trạng thái"}
+                    optsData={statusOpts}
+                    dataSearch={dataSearch}
+                    setDataSearch={setDataSearch}
+                    dataKey="activeStatus"
+                />
+            </div>
+
             <div className="flex gap-2">
-                {buttons === "import" && (
-                    <Button label="Nhập file" size="small" icon={<FaFileImport />} type="success" onClick={() => {
-                    }} />
-                )}
                 <Button
                     label="Thêm mới"
                     size="small"
                     icon={<FaPlus />}
-                    onClick={() => router.push("/users/create")}
+                    onClick={() => router.push("/branches/create")}
                 />
             </div>
         </div>
     );
 }
 
-export default UserHeaderTaskbar;
+export default HeaderTaskbar;

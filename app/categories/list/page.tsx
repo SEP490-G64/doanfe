@@ -2,7 +2,6 @@
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import CategoryHeaderTaskbar from "@/components/HeaderTaskbar/CategoryHeaderTaskbar/page";
 import CategoryesTable from "@/components/Category/CategoryTable/page";
 
 export const metadata: Metadata = {
@@ -15,11 +14,7 @@ const CategoryList = () => {
         <DefaultLayout>
             <Breadcrumb pageName="Danh sách nhóm sản phẩm" />
 
-            <CategoryHeaderTaskbar />
-
-            <div className="flex flex-col gap-18">
-                <CategoryesTable />
-            </div>
+            <CategoryesTable />
         </DefaultLayout>
     );
 };

@@ -28,6 +28,9 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { userColumns } from "@/utils/data";
 import { User } from "@/types/user";
+import UserHeaderTaskbar from "@/components/HeaderTaskbar/UserHeaderTaskbar/page";
+import { DataSearch } from "@/types/product";
+import { getListProduct } from "@/services/productServices";
 
 const UsersTable = () => {
     const router = useRouter();
@@ -40,6 +43,10 @@ const UsersTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        status: "",
+    });
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -52,7 +59,12 @@ const UsersTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListUser(page - 1, rowsPerPage, sessionToken);
+            const response = await getListUser(
+                (page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setUserData(
@@ -74,6 +86,10 @@ const UsersTable = () => {
         setSelectedId(UserId);
         setAction(Action);
         onOpen();
+    };
+
+    const handleSearch = async () => {
+        await getListUserByPage();
     };
 
     const handleDelete = async (UserId: string) => {
@@ -280,6 +296,14 @@ const UsersTable = () => {
     if (loading) return <Loader />;
     else
         return (
+            <>
+                <UserHeaderTaskbar
+                    sessionToken={sessionToken}
+                    buttons={"import"}
+                    dataSearch={dataSearch}
+                    setDataSearch={setDataSearch}
+                    handleSearch={handleSearch}
+                />
             <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                 <div className="max-w-full overflow-x-auto">
                     <Table
@@ -333,7 +357,7 @@ const UsersTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={UserData ?? []}>
+                        <TableBody items={UserData ?? []} emptyContent={"Không có dữ liệu"}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
@@ -410,6 +434,7 @@ const UsersTable = () => {
                     </ModalContent>
                 </Modal>
             </div>
+            </>
         );
 };
 

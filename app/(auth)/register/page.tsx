@@ -18,22 +18,19 @@ const Register: React.FC = () => {
                         <Link className="mb-5.5 inline-block" href="/">
                             <Image
                                 className="hidden dark:block"
-                                src={"/images/logo/logo.svg"}
+                                src={"/images/logo/WLP-logo.png"}
                                 alt="Logo"
-                                width={176}
-                                height={32}
+                                width={252}
+                                height={62}
                             />
                             <Image
                                 className="dark:hidden"
-                                src={"/images/WLP-logo.jpg"}
+                                src={"/images/logo/WLP-logo.png"}
                                 alt="Logo"
-                                width={176}
-                                height={32}
+                                width={252}
+                                height={62}
                             />
                         </Link>
-                        <p className="2xl:px-20">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit suspendisse.
-                        </p>
 
                         <span className="mt-15 inline-block">
                             <svg

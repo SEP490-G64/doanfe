@@ -9,3 +9,8 @@ export type Manufacturer = {
     origin: string;
     status: boolean;
 };
+
+export type DataSearch = {
+    keyword?: string;
+    status?: string;
+};

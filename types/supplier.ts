@@ -9,3 +9,8 @@ export type Supplier = {
     faxNumber: string;
     status: boolean;
 };
+
+export type DataSearch = {
+    keyword?: string;
+    status?: string;
+};

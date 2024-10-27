@@ -28,6 +28,8 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { unitColumns } from "@/utils/data";
 import { Unit } from "@/types/unit";
+import { DataSearch } from "@/types/product";
+import HeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
 
 const UnitsTable = () => {
     const router = useRouter();
@@ -39,6 +41,10 @@ const UnitsTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        status: "",
+    });
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -51,7 +57,10 @@ const UnitsTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListUnit(page - 1, rowsPerPage, sessionToken);
+            const response = await getListUnit((page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken);
 
             if (response.message === "200 OK") {
                 setUnitData(
@@ -72,6 +81,10 @@ const UnitsTable = () => {
     const handleOpenModal = (unitId: string) => {
         setSelectedId(unitId);
         onOpen();
+    };
+
+    const handleSearch = async () => {
+        await getListUnitByPage();
     };
 
     const handleDelete = async (unitId: string) => {
@@ -184,6 +197,13 @@ const UnitsTable = () => {
     if (loading) return <Loader />;
     else
         return (
+            <>
+                <HeaderTaskbar
+                    sessionToken={sessionToken}
+                    dataSearch={dataSearch}
+                    setDataSearch={setDataSearch}
+                    handleSearch={handleSearch}
+                />
             <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                 <div className="max-w-full overflow-x-auto">
                     <Table
@@ -279,6 +299,7 @@ const UnitsTable = () => {
                     </ModalContent>
                 </Modal>
             </div>
+                </>
         );
 };
 

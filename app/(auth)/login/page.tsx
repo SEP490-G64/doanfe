@@ -19,23 +19,19 @@ const LogIn: React.FC = () => {
                             <Link className="mb-5.5 inline-block" href="/">
                                 <Image
                                     className="hidden dark:block"
-                                    src={"/images/WLP-logo.png"}
+                                    src={"/images/logo/WLP-logo.png"}
                                     alt="Logo"
-                                    width={176}
-                                    height={32}
+                                    width={200}
+                                    height={55}
                                 />
                                 <Image
                                     className="dark:hidden"
-                                    src={"/images/logo/logo-dark.svg"}
+                                    src={"/images/logo/WLP-logo.png"}
                                     alt="Logo"
-                                    width={176}
-                                    height={32}
+                                    width={200}
+                                    height={55}
                                 />
                             </Link>
-
-                            <p className="2xl:px-20">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit suspendisse.
-                            </p>
 
                             <span className="mt-15 inline-block">
                                 <svg

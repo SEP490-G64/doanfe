@@ -1,6 +1,6 @@
 export type Branch = {
     index: number;
-    id: number;
+    id: string;
     branchName: string;
     branchType: "MAIN" | "SUB";
     location: string;
@@ -9,4 +9,10 @@ export type Branch = {
     capacity: number;
     activeStatus: boolean;
     actions: string;
+};
+
+export type DataSearch = {
+    keyword?: string;
+    branchType?: string;
+    activeStatus?: boolean;
 };

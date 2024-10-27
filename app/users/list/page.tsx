@@ -15,11 +15,7 @@ const UserList = () => {
         <DefaultLayout>
             <Breadcrumb pageName="Danh sách người dùng" />
 
-            <HeaderTaskbar />
-
-            <div className="flex flex-col gap-18">
-                <UsersTable />
-            </div>
+            <UsersTable />
         </DefaultLayout>
     );
 };

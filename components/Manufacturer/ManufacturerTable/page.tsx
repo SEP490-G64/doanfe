@@ -28,6 +28,8 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { manufacturerColumns } from "@/utils/data";
 import { Manufacturer } from "@/types/manufacturer";
+import { DataSearch } from "@/types/product";
+import HeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
 
 const ManufacturersTable = () => {
     const router = useRouter();
@@ -39,6 +41,10 @@ const ManufacturersTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        status: "",
+    });
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -51,7 +57,10 @@ const ManufacturersTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListManufacturer(page - 1, rowsPerPage, sessionToken);
+            const response = await getListManufacturer((page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken);
 
             if (response.message === "200 OK") {
                 setManufacturerData(
@@ -72,6 +81,10 @@ const ManufacturersTable = () => {
     const handleOpenModal = (ManufacturerId: string) => {
         setSelectedId(ManufacturerId);
         onOpen();
+    };
+
+    const handleSearch = async () => {
+        await getListManufacturerByPage();
     };
 
     const handleDelete = async (ManufacturerId: string) => {
@@ -189,6 +202,13 @@ const ManufacturersTable = () => {
     if (loading) return <Loader />;
     else
         return (
+            <>
+                <HeaderTaskbar
+                    sessionToken={sessionToken}
+                    dataSearch={dataSearch}
+                    setDataSearch={setDataSearch}
+                    handleSearch={handleSearch}
+                />
             <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                 <div className="max-w-full overflow-x-auto">
                     <Table
@@ -284,6 +304,7 @@ const ManufacturersTable = () => {
                     </ModalContent>
                 </Modal>
             </div>
+                </>
         );
 };
 

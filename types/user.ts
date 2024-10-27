@@ -14,3 +14,8 @@ export type User = {
     roles: Role[];
     branch: Branch;
 };
+
+export type DataSearch = {
+    keyword?: string;
+    status?: string;
+};
