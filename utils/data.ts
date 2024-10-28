@@ -67,3 +67,9 @@ export const productColumns = [
     { name: "Số lượng tối đa", uid: "maxQuantity" },
     { name: "Tác vụ", uid: "actions" },
 ];
+
+export const allowProductColumns = [
+    { name: "Mã đăng ký", uid: "registrationCode" },
+    { name: "Tên sản phẩm", uid: "productName" },
+    { name: "Tác vụ", uid: "actions" },
+];

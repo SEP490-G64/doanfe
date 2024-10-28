@@ -30,7 +30,6 @@ import { userColumns } from "@/utils/data";
 import { User } from "@/types/user";
 import UserHeaderTaskbar from "@/components/HeaderTaskbar/UserHeaderTaskbar/page";
 import { DataSearch } from "@/types/product";
-import { getListProduct } from "@/services/productServices";
 
 const UsersTable = () => {
     const router = useRouter();

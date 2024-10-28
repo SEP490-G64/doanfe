@@ -40,7 +40,7 @@ export const BranchDtoBody = z
         location: z.string().optional(),
         contactPerson: z.string().optional(),
         phoneNumber: z.string().optional(),
-        capacity: z.coerce.number().int().optional(),
+        capacity: z.string().optional(),
         activeStatus: z.boolean().optional(),
         branchType: z.enum(["MAIN", "SUB"]).optional(),
     })

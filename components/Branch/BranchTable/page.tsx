@@ -29,7 +29,7 @@ import Loader from "@/components/common/Loader";
 import { branchColumns } from "@/utils/data";
 import { Branch } from "@/types/branch";
 import { DataSearch } from "@/types/product";
-import HeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
+import HeaderTaskbar from "@/components/HeaderTaskbar/BranchHeaderTaskbar/page";
 
 const BranchesTable = () => {
     const router = useRouter();

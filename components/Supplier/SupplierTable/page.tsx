@@ -29,7 +29,7 @@ import Loader from "@/components/common/Loader";
 import { supplierColumns } from "@/utils/data";
 import { Supplier } from "@/types/supplier";
 import { DataSearch } from "@/types/product";
-import HeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
+import HeaderTaskbar from "@/components/HeaderTaskbar/SupplierHeaderTaskbar/page";
 
 const SuppliersTable = () => {
     const router = useRouter();
@@ -266,7 +266,7 @@ const SuppliersTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={SupplierData ?? []}>
+                        <TableBody items={SupplierData ?? []} emptyContent={"Không có dữ liệu"}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (

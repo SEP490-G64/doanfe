@@ -26,6 +26,8 @@ import { Type } from "@/types/type";
 import { Manufacturer } from "@/types/manufacturer";
 import { getAllUnit } from "@/services/unitServices";
 import { Unit } from "@/types/unit";
+import Link from "next/link";
+import AllowProductTable from "@/components/Product/AllowProductTable";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -36,6 +38,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     const [typeOpts, setTypeOpts] = useState([]);
     const [manOpts, setManOpts] = useState([]);
     const [unitOpts, setUnitOpts] = useState([]);
+    const [action, setAction] = useState<string>("");
     const specialConditionOpts = [
         {
             value: "NHIET_DO",
@@ -148,6 +151,11 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         name: "branchProducts",
     });
 
+    const handleOpenModal = (Action: string) => {
+        setAction(Action);
+        onOpenChange();
+    };
+
     const getProductInfo = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
@@ -242,9 +250,22 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 </div>
                                 <div className="p-6.5">
                                     <div className="mb-4.5">
-                                        <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Tên sản phẩm <span className="text-meta-1">*</span>
-                                        </label>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <label className="block text-sm font-medium text-black dark:text-white">
+                                                Tên sản phẩm <span className="text-meta-1">*</span>
+                                            </label>
+                                            <Link
+                                                href={"#"}
+                                                className="text-primary"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleOpenModal("allow-products");
+                                                }}
+                                            >
+                                                Tra cứu thuốc
+                                            </Link>
+                                        </div>
+
                                         <input
                                             {...register("productName")}
                                             type="email"
@@ -260,8 +281,9 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Mã sản phẩm <span className="text-meta-1">*</span>
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            Mã sản phẩm <span className="text-meta-1">*</span>
                                             </label>
                                             <input
                                                 {...register("productCode")}
@@ -781,7 +803,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <button
                                     className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-stroke/90"
                                     type={"button"}
-                                    onClick={() => onOpenChange()}
+                                    onClick={() => handleOpenModal("products")}
                                 >
                                     Hủy
                                 </button>
@@ -802,24 +824,39 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                         <ModalContent>
                             {(onClose) => (
                                 <>
-                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                    <ModalBody>
-                                        <p>Bạn có chắc muốn hủy thực hiện hành động này không?</p>
-                                    </ModalBody>
-                                    <ModalFooter>
-                                        <Button color="default" variant="light" onPress={onClose}>
-                                            Không
-                                        </Button>
-                                        <Button
-                                            color="primary"
-                                            onPress={() => {
-                                                router.push(`/products/list`);
-                                                onClose();
-                                            }}
-                                        >
-                                            Chắc chắn
-                                        </Button>
-                                    </ModalFooter>
+                                    {(() => {
+                                        switch (action) {
+                                            case "allow-products":
+                                                return <>
+                                                    <ModalHeader className="flex flex-col gap-1">Tra cứu thuốc</ModalHeader>
+                                                    <ModalBody>
+                                                        <p>Danh sách thuốc được bộ y tế quốc gia cho phép lưu hành</p>
+                                                        <AllowProductTable/>
+                                                    </ModalBody>
+                                                </>;
+                                            case "products":
+                                                return <>
+                                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                                    <ModalBody>
+                                                        <p>Bạn có chắc muốn hủy thực hiện hành động này không?</p>
+                                                    </ModalBody>
+                                                    <ModalFooter>
+                                                        <Button color="default" variant="light" onPress={onClose}>
+                                                            Không
+                                                        </Button>
+                                                        <Button
+                                                            color="primary"
+                                                            onPress={() => {
+                                                                router.push(`/products/list`);
+                                                                onClose();
+                                                            }}
+                                                        >
+                                                            Chắc chắn
+                                                        </Button>
+                                                    </ModalFooter>
+                                                </>;
+                                        }
+                                    })()}
                                 </>
                             )}
                         </ModalContent>

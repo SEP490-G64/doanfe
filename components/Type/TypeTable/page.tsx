@@ -29,7 +29,7 @@ import Loader from "@/components/common/Loader";
 import { typeColumns } from "@/utils/data";
 import { Type } from "@/types/type";
 import { DataSearch } from "@/types/product";
-import HeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
+import HeaderTaskbar from "@/components/HeaderTaskbar/TypeHeaderTaskbar/page";
 
 const TypesTable = () => {
     const router = useRouter();

@@ -1,41 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaPlus } from "react-icons/fa6";
-import { FaFileImport } from "react-icons/fa6";
+import { FaFileImport, FaPlus } from "react-icons/fa6";
 
 import Button from "@/components/UI/Button";
 import { DataSearch } from "@/types/product";
+import { getAllCategory } from "@/services/categoryServices";
+import { getAllType } from "@/services/typeServices";
+import { getAllManufacturer } from "@/services/manufacturerServices";
+import { Category } from "@/types/category";
+import { Type } from "@/types/type";
+import { Manufacturer } from "@/types/manufacturer";
 import SelectGroupOne from "@/components/SelectGroup/SelectGroupOne";
 
 function HeaderTaskbar({
-                           sessionToken,
-                           buttons,
-                           dataSearch,
-                           setDataSearch,
-                           handleSearch,
-                       }: {
+    sessionToken,
+    buttons,
+    dataSearch,
+    setDataSearch,
+    handleSearch,
+}: {
     sessionToken: string;
     buttons?: string;
     dataSearch?: DataSearch;
     setDataSearch?: any;
     handleSearch?: any;
 }) {
-    const statusOpts = [
-        { value: "true", label: "Đang hoạt động" },
-        { value: "false", label: "Không hoạt động" },
-    ];
-
-    const branchTypeOpts = [
-        { value: "MAIN", label: "Trụ sở chính" },
-        { value: "SUB", label: "Chi nhánh" },
-    ];
-
     const router = useRouter();
 
     return (
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1">
                 <div className="relative">
                     <button
@@ -73,33 +68,6 @@ function HeaderTaskbar({
                         className="w-full bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125"
                     />
                 </div>
-            </div>
-
-            <div className="mt-2 flex gap-2">
-                <SelectGroupOne
-                    placeHolder={"Chọn kiểu chi nhánh"}
-                    optsData={branchTypeOpts}
-                    dataSearch={dataSearch}
-                    setDataSearch={setDataSearch}
-                    dataKey="branchType"
-                />
-
-                <SelectGroupOne
-                    placeHolder={"Chọn trạng thái"}
-                    optsData={statusOpts}
-                    dataSearch={dataSearch}
-                    setDataSearch={setDataSearch}
-                    dataKey="activeStatus"
-                />
-            </div>
-
-            <div className="flex gap-2">
-                <Button
-                    label="Thêm mới"
-                    size="small"
-                    icon={<FaPlus />}
-                    onClick={() => router.push("/branches/create")}
-                />
             </div>
         </div>
     );

@@ -29,7 +29,7 @@ import Loader from "@/components/common/Loader";
 import { manufacturerColumns } from "@/utils/data";
 import { Manufacturer } from "@/types/manufacturer";
 import { DataSearch } from "@/types/product";
-import HeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
+import HeaderTaskbar from "@/components/HeaderTaskbar/ManufacturerHeaderTaskbar/page";
 
 const ManufacturersTable = () => {
     const router = useRouter();

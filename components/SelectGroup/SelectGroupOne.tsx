@@ -34,7 +34,7 @@ const SelectGroupOne = ({
                         isOptionSelected ? "text-black dark:text-white" : ""
                     }`}
                 >
-                    <option value="" disabled className="text-body dark:text-bodydark">
+                    <option value="" className="text-body dark:text-bodydark">
                         {placeHolder}
                     </option>
 

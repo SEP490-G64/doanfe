@@ -29,7 +29,7 @@ import Loader from "@/components/common/Loader";
 import { categoryColumns } from "@/utils/data";
 import { Category } from "@/types/category";
 import { DataSearch } from "@/types/product";
-import HeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
+import HeaderTaskbar from "@/components/HeaderTaskbar/CategoryHeaderTaskbar/page";
 
 const CategoryesTable = () => {
     const router = useRouter();
@@ -260,7 +260,7 @@ const CategoryesTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={CategoryData ?? []}>
+                        <TableBody items={CategoryData ?? []} emptyContent={"Không có dữ liệu"}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (

@@ -32,7 +32,7 @@ export const ProductBody = z
         urlImage: z.string().trim().optional(),
         activeIngredient: z.string().trim().min(1, "Vui lòng nhập hoạt chất").max(256, "Giới hạn 255 kí tự"),
         excipient: z.string().trim().min(1, "Vui lòng nhập tá dược"),
-        formulation: z.string().trim().min(1, "Vui lòng nhập đơn vị"),
+        formulation: z.string().trim().min(1, "Vui lòng nhập quy cách quy đổi"),
         status: z.preprocess(
             (val) => (val === null || val === undefined || val === "" ? undefined : val), // Turn null to undefined
             z.enum(["CON_HANG", "HET_HANG", "NGUNG_KINH_DOANH", ""], {

@@ -29,3 +29,19 @@ export type DataSearch = {
     manufacturerId?: string;
     status?: string;
 };
+
+export type AllowProduct = {
+    index: number;
+    id: string;
+    productName: string;
+    productCode: string;
+    registrationCode: string;
+    urlImage: string;
+    activeIngredient: string;
+    excipient: string;
+    formulation: string;
+};
+
+export type ProductDataSearch = {
+    keyword?: string;
+};

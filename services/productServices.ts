@@ -33,6 +33,27 @@ export const getListProduct = async (page: string, size: string, dataSearch: Dat
     }
 };
 
+export const getListAllowProduct = async (dataSearch: DataSearch, token: string) => {
+    const params: Params = {};
+
+    for (const searchKey in dataSearch) {
+        if (dataSearch[searchKey as keyof typeof dataSearch]) {
+            params[searchKey as keyof typeof params] = dataSearch[searchKey as keyof typeof dataSearch];
+        }
+    }
+
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/allow-products`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params,
+        });
+
+        return res;
+    } catch (error: any) {
+        console.log(error);
+    }
+};
+
 export const getProductById = async (id: string, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/product/${id}`, {

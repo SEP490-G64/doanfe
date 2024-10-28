@@ -257,7 +257,7 @@ const UnitsTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={unitData ?? []}>
+                        <TableBody items={unitData ?? []} emptyContent={"Không có dữ liệu"}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
