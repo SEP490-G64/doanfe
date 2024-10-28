@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { FaPlus } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
 import { TfiSupport } from "react-icons/tfi";
 
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
@@ -9,8 +10,40 @@ import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
 import ProductsTable from "@/components/Tables/ProductsTable";
 import IconButton from "@/components/UI/IconButton";
 import { ProductInfor } from "@/types/inbound";
+import { createInitInbound } from "@/services/inboundServices";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InboundBody, InboundBodyType } from "@/lib/schemaValidate/inboundSchema";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const { sessionToken } = useAppContext();
+    const [user, setUser] = useState<{ firstName: string; lastName: string } | undefined>();
+    const [branch, setBranch] = useState<{ id: number; branchName: string } | undefined>();
+    const [createdDate, setCreatedDate] = useState<Date | string>();
+
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors },
+    } = useForm<InboundBodyType>({
+        resolver: zodResolver(InboundBody),
+        defaultValues: {
+            inboundId: undefined,
+            inboundCode: undefined,
+            inboundType: undefined,
+            createdDate: undefined,
+            note: undefined,
+            createdBy: undefined,
+            toBranch: undefined,
+            productInbounds: undefined,
+        },
+    });
+
     const [products, setProducts] = useState<ProductInfor[]>([
         {
             image: "/images/no-image.png",
@@ -74,6 +107,36 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             },
         ]);
     };
+
+    const initInbound = async () => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await createInitInbound("NHAP_TU_NHA_CUNG_CAP", sessionToken);
+
+            if (response.status === "SUCCESS") {
+                setValue("inboundType", response.data.inboundType);
+                setValue("createdDate", response.data.createdDate);
+                setValue("toBranch.id", response.data.toBranch.id);
+                setUser(response.data.createdBy);
+                setBranch(response.data.toBranch);
+                setCreatedDate(response.data.createdDate);
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (viewMode === "create") {
+            initInbound();
+        }
+    }, []);
 
     const handleOnClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -166,9 +229,10 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 Người tạo <span className="text-meta-1">*</span>
                             </label>
                             <input
+                                defaultValue={user ? `${user?.firstName} ${user?.lastName}` : ""}
                                 type="text"
                                 placeholder="Nhập người tạo"
-                                disabled={viewMode === "details"}
+                                disabled
                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                             />
                         </div>
@@ -177,7 +241,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                     Ngày nhập
                                 </label>
-                                <DatePickerOne disabled={viewMode === "details"} />
+                                <DatePickerOne dateValue={createdDate} disabled={true} />
                             </div>
 
                             {viewMode !== "create" && (
@@ -188,7 +252,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     <input
                                         type="text"
                                         placeholder="Nhập mã đơn"
-                                        disabled={viewMode === "details"}
+                                        disabled
                                         className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                     />
                                 </div>
@@ -199,9 +263,10 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 Chi nhánh <span className="text-meta-1">*</span>
                             </label>
                             <input
+                                defaultValue={branch?.branchName}
                                 type="text"
                                 placeholder="Nhập chi nhánh"
-                                disabled={viewMode === "details"}
+                                disabled
                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                             />
                         </div>

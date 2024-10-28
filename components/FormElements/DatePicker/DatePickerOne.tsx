@@ -1,11 +1,27 @@
 "use client";
 
 import flatpickr from "flatpickr";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const DatePickerOne = ({ disabled }: { disabled: boolean }) => {
+const formatDateTime = (date: Date | string | undefined) => {
+    if (!date) return "";
+    const newDate = new Date(date);
+
+    // Lấy ngày, tháng và năm
+    const day = newDate.getDate();
+    const month = newDate.getMonth() + 1; // getMonth() trả về giá trị từ 0-11, nên cần cộng thêm 1
+    const year = newDate.getFullYear();
+    // Định dạng lại chuỗi
+    return `${day}-${month}-${year}`;
+};
+
+const DatePickerOne = ({ dateValue, disabled }: { dateValue?: Date | string; disabled?: boolean }) => {
+    const [newDate, setNewDate] = useState<Date | string | undefined>(dateValue);
+
     useEffect(() => {
+        setNewDate(formatDateTime(newDate));
         flatpickr(".form-datepicker", {
+            defaultDate: newDate,
             mode: "single",
             allowInput: false,
             static: true,
@@ -16,7 +32,7 @@ const DatePickerOne = ({ disabled }: { disabled: boolean }) => {
             nextArrow:
                 '<svg className="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M1.4 10.8L0 9.4l4-4-4-4L1.4 0l5.4 5.4z" /></svg>',
         });
-    }, []);
+    }, [newDate]);
 
     return (
         <div className="w-full">
