@@ -264,7 +264,7 @@ const TypesTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={typeData ?? []}>
+                        <TableBody items={typeData ?? []} emptyContent={"Không có dữ liệu"}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (

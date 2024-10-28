@@ -262,7 +262,7 @@ const ManufacturersTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={ManufacturerData ?? []}>
+                        <TableBody items={ManufacturerData ?? []} emptyContent={"Không có dữ liệu"}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (

@@ -274,7 +274,7 @@ const BranchesTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={branchData ?? []}>
+                        <TableBody items={branchData ?? []} emptyContent={"Không có dữ liệu"}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
