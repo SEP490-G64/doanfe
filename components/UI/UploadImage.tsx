@@ -3,18 +3,10 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 
-function UploadImage({
-    sessionToken,
-    urlImage,
-    setValue,
-}: {
-    sessionToken: string;
-    urlImage: string | undefined;
-    setValue: any;
-}) {
+function UploadImage({ sessionToken, watch, setValue }: { sessionToken: string; watch: any; setValue: any }) {
     const [isWrongType, setIsWrongType] = useState(false);
     const [isTooHeavy, setIsTooHeavy] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string | undefined>(urlImage);
+    const imageUrl = watch("urlImage");
 
     const uploadImage = async (file: File) => {
         try {
@@ -23,7 +15,6 @@ function UploadImage({
             const response = await uploadFile(formData, sessionToken);
 
             if (response && response.message === "200 OK") {
-                setImageUrl(response.data);
                 setValue("urlImage", response.data);
             }
         } catch (error) {
@@ -73,8 +64,8 @@ function UploadImage({
                     src={imageUrl}
                     alt="product-image"
                     loader={() => imageUrl}
-                    onError={() => {
-                        setImageUrl("/images/no-image.png");
+                    onError={(e) => {
+                        e.currentTarget.src = "/images/no-image.png";
                     }}
                     width={180}
                     height={180}

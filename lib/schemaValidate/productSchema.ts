@@ -22,12 +22,11 @@ const SpecialCondition = z
     })
     .strict();
 
-const BaseUnit = z.object({ id: z.string().trim(), quantity: z.coerce.number() }).strict();
+const UnitConversion = z.object({ id: z.string().trim(), quantity: z.coerce.number() }).strict();
 
 export const ProductBody = z
     .object({
         productName: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm").max(256, "Giới hạn 255 kí tự"),
-        productCode: z.string().trim().min(1, "Vui lòng nhập mã sản phẩm"),
         registrationCode: z.string().trim().min(1, "Vui lòng nhập mã đăng ký sản phẩm"),
         urlImage: z.string().trim().optional(),
         activeIngredient: z.string().trim().min(1, "Vui lòng nhập hoạt chất").max(256, "Giới hạn 255 kí tự"),
@@ -42,7 +41,8 @@ export const ProductBody = z
         category: z.object({ id: z.string().trim().min(1, "Vui lòng chọn nhóm sản phẩm") }),
         type: z.object({ id: z.string().trim().min(1, "Vui lòng chọn loại sản phẩm") }),
         manufacturer: z.object({ id: z.string().trim().min(1, "Vui lòng chọn nhà sản xuất") }),
-        baseUnits: z.array(BaseUnit).optional(),
+        unitConversions: z.array(UnitConversion).optional(),
+        baseUnit: z.string().trim().optional(),
         branchProducts: z.array(BranchProduct).optional(),
         specialConditions: z.array(SpecialCondition).optional(),
     })

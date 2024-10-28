@@ -232,6 +232,7 @@ const ManufacturerForm = ({
                                         placeholder="Chọn quốc gia"
                                         register={{ ...register("origin") }}
                                         watch={watch("origin")}
+                                        disabled={viewMode === "details"}
                                         data={countries.map((c) => ({ label: c, value: c }))}
                                     />
                                     {errors.origin && (
