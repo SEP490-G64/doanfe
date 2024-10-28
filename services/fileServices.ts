@@ -12,7 +12,7 @@ export const uploadFile = async (formData: FormData, token: string) => {
             return res;
         }
     } catch (error: any) {
-        if (error.status === 401) toast.error("Bạn chưa đăng nhập");
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
             toast.error("Có lỗi xảy ra");
             console.log(error);

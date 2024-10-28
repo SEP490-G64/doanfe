@@ -29,7 +29,10 @@ export const getListProduct = async (page: string, size: string, dataSearch: Dat
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
     }
 };
 
@@ -41,7 +44,10 @@ export const getProductById = async (id: string, token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
     }
 };
 export const createProduct = async (product: ProductBodyType, token: string) => {
@@ -60,8 +66,11 @@ export const createProduct = async (product: ProductBodyType, token: string) => 
             return res;
         }
     } catch (error: any) {
-        toast.error("Tạo mới sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Tạo mới sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -76,8 +85,11 @@ export const updateProduct = async (product: ProductBodyType, id: string, token:
             return res;
         }
     } catch (error: any) {
-        toast.error("Cập nhật sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -92,7 +104,10 @@ export const deleteProduct = async (id: string, token: string) => {
             return res.data;
         }
     } catch (error: any) {
-        toast.error("Xóa sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Xóa sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };

@@ -13,7 +13,8 @@ export const getListUser = async (page: number, size: number, token: string) => 
         console.log(res);
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -25,7 +26,8 @@ export const getUserById = async (id: string, token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 export const createUser = async (User: UserBodyType, token: string) => {
@@ -48,8 +50,11 @@ export const createUser = async (User: UserBodyType, token: string) => {
             return res;
         }
     } catch (error: any) {
-        toast.error("Tạo mới người dùng thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Tạo mới người dùng thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -73,8 +78,11 @@ export const updateUser = async (User: UserBodyType, id: string, token: string) 
             return res;
         }
     } catch (error: any) {
-        toast.error("Cập nhật người dùng thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật người dùng thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -89,8 +97,11 @@ export const deleteUser = async (id: string, token: string) => {
             return res.data;
         }
     } catch (error: any) {
-        toast.error("Xóa người dùng thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Xóa người dùng thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -113,8 +124,11 @@ export const activateUser = async (id: string, token: string) => {
             return res;
         }
     } catch (error: any) {
-        toast.error("Kích hoạt / Vô hiệu hóa người dùng thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Kích hoạt / Vô hiệu hóa người dùng thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -128,7 +142,8 @@ export const getRegistrationRequests = async (page: number, token: string) => {
         console.log(res);
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -152,11 +167,14 @@ export const approveUser = async (id: string, accept: boolean, token: string) =>
             return res;
         }
     } catch (error: any) {
-        if (accept) {
-            toast.error("Duyệt người dùng thất bại");
-        } else {
-            toast.error("Từ chối người dùng thất bại");
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            if (accept) {
+                toast.error("Duyệt người dùng thất bại");
+            } else {
+                toast.error("Từ chối người dùng thất bại");
+            }
+            console.log(error);
         }
-        console.log(error);
     }
 };

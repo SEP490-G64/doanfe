@@ -11,7 +11,8 @@ export const getAllType = async (token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -24,7 +25,8 @@ export const getListType = async (page: number, size: number, token: string) => 
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -36,7 +38,8 @@ export const getTypeById = async (id: string, token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 export const createType = async (Type: TypeBodyType, token: string) => {
@@ -55,8 +58,11 @@ export const createType = async (Type: TypeBodyType, token: string) => {
             return res;
         }
     } catch (error: any) {
-        toast.error("Tạo mới loại sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Tạo mới loại sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -76,8 +82,11 @@ export const updateType = async (Type: TypeBodyType, id: string, token: string) 
             return res;
         }
     } catch (error: any) {
-        toast.error("Cập nhật loại sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật loại sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -92,7 +101,10 @@ export const deleteType = async (id: string, token: string) => {
             return res.data;
         }
     } catch (error: any) {
-        toast.error("Xóa loại sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Xóa loại sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };
