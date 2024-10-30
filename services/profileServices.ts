@@ -12,7 +12,8 @@ export const getProfile = async (token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -32,8 +33,11 @@ export const updateProfile = async (profile: ProfileBodyType, token: string) => 
             return res;
         }
     } catch (error: any) {
-        toast.error("Cập nhật hồ sơ thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật hồ sơ thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -53,7 +57,10 @@ export const changePassword = async (changePasswordBody: ChangePasswordBodyType,
             return res;
         }
     } catch (error: any) {
-        toast.error("Đổi mật khẩu thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Đổi mật khẩu thất bại");
+            console.log(error);
+        }
     }
 };

@@ -29,7 +29,8 @@ export const getListSupplier = async (page: string, size: string, dataSearch: Da
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -41,7 +42,8 @@ export const getSupplierById = async (id: string, token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 export const createSupplier = async (Supplier: SupplierBodyType, token: string) => {
@@ -64,8 +66,11 @@ export const createSupplier = async (Supplier: SupplierBodyType, token: string) 
             return res;
         }
     } catch (error: any) {
-        toast.error("Tạo mới nhà cung cấp thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Tạo mới nhà cung cấp thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -89,8 +94,11 @@ export const updateSupplier = async (Supplier: SupplierBodyType, id: string, tok
             return res;
         }
     } catch (error: any) {
-        toast.error("Cập nhật nhà cung cấp thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật nhà cung cấp thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -105,7 +113,10 @@ export const deleteSupplier = async (id: string, token: string) => {
             return res.data;
         }
     } catch (error: any) {
-        toast.error("Xóa nhà cung cấp thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Xóa nhà cung cấp thất bại");
+            console.log(error);
+        }
     }
 };

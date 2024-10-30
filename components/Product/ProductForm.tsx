@@ -26,8 +26,6 @@ import { Type } from "@/types/type";
 import { Manufacturer } from "@/types/manufacturer";
 import { getAllUnit } from "@/services/unitServices";
 import { Unit } from "@/types/unit";
-import Link from "next/link";
-import AllowProductTable from "@/components/Product/AllowProductTable";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -38,7 +36,6 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     const [typeOpts, setTypeOpts] = useState([]);
     const [manOpts, setManOpts] = useState([]);
     const [unitOpts, setUnitOpts] = useState([]);
-    const [action, setAction] = useState<string>("");
     const specialConditionOpts = [
         {
             value: "NHIET_DO",
@@ -104,7 +101,6 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         register,
         handleSubmit,
         watch,
-        getValues,
         setValue,
         control,
         formState: { errors },
@@ -112,7 +108,6 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         resolver: zodResolver(ProductBody),
         defaultValues: {
             productName: undefined,
-            productCode: undefined,
             registrationCode: undefined,
             urlImage: undefined,
             activeIngredient: undefined,
@@ -122,7 +117,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
             category: undefined,
             type: undefined,
             manufacturer: undefined,
-            baseUnits: undefined,
+            baseUnit: undefined,
+            unitConversions: undefined,
             branchProducts: [
                 {
                     branchId: undefined,
@@ -136,9 +132,9 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         },
     });
 
-    const baseUnitForm = useFieldArray({
+    const unitConversionForm = useFieldArray({
         control,
-        name: "baseUnits",
+        name: "unitConversions",
     });
 
     const specialConditionsForm = useFieldArray({
@@ -150,11 +146,6 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         control,
         name: "branchProducts",
     });
-
-    const handleOpenModal = (Action: string) => {
-        setAction(Action);
-        onOpenChange();
-    };
 
     const getProductInfo = async () => {
         if (loading) {
@@ -168,7 +159,6 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
             if (response.message === "200 OK") {
                 const fields: [
                     "productName",
-                    "productCode",
                     "registrationCode",
                     "urlImage",
                     "activeIngredient",
@@ -178,12 +168,12 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                     "category",
                     "type",
                     "manufacturer",
-                    "baseUnits",
+                    "baseUnit",
+                    "unitConversions",
                     "branchProducts",
                     "specialConditions",
                 ] = [
                     "productName",
-                    "productCode",
                     "registrationCode",
                     "urlImage",
                     "activeIngredient",
@@ -193,7 +183,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                     "category",
                     "type",
                     "manufacturer",
-                    "baseUnits",
+                    "baseUnit",
+                    "unitConversions",
                     "branchProducts",
                     "specialConditions",
                 ];
@@ -250,26 +241,14 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 </div>
                                 <div className="p-6.5">
                                     <div className="mb-4.5">
-                                        <div className="flex justify-between items-center mb-3">
-                                            <label className="block text-sm font-medium text-black dark:text-white">
-                                                Tên sản phẩm <span className="text-meta-1">*</span>
-                                            </label>
-                                            <Link
-                                                href={"#"}
-                                                className="text-primary"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    handleOpenModal("allow-products");
-                                                }}
-                                            >
-                                                Tra cứu thuốc
-                                            </Link>
-                                        </div>
-
+                                        <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            Tên sản phẩm <span className="text-meta-1">*</span>
+                                        </label>
                                         <input
                                             {...register("productName")}
                                             type="email"
                                             placeholder="Nhập tên sản phẩm"
+                                            disabled={viewMode === "details"}
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                         />
                                         {errors.productName && (
@@ -280,25 +259,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     </div>
 
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                        <div className="w-full xl:w-1/2">
-                                            <label
-                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Mã sản phẩm <span className="text-meta-1">*</span>
-                                            </label>
-                                            <input
-                                                {...register("productCode")}
-                                                type="text"
-                                                placeholder="Nhập mã sản phẩm"
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
-                                            {errors.productCode && (
-                                                <span className="mt-1 block w-full text-sm text-rose-500">
-                                                    {errors.productCode.message}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <div className="w-full xl:w-1/2">
+                                        <div className="w-full">
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Số đăng ký <span className="text-meta-1">*</span>
                                             </label>
@@ -306,6 +267,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 {...register("registrationCode")}
                                                 type="text"
                                                 placeholder="Nhập số đăng ký"
+                                                disabled={viewMode === "details"}
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
                                             {errors.registrationCode && (
@@ -325,6 +287,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 {...register("formulation")}
                                                 type="text"
                                                 placeholder="Nhập bào chế"
+                                                disabled={viewMode === "details"}
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
                                             {errors.formulation && (
@@ -342,6 +305,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 {...register("activeIngredient")}
                                                 type="text"
                                                 placeholder="Nhập hoạt chất"
+                                                disabled={viewMode === "details"}
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
                                             {errors.activeIngredient && (
@@ -360,6 +324,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             {...register("excipient")}
                                             type="text"
                                             placeholder="Nhập tá dược"
+                                            disabled={viewMode === "details"}
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                         />
                                         {errors.excipient && (
@@ -374,10 +339,17 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             Quy cách đóng gói <span className="text-meta-1">*</span>
                                         </label>
                                         <input
+                                            {...register("baseUnit")}
                                             type="text"
                                             placeholder="Nhập quy cách đóng gói"
+                                            disabled={viewMode === "details"}
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                         />
+                                        {errors.baseUnit && (
+                                            <span className="mt-1 block w-full text-sm text-rose-500">
+                                                {errors.baseUnit.message}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -408,6 +380,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             <input
                                                 type="text"
                                                 placeholder="Nhập giá bán"
+                                                disabled={viewMode === "details"}
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
                                         </div>
@@ -418,18 +391,20 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Điều kiện đặc biệt</h3>
-                                    <IconButton
-                                        icon={<FaPlus />}
-                                        rounded="full"
-                                        size="small"
-                                        onClick={(e) => {
-                                            e?.preventDefault();
-                                            specialConditionsForm.append({
-                                                conditionType: "",
-                                                handlingInstruction: "",
-                                            });
-                                        }}
-                                    />
+                                    {viewMode !== "details" && (
+                                        <IconButton
+                                            icon={<FaPlus />}
+                                            rounded="full"
+                                            size="small"
+                                            onClick={(e) => {
+                                                e?.preventDefault();
+                                                specialConditionsForm.append({
+                                                    conditionType: "",
+                                                    handlingInstruction: "",
+                                                });
+                                            }}
+                                        />
+                                    )}
                                 </div>
                                 <div className="p-6.5">
                                     {specialConditionsForm.fields.map((field, index) => (
@@ -442,9 +417,10 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     register={{
                                                         ...register(`specialConditions.${index}.conditionType`),
                                                     }}
-                                                    watch={watch("specialConditions")}
+                                                    watch={watch(`specialConditions.${index}.conditionType`)}
                                                     icon={<BsLifePreserver />}
                                                     placeholder="Chọn điều kiện"
+                                                    disabled={viewMode === "details"}
                                                     data={specialConditionOpts}
                                                 />
                                                 {errors.specialConditions?.[index]?.conditionType && (
@@ -462,6 +438,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     {...register(`specialConditions.${index}.handlingInstruction`)}
                                                     type="text"
                                                     placeholder="Hướng dẫn xử lý"
+                                                    disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
                                                 {errors.specialConditions?.[index]?.handlingInstruction && (
@@ -472,16 +449,18 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             </div>
 
                                             <div className="m-auto w-1/12 text-center">
-                                                <IconButton
-                                                    icon={<IoTrashBinOutline />}
-                                                    rounded="full"
-                                                    size="small"
-                                                    type="danger"
-                                                    onClick={(e) => {
-                                                        e?.preventDefault();
-                                                        specialConditionsForm.remove(index);
-                                                    }}
-                                                />
+                                                {viewMode !== "details" && (
+                                                    <IconButton
+                                                        icon={<IoTrashBinOutline />}
+                                                        rounded="full"
+                                                        size="small"
+                                                        type="danger"
+                                                        onClick={(e) => {
+                                                            e?.preventDefault();
+                                                            specialConditionsForm.remove(index);
+                                                        }}
+                                                    />
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -491,21 +470,23 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Đơn vị quy đổi</h3>
-                                    <IconButton
-                                        icon={<FaPlus />}
-                                        rounded="full"
-                                        size="small"
-                                        onClick={(e) => {
-                                            e?.preventDefault();
-                                            baseUnitForm.append({
-                                                id: "",
-                                                quantity: 0,
-                                            });
-                                        }}
-                                    />
+                                    {viewMode !== "details" && (
+                                        <IconButton
+                                            icon={<FaPlus />}
+                                            rounded="full"
+                                            size="small"
+                                            onClick={(e) => {
+                                                e?.preventDefault();
+                                                unitConversionForm.append({
+                                                    id: "",
+                                                    quantity: 0,
+                                                });
+                                            }}
+                                        />
+                                    )}
                                 </div>
                                 <div className="p-6.5">
-                                    {baseUnitForm.fields.map((field, index) => (
+                                    {unitConversionForm.fields.map((field, index) => (
                                         <div key={field.id} className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                             <div className="w-6/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
@@ -513,16 +494,17 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </label>
                                                 <SelectGroupTwo
                                                     register={{
-                                                        ...register(`baseUnits.${index}.id`),
+                                                        ...register(`unitConversions.${index}.id`),
                                                     }}
-                                                    watch={watch("baseUnits")}
+                                                    watch={watch(`unitConversions.${index}.id`)}
                                                     icon={<BsLifePreserver />}
                                                     placeholder="Chọn đơn vị"
+                                                    disabled={viewMode === "details"}
                                                     data={unitOpts}
                                                 />
-                                                {errors.baseUnits?.[index]?.id && (
+                                                {errors.unitConversions?.[index]?.id && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
-                                                        {errors.baseUnits?.[index]?.id.message}
+                                                        {errors.unitConversions?.[index]?.id.message}
                                                     </span>
                                                 )}
                                             </div>
@@ -532,29 +514,32 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     Số lượng <span className="text-meta-1">*</span>
                                                 </label>
                                                 <input
-                                                    {...register(`baseUnits.${index}.quantity`)}
+                                                    {...register(`unitConversions.${index}.quantity`)}
                                                     type="text"
                                                     placeholder="Nhập số lượng"
+                                                    disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
-                                                {errors.baseUnits?.[index]?.quantity && (
+                                                {errors.unitConversions?.[index]?.quantity && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
-                                                        {errors.baseUnits?.[index]?.quantity.message}
+                                                        {errors.unitConversions?.[index]?.quantity.message}
                                                     </span>
                                                 )}
                                             </div>
 
                                             <div className="m-auto w-1/12 text-center">
-                                                <IconButton
-                                                    icon={<IoTrashBinOutline />}
-                                                    rounded="full"
-                                                    size="small"
-                                                    type="danger"
-                                                    onClick={(e) => {
-                                                        e?.preventDefault();
-                                                        baseUnitForm.remove(index);
-                                                    }}
-                                                />
+                                                {viewMode !== "details" && (
+                                                    <IconButton
+                                                        icon={<IoTrashBinOutline />}
+                                                        rounded="full"
+                                                        size="small"
+                                                        type="danger"
+                                                        onClick={(e) => {
+                                                            e?.preventDefault();
+                                                            unitConversionForm.remove(index);
+                                                        }}
+                                                    />
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -569,11 +554,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     <h3 className="font-medium text-black dark:text-white">Ảnh sản phẩm</h3>
                                 </div>
                                 <div className="p-6.5">
-                                    <UploadImage
-                                        sessionToken={sessionToken}
-                                        urlImage={getValues("urlImage")}
-                                        setValue={setValue}
-                                    />
+                                    <UploadImage sessionToken={sessionToken} watch={watch} setValue={setValue} />
                                 </div>
                             </div>
                             {/* <!-- Textarea Fields --> */}
@@ -591,6 +572,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             watch={watch("category.id")}
                                             icon={<BiCategory />}
                                             placeholder="Chọn nhóm sản phẩm"
+                                            disabled={viewMode === "details"}
                                             data={cateOpts}
                                         />
                                         {errors.category?.id && (
@@ -609,6 +591,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             watch={watch("type.id")}
                                             icon={<MdOutlineBloodtype />}
                                             placeholder="Chọn loại sản phẩm"
+                                            disabled={viewMode === "details"}
                                             data={typeOpts}
                                         />
                                         {errors.type?.id && (
@@ -627,6 +610,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             watch={watch("manufacturer.id")}
                                             icon={<MdOutlinePrecisionManufacturing />}
                                             placeholder="Chọn nhà sản xuất"
+                                            disabled={viewMode === "details"}
                                             data={manOpts}
                                         />
                                         {errors.manufacturer?.id && (
@@ -654,6 +638,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 watch={watch("status")}
                                                 icon={<IoInformationCircle size={20} />}
                                                 placeholder="Chọn tình trạng"
+                                                disabled={viewMode === "details"}
                                                 data={statusOpts}
                                             />
                                             {errors.status && (
@@ -728,6 +713,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     {...register(`branchProducts.${index}.branchId`)}
                                                     type="text"
                                                     placeholder="Nhập vị trí"
+                                                    disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
                                                 {errors.branchProducts?.[index]?.branchId && (
@@ -747,6 +733,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     {...register(`branchProducts.${index}.minQuantity`)}
                                                     type="text"
                                                     placeholder="Nhập số lượng tối thiểu"
+                                                    disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
                                                 {errors.branchProducts?.[index]?.minQuantity && (
@@ -763,6 +750,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     {...register(`branchProducts.${index}.maxQuantity`)}
                                                     type="text"
                                                     placeholder="Nhập số lượng tối đa"
+                                                    disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
                                                 {errors.branchProducts?.[index]?.maxQuantity && (
@@ -784,6 +772,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <button
                                     className="flex w-full justify-center rounded border border-primary bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                     type="submit"
+                                    onClick={() => console.log(errors)}
                                 >
                                     {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                 </button>
@@ -803,7 +792,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <button
                                     className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-stroke/90"
                                     type={"button"}
-                                    onClick={() => handleOpenModal("products")}
+                                    onClick={() => onOpenChange()}
                                 >
                                     Hủy
                                 </button>
@@ -824,39 +813,24 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                         <ModalContent>
                             {(onClose) => (
                                 <>
-                                    {(() => {
-                                        switch (action) {
-                                            case "allow-products":
-                                                return <>
-                                                    <ModalHeader className="flex flex-col gap-1">Tra cứu thuốc</ModalHeader>
-                                                    <ModalBody>
-                                                        <p>Danh sách thuốc được bộ y tế quốc gia cho phép lưu hành</p>
-                                                        <AllowProductTable/>
-                                                    </ModalBody>
-                                                </>;
-                                            case "products":
-                                                return <>
-                                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                                    <ModalBody>
-                                                        <p>Bạn có chắc muốn hủy thực hiện hành động này không?</p>
-                                                    </ModalBody>
-                                                    <ModalFooter>
-                                                        <Button color="default" variant="light" onPress={onClose}>
-                                                            Không
-                                                        </Button>
-                                                        <Button
-                                                            color="primary"
-                                                            onPress={() => {
-                                                                router.push(`/products/list`);
-                                                                onClose();
-                                                            }}
-                                                        >
-                                                            Chắc chắn
-                                                        </Button>
-                                                    </ModalFooter>
-                                                </>;
-                                        }
-                                    })()}
+                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                    <ModalBody>
+                                        <p>Bạn có chắc muốn hủy thực hiện hành động này không?</p>
+                                    </ModalBody>
+                                    <ModalFooter>
+                                        <Button color="default" variant="light" onPress={onClose}>
+                                            Không
+                                        </Button>
+                                        <Button
+                                            color="primary"
+                                            onPress={() => {
+                                                router.push(`/products/list`);
+                                                onClose();
+                                            }}
+                                        >
+                                            Chắc chắn
+                                        </Button>
+                                    </ModalFooter>
                                 </>
                             )}
                         </ModalContent>

@@ -12,7 +12,8 @@ export const getAllUnit = async (token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -41,7 +42,8 @@ export const getListUnit = async (page: string, size: string, dataSearch: DataSe
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -53,7 +55,8 @@ export const getUnitById = async (id: string, token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 export const createUnit = async (Unit: UnitBodyType, token: string) => {
@@ -72,8 +75,11 @@ export const createUnit = async (Unit: UnitBodyType, token: string) => {
             return res;
         }
     } catch (error: any) {
-        toast.error("Tạo mới đơn vị thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Tạo mới đơn vị thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -93,8 +99,11 @@ export const updateUnit = async (Unit: UnitBodyType, id: string, token: string) 
             return res;
         }
     } catch (error: any) {
-        toast.error("Cập nhật đơn vị thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật đơn vị thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -109,7 +118,10 @@ export const deleteUnit = async (id: string, token: string) => {
             return res.data;
         }
     } catch (error: any) {
-        toast.error("Xóa đơn vị thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Xóa đơn vị thất bại");
+            console.log(error);
+        }
     }
 };

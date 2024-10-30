@@ -12,7 +12,8 @@ export const getAllCategory = async (token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -41,7 +42,8 @@ export const getListCategory = async (page: string, size: string, dataSearch: Da
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -53,7 +55,8 @@ export const getCategoryById = async (id: string, token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 export const createCategory = async (category: CategoryBodyType, token: string) => {
@@ -72,8 +75,11 @@ export const createCategory = async (category: CategoryBodyType, token: string) 
             return res;
         }
     } catch (error: any) {
-        toast.error("Tạo mới nhóm sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Tạo mới nhóm sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -93,8 +99,11 @@ export const updateCategory = async (category: CategoryBodyType, id: string, tok
             return res;
         }
     } catch (error: any) {
-        toast.error("Cập nhật nhóm sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật nhóm sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -109,7 +118,10 @@ export const deleteCategory = async (id: string, token: string) => {
             return res.data;
         }
     } catch (error: any) {
-        toast.error("Xóa nhóm sản phẩm thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Xóa nhóm sản phẩm thất bại");
+            console.log(error);
+        }
     }
 };

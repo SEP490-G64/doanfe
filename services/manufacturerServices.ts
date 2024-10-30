@@ -12,7 +12,8 @@ export const getAllManufacturer = async (token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -41,7 +42,8 @@ export const getListManufacturer = async (page: string, size: string, dataSearch
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 
@@ -53,7 +55,8 @@ export const getManufacturerById = async (id: string, token: string) => {
 
         return res;
     } catch (error: any) {
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
     }
 };
 export const createManufacturer = async (manufacturer: ManufacturerBodyType, token: string) => {
@@ -76,8 +79,11 @@ export const createManufacturer = async (manufacturer: ManufacturerBodyType, tok
             return res;
         }
     } catch (error: any) {
-        toast.error("Tạo mới nhà sản xuất thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Tạo mới nhà sản xuất thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -101,8 +107,11 @@ export const updateManufacturer = async (manufacturer: ManufacturerBodyType, id:
             return res;
         }
     } catch (error: any) {
-        toast.error("Cập nhật nhà sản xuất thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật nhà sản xuất thất bại");
+            console.log(error);
+        }
     }
 };
 
@@ -117,7 +126,10 @@ export const deleteManufacturer = async (id: string, token: string) => {
             return res.data;
         }
     } catch (error: any) {
-        toast.error("Xóa nhà sản xuất thất bại");
-        console.log(error);
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Xóa nhà sản xuất thất bại");
+            console.log(error);
+        }
     }
 };
