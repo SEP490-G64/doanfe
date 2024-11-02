@@ -68,6 +68,16 @@ export const productColumns = [
     { name: "Tác vụ", uid: "actions" },
 ];
 
+export const inboundColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Mã phiếu nhập", uid: "inboundCode" },
+    { name: "Nhà cung cấp", uid: "supplierName" },
+    { name: "Người tạo", uid: "createdBy" },
+    { name: "Trạng thái", uid: "status" },
+    { name: "Ngày tạo", uid: "createdDate" },
+    { name: "Tác vụ", uid: "actions" },
+];
+
 export const allowProductColumns = [
     { name: "Mã đăng ký", uid: "registrationCode" },
     { name: "Tên sản phẩm", uid: "productName" },

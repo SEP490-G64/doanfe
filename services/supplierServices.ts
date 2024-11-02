@@ -9,6 +9,19 @@ interface Params extends DataSearch {
     size?: string;
 }
 
+export const getAllSupplier = async (token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/supplier`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
+    }
+};
+
 export const getListSupplier = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
     const params: Params = {
         page,
@@ -60,7 +73,7 @@ export const createSupplier = async (Supplier: SupplierBodyType, token: string) 
         if (res.errors) {
             if (res.errors.includes("error.supplier.exist")) {
                 toast.error("Tên và địa chỉ nhà cung cấp đã tồn tại");
-            } else if (res.errors.includes("error.supplier.taxcode_not_exist")) {
+            } else if (res.errors.includes("error.supplier.taxcode_exist")) {
                 toast.error("Mã số thuế của nhà cung cấp đã tồn tại");
             }
             return res;
@@ -88,7 +101,7 @@ export const updateSupplier = async (Supplier: SupplierBodyType, id: string, tok
         if (res.errors) {
             if (res.errors.includes("error.supplier.exist")) {
                 toast.error("Tên và địa chỉ nhà cung cấp đã tồn tại");
-            } else if (res.errors.includes("error.supplier.taxcode_not_exist")) {
+            } else if (res.errors.includes("error.supplier.taxcode_exist")) {
                 toast.error("Mã số thuế của nhà cung cấp đã tồn tại");
             }
             return res;

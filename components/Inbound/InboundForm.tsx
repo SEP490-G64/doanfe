@@ -4,25 +4,64 @@ import { toast } from "react-toastify";
 import { FaPlus } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { TfiSupport } from "react-icons/tfi";
+import {
+    Button,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    useDisclosure,
+    Select,
+    SelectItem,
+} from "@nextui-org/react";
 
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
-import ProductsTable from "@/components/Tables/ProductsTable";
+import ProductsTableBeforeCheck from "@/components/Tables/ProductsTableBeforeCheck";
 import IconButton from "@/components/UI/IconButton";
-import { ProductInfor } from "@/types/inbound";
-import { createInitInbound } from "@/services/inboundServices";
+import {
+    changeInboundStatus,
+    createInitInbound,
+    getInboundById,
+    submitDraft,
+    submitInbound,
+} from "@/services/inboundServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InboundBody, InboundBodyType } from "@/lib/schemaValidate/inboundSchema";
+import { getAllSupplier } from "@/services/supplierServices";
+import { Supplier } from "@/types/supplier";
+import Loader from "@/components/common/Loader";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import ProductsTableAfterCheck from "@/components/Tables/ProductsTableAfterCheck";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
     const [user, setUser] = useState<{ firstName: string; lastName: string } | undefined>();
     const [branch, setBranch] = useState<{ id: number; branchName: string } | undefined>();
-    const [createdDate, setCreatedDate] = useState<Date | string>();
+    const [inboundStatus, setInboundStatus] = useState<string | undefined>();
+    const [suppliers, setSuppliers] = useState([]);
+    const { isOpen, onOpenChange } = useDisclosure();
+    const [inboundType, setInboundType] = useState<"NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO">(
+        "NHAP_TU_NHA_CUNG_CAP"
+    );
+    const [product, setProduct] = useState<{
+        registrationCode?: string;
+        productName?: string;
+        discount?: number;
+        baseUnit?: {
+            id?: number;
+            unitName?: string;
+        };
+        requestQuantity?: number;
+    }>();
 
     const {
         register,
@@ -39,73 +78,30 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             createdDate: undefined,
             note: undefined,
             createdBy: undefined,
+            supplier: { id: "" },
             toBranch: undefined,
-            productInbounds: undefined,
+            productInbounds: [],
         },
     });
 
-    const [products, setProducts] = useState<ProductInfor[]>([
-        {
-            image: "/images/no-image.png",
-            name: "Thuốc nhỏ mắt",
-            unit: "Lọ",
-            quantity: 100,
-            price: 50000,
-            discount: 0.25,
-            total: 4000000,
-        },
-        {
-            image: "/images/no-image.png",
-            name: "Thuốc nhỏ mắt",
-            unit: "Lọ",
-            quantity: 100,
-            price: 50000,
-            discount: 0.25,
-            total: 4000000,
-        },
-        {
-            image: "/images/no-image.png",
-            name: "Thuốc nhỏ mắt",
-            unit: "Lọ",
-            quantity: 100,
-            price: 50000,
-            discount: 0.25,
-            total: 4000000,
-        },
-        {
-            image: "/images/no-image.png",
-            name: "Thuốc nhỏ mắt",
-            unit: "Lọ",
-            quantity: 100,
-            price: 50000,
-            discount: 0.25,
-            total: 4000000,
-        },
-        {
-            image: "/images/no-image.png",
-            name: "Thuốc nhỏ mắt",
-            unit: "Lọ",
-            quantity: 100,
-            price: 50000,
-            discount: 0.25,
-            total: 4000000,
-        },
-    ]);
+    const products = watch("productInbounds");
+
+    const handleTypeProduct = (e) => {
+        setProduct({
+            registrationCode: e.target.value,
+            productName: e.target.value,
+            discount: 10,
+            baseUnit: {
+                id: 1,
+                unitName: "Viên",
+            },
+            requestQuantity: 1,
+        });
+    };
 
     const addItem = (e?: React.MouseEvent) => {
         e!.preventDefault();
-        setProducts([
-            ...products,
-            {
-                image: "/images/no-image.png",
-                name: "Thuốc nhỏ mắt",
-                unit: "Lọ",
-                quantity: 100,
-                price: 50000,
-                discount: 0.25,
-                total: 4000000,
-            },
-        ]);
+        setValue("productInbounds", [...products, product]);
     };
 
     const initInbound = async () => {
@@ -115,15 +111,19 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         }
         setLoading(true);
         try {
-            const response = await createInitInbound("NHAP_TU_NHA_CUNG_CAP", sessionToken);
+            const response = await createInitInbound(inboundType, sessionToken);
 
             if (response.status === "SUCCESS") {
+                setValue("inboundId", response.data.id);
+                setValue("inboundCode", response.data.inboundCode);
                 setValue("inboundType", response.data.inboundType);
                 setValue("createdDate", response.data.createdDate);
                 setValue("toBranch.id", response.data.toBranch.id);
+                setValue("note", response.data.note);
+                setValue("createdBy.id", response.data.createdBy.id);
                 setUser(response.data.createdBy);
                 setBranch(response.data.toBranch);
-                setCreatedDate(response.data.createdDate);
+                setInboundStatus(response.data.status);
             }
         } catch (error) {
             console.log(error);
@@ -132,180 +132,410 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         }
     };
 
+    const getInforInbound = async () => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await getInboundById(inboundId as string, sessionToken);
+
+            if (response.message === "200 OK") {
+                setValue("inboundId", response.data.id);
+                setValue("inboundCode", response.data.inboundCode);
+                setValue("inboundType", response.data.inboundType);
+                setValue("createdDate", response.data.createdDate);
+                setValue("toBranch.id", response.data.toBranch.id);
+                setValue("note", response.data.note);
+                setValue("createdBy.id", response.data.createdBy?.id);
+                setValue("supplier.id", response.data.supplier.id);
+                setValue("productInbounds", response.data.productBatchDetails);
+                setUser(response.data.createdBy);
+                setBranch(response.data.toBranch);
+                setInboundStatus(response.data.status);
+                setSelectedSupplier(response.data.supplier);
+            } else router.push("/not-found");
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getSupplierOpts = async () => {
+        try {
+            const response = await getAllSupplier(sessionToken);
+
+            if (response.message === "200 OK") {
+                setSuppliers(response.data);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     useEffect(() => {
+        getSupplierOpts();
         if (viewMode === "create") {
-            initInbound();
+            onOpenChange();
+        } else {
+            getInforInbound();
         }
     }, []);
 
-    const handleOnClick = (e: React.MouseEvent) => {
+    const selectedSupId = watch("supplier.id");
+    const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
+
+    useEffect(() => {
+        if (selectedSupId) {
+            const sup = suppliers.find((item: Supplier) => item.id.toString() === selectedSupId);
+            setSelectedSupplier(sup);
+        }
+    }, [selectedSupId]);
+
+    const handleOnClick = async (e: React.MouseEvent, status: string) => {
         e.preventDefault();
-        toast.success("Ok roi!");
+        const response = await changeInboundStatus(inboundId as string, status, sessionToken);
+        if (response.status === "SUCCESS") {
+            router.push("/inbound/list");
+            router.refresh();
+        }
     };
 
-    return (
-        <form className="flex flex-col gap-6">
-            {/* <!--  Thông tin người duyệt --> */}
-            {viewMode !== "create" && (
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                    <div className="p-6.5">
-                        <div className="flex flex-col gap-6 xl:flex-row">
-                            <div className="flex w-full items-center gap-2 xl:w-1/2">
-                                <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                    Người duyệt: <span className="text-meta-1">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Nhập người duyệt"
-                                    disabled={viewMode === "details"}
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                />
-                            </div>
+    const handleSubmitInbound = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        const response = await submitInbound(inboundId as string, sessionToken);
+        if (response.status === "SUCCESS") {
+            router.push("/inbound/list");
+            router.refresh();
+            await changeInboundStatus(inboundId as string, "HOAN_THANH", sessionToken);
+        }
+    };
 
-                            <div className="flex w-full items-center gap-2 xl:w-1/2">
-                                <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                    Ngày duyệt: <span className="text-meta-1">*</span>
-                                </label>
-                                <DatePickerOne disabled={viewMode === "details"} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+    const onSubmit = async (inbound: InboundBodyType) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        console.log(inbound.productInbounds);
+        setLoading(true);
+        try {
+            const response = await submitDraft(inbound, sessionToken);
 
-            {/* <!-- Input Fields --> */}
-            <div className="flex gap-3">
-                <div className="w-7/12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                    <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-                        <h3 className="font-medium text-black dark:text-white">Thông tin nhà cung cấp</h3>
-                    </div>
-                    <div className="p-6.5">
-                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                            <div className="w-full xl:w-1/2">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Tên nhà cung cấp <span className="text-meta-1">*</span>
-                                </label>
-                                {/*<SelectGroupTwo*/}
-                                {/*    icon={<TfiSupport />}*/}
-                                {/*    placeholder="Chọn nhà cung cấp"*/}
-                                {/*    disabled={viewMode === "details"}*/}
-                                {/*/>*/}
-                            </div>
+            if (response && response.status === "SUCCESS") {
+                router.push("/inbound/list");
+                router.refresh();
+                if (inboundStatus === "KIEM_HANG")
+                    await changeInboundStatus(inboundId as string, "KIEM_HANG", sessionToken);
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-                            <div className="w-full xl:w-1/2">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Số điện thoại
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Nhập số điện thoại"
-                                    disabled={viewMode === "details"}
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mb-4.5">
-                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                Địa chỉ <span className="text-meta-1">*</span>
-                            </label>
-                            <textarea
-                                rows={5}
-                                placeholder="Nhập địa chỉ"
-                                disabled={viewMode === "details"}
-                                className="w-full rounded-lg border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                            ></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="w-5/12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                    <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-                        <h3 className="font-medium text-black dark:text-white">Thông tin đơn đặt hàng</h3>
-                    </div>
-                    <div className="p-6.5">
-                        <div className="mb-4.5">
-                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                Người tạo <span className="text-meta-1">*</span>
-                            </label>
-                            <input
-                                defaultValue={user ? `${user?.firstName} ${user?.lastName}` : ""}
-                                type="text"
-                                placeholder="Nhập người tạo"
-                                disabled
-                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                            />
-                        </div>
-                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                            <div className={`w-full ${viewMode !== "create" ? "xl:w-1/2" : ""}`}>
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Ngày nhập
-                                </label>
-                                <DatePickerOne dateValue={createdDate} disabled={true} />
-                            </div>
-
-                            {viewMode !== "create" && (
-                                <div className="w-full xl:w-1/2">
-                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Mã đơn
+    if (loading) return <Loader />;
+    else
+        return (
+            <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
+                {/* <!--  Thông tin người duyệt --> */}
+                {viewMode !== "create" && userInfo?.roles[0].type !== "ADMIN" && (
+                    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                        <div className="p-6.5">
+                            <div className="flex flex-col gap-6 xl:flex-row">
+                                <div className="flex w-full items-center gap-2 xl:w-1/2">
+                                    <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                        Người duyệt: <span className="text-meta-1">*</span>
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="Nhập mã đơn"
+                                        placeholder="Nhập người duyệt"
+                                        disabled={viewMode === "details"}
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    />
+                                </div>
+
+                                <div className="flex w-full items-center gap-2 xl:w-1/2">
+                                    <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                        Ngày duyệt: <span className="text-meta-1">*</span>
+                                    </label>
+                                    <DatePickerOne disabled={viewMode === "details"} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* <!-- Input Fields --> */}
+                <div className="flex gap-3">
+                    <div className="w-7/12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                        <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                            <h3 className="font-medium text-black dark:text-white">Thông tin nhà cung cấp</h3>
+                        </div>
+                        <div className="p-6.5">
+                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Tên nhà cung cấp <span className="text-meta-1">*</span>
+                                    </label>
+                                    <SelectGroupTwo
+                                        register={{ ...register("supplier.id") }}
+                                        watch={watch("supplier.id")}
+                                        icon={<TfiSupport />}
+                                        placeholder="Chọn nhà cung cấp"
+                                        disabled={
+                                            viewMode === "details" ||
+                                            !["CHUA_LUU", "BAN_NHAP"].includes(inboundStatus as string)
+                                        }
+                                        data={suppliers.map((supplier: Supplier) => ({
+                                            label: supplier.supplierName,
+                                            value: supplier.id,
+                                        }))}
+                                    />
+                                    {errors.supplier?.id && (
+                                        <span className="mt-1 block w-full text-sm text-rose-500">
+                                            {errors.supplier.id.message}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Số điện thoại
+                                    </label>
+                                    <input
+                                        value={selectedSupplier?.phoneNumber ? selectedSupplier?.phoneNumber : ""}
+                                        type="text"
+                                        placeholder="Nhập số điện thoại"
                                         disabled
                                         className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                     />
                                 </div>
-                            )}
+                            </div>
+
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Địa chỉ <span className="text-meta-1">*</span>
+                                </label>
+                                <textarea
+                                    value={selectedSupplier?.address ? selectedSupplier?.address : ""}
+                                    rows={5}
+                                    placeholder="Nhập địa chỉ"
+                                    disabled
+                                    className="w-full rounded-lg border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                ></textarea>
+                            </div>
                         </div>
-                        <div className="mb-4.5">
-                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                Chi nhánh <span className="text-meta-1">*</span>
-                            </label>
-                            <input
-                                defaultValue={branch?.branchName}
-                                type="text"
-                                placeholder="Nhập chi nhánh"
-                                disabled
-                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                            />
+                    </div>
+
+                    <div className="w-5/12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                        <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                            <h3 className="font-medium text-black dark:text-white">Thông tin đơn đặt hàng</h3>
+                        </div>
+                        <div className="p-6.5">
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Người tạo <span className="text-meta-1">*</span>
+                                </label>
+                                <input
+                                    defaultValue={user ? `${user?.firstName} ${user?.lastName}` : ""}
+                                    type="text"
+                                    placeholder="Nhập người tạo"
+                                    disabled
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                />
+                            </div>
+                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <div className={`w-full ${viewMode !== "create" ? "xl:w-1/2" : ""}`}>
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Ngày nhập
+                                    </label>
+                                    <DatePickerOne dateValue={watch("createdDate")} disabled={true} />
+                                </div>
+
+                                {viewMode !== "create" && (
+                                    <div className="w-full xl:w-1/2">
+                                        <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            Mã đơn
+                                        </label>
+                                        <input
+                                            {...register("inboundCode")}
+                                            type="text"
+                                            placeholder="Nhập mã đơn"
+                                            disabled
+                                            className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="mb-4.5">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Chi nhánh <span className="text-meta-1">*</span>
+                                </label>
+                                <input
+                                    defaultValue={branch?.branchName}
+                                    type="text"
+                                    placeholder="Nhập chi nhánh"
+                                    disabled
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-                    <h3 className="font-medium text-black dark:text-white">Danh sách sản phẩm</h3>
-                </div>
-                <div className="p-6.5">
-                    {viewMode !== "details" && (
-                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                            <label className="mb-3 block self-center whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                Tên sản phẩm <span className="text-meta-1">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="Nhập tên sảm phẩm"
-                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                        <h3 className="font-medium text-black dark:text-white">Danh sách sản phẩm</h3>
+                    </div>
+                    <div className="p-6.5">
+                        {viewMode !== "details" &&
+                            ["CHUA_LUU", "BAN_NHAP", "KIEM_HANG"].includes(inboundStatus as string) && (
+                                <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                    <label className="mb-3 block self-center whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                        Tên sản phẩm <span className="text-meta-1">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Nhập tên sảm phẩm"
+                                        onChange={(e) => handleTypeProduct(e)}
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    />
+                                    <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)} />
+                                </div>
+                            )}
+
+                        {["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inboundStatus as string) ? (
+                            viewMode === "details" ? (
+                                <ProductsTableAfterCheck
+                                    data={products || []}
+                                    active={viewMode !== "details" && inboundStatus === "KIEM_HANG"}
+                                    setProducts={setValue}
+                                />
+                            ) : (
+                                <ProductsTableAfterCheck
+                                    data={
+                                        products.map((p) =>
+                                            !p.batchList
+                                                ? {
+                                                      ...p,
+                                                      batchList: [
+                                                          {
+                                                              batchCode: undefined,
+                                                              inboundBatchQuantity: undefined,
+                                                              inboundPrice: undefined,
+                                                              expireDate: undefined,
+                                                          },
+                                                      ],
+                                                  }
+                                                : p
+                                        ) || []
+                                    }
+                                    active={inboundStatus === "KIEM_HANG"}
+                                    setProducts={setValue}
+                                />
+                            )
+                        ) : (
+                            <ProductsTableBeforeCheck
+                                data={products || []}
+                                active={
+                                    viewMode !== "details" && ["CHUA_LUU", "BAN_NHAP"].includes(inboundStatus as string)
+                                }
+                                setProducts={setValue}
                             />
-                            <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)} />
-                        </div>
-                    )}
-                    <ProductsTable data={products} active={viewMode !== "details"} setProducts={setProducts} />
+                        )}
 
-                    {viewMode !== "details" && (
-                        <button
-                            className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                            type="submit"
-                        >
-                            {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
-                        </button>
-                    )}
+                        {viewMode !== "details" &&
+                            ["CHUA_LUU", "BAN_NHAP", "KIEM_HANG"].includes(inboundStatus as string) && (
+                                <button
+                                    className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    type="submit"
+                                    // onClick={() => console.log(errors)}
+                                >
+                                    {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
+                                </button>
+                            )}
+
+                        {viewMode === "details" &&
+                            userInfo?.roles[0].type === "ADMIN" &&
+                            inboundStatus === "BAN_NHAP" && (
+                                <button
+                                    className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    onClick={(e) => handleOnClick(e, "CHO_HANG")}
+                                >
+                                    Duyệt đơn
+                                </button>
+                            )}
+                        {viewMode === "details" &&
+                            userInfo?.roles[0].type === "ADMIN" &&
+                            inboundStatus === "CHO_HANG" && (
+                                <button
+                                    className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    onClick={(e) => handleOnClick(e, "KIEM_HANG")}
+                                >
+                                    Kiểm hàng
+                                </button>
+                            )}
+                        {viewMode === "details" && inboundStatus === "KIEM_HANG" && (
+                            <button
+                                className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                onClick={(e) => handleSubmitInbound(e)}
+                            >
+                                Nhập hàng
+                            </button>
+                        )}
+                    </div>
                 </div>
-            </div>
-        </form>
-    );
+                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                <ModalBody>
+                                    <p>Vui lòng chọn kiểu nhập hàng</p>
+                                    <Select
+                                        value={inboundType}
+                                        onChange={(e) =>
+                                            setInboundType(
+                                                e.target.value as "NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO"
+                                            )
+                                        }
+                                        label="Chọn kiểu nhập hàng"
+                                        className="max-w-full"
+                                    >
+                                        <SelectItem key={"NHAP_TU_NHA_CUNG_CAP"}>Nhập từ nhà cung cấp</SelectItem>
+                                        <SelectItem key={"CHUYEN_KHO_NOI_BO"}>Chuyển kho nội bộ</SelectItem>
+                                    </Select>
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button
+                                        color="default"
+                                        variant="light"
+                                        onPress={() => {
+                                            onClose();
+                                            toast.error("Khởi tạo đơn nhập hàng thất bại");
+                                        }}
+                                    >
+                                        Không
+                                    </Button>
+                                    <Button
+                                        color="primary"
+                                        onPress={async () => {
+                                            await initInbound();
+                                            onClose();
+                                        }}
+                                    >
+                                        Chắc chắn
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
+            </form>
+        );
 };
 
 export default InboundForm;
