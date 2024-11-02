@@ -6,7 +6,7 @@ import { TfiSupport } from "react-icons/tfi";
 
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
-import ProductsTable from "@/components/Tables/ProductsTable";
+import ProductsTable from "@/components/Tables/ProductsTableBeforeCheck";
 import IconButton from "@/components/UI/IconButton";
 import { ProductInfor } from "@/types/inbound";
 

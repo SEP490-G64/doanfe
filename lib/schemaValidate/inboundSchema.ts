@@ -5,10 +5,11 @@ const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8
 
 const BatchProduct = z
     .object({
-        batchCode: z.string().trim().min(1, "Vui lòng nhập mã lô").max(100, "Giới hạn 100 ký tự"),
-        productDate: z.coerce.string().trim(),
-        expiredDate: z.coerce.string().trim(),
-        inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0"),
+        batchCode: z.string().trim().min(1, "Vui lòng nhập mã lô").max(100, "Giới hạn 100 ký tự").optional(),
+        produceDate: z.coerce.string().trim().optional(),
+        expireDate: z.coerce.string().trim().optional(),
+        inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
+        inboundBatchQuantity: z.number().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
         outboundDetails: z.array(z.object({})).optional(),
         branchBatches: z.array(z.object({})).optional(),
         inboundBatchDetails: z.array(z.object({})).optional(),
@@ -18,23 +19,26 @@ const BatchProduct = z
 
 const ProductInbound = z
     .object({
-        registrationCode: z.string().trim(),
+        id: z.number().optional(),
+        productId: z.number().optional(),
+        productCode: z.string().trim().optional(),
+        registrationCode: z.string().trim().optional(),
         productName: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm").max(100, "Giới hạn 100 kí tự"),
-        batchCode: z.string().trim(),
         discount: z.number().optional(),
-        expiredDate: z.coerce.string().trim(),
-        baseUnit: z.object({ id: z.number() }),
-        batchList: z.array(BatchProduct),
-        requestQuantity: z.number().int().min(1, "Số lượng yêu cầu không thể nhỏ hơn 1"),
-        quantity: z.number().int().min(1, "Số lượng không thể nhỏ hơn 1"),
-        price: z.number().min(0, "Giá không thể nhỏ hơn 0"),
+        baseUnit: z.object({ id: z.number(), unitName: z.string() }),
+        batchList: z.array(BatchProduct).optional(),
+        requestQuantity: z.number().int(),
+        quantity: z.number().int().optional(),
+        receiveQuantity: z.number().int().optional(),
+        batches: z.array(BatchProduct).optional(),
+        price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
     })
     .strict();
 
 export const InboundBody = z
     .object({
-        inboundId: z.number(),
-        inboundCode: z.string().trim().min(1, "Vui lòng nhập mã đơn nhập hàng").max(100, "Giới hạn 100 kí tự"),
+        inboundId: z.number().optional(),
+        inboundCode: z.string().trim().optional(),
         createdDate: z.coerce.string(),
         inboundType: z.preprocess(
             (val) => (val === null || val === undefined || val === "" ? undefined : val), // Turn null to undefined
@@ -44,6 +48,7 @@ export const InboundBody = z
         ),
         note: z.string().trim().max(256, "Giới hạn 255 kí tự").optional(),
         createdBy: z.object({ id: z.number() }),
+        supplier: z.object({ id: z.coerce.string().trim().min(1, "Vui lòng chọn cung cấp") }),
         fromBranch: z.object({ id: z.number() }).optional(),
         toBranch: z.object({ id: z.number() }).optional(),
         productInbounds: z.array(ProductInbound),
@@ -51,6 +56,7 @@ export const InboundBody = z
     .strict();
 
 export type InboundBodyType = z.TypeOf<typeof InboundBody>;
+export type ProductInboundType = z.TypeOf<typeof ProductInbound>;
 
 export const BranchDtoBody = z
     .object({

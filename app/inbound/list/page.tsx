@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import TableThree from "@/components/Branch/BranchTable/page";
+import InboundTable from "@/components/Inbound/InboundTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import HeaderTaskbar from "@/components/HeaderTaskbar/page";
+import HeaderTaskbar from "@/components/HeaderTaskbar/InboundHeaderTaskbar/page";
 
 export const metadata: Metadata = {
     title: "Danh sách phiếu nhập hàng",
@@ -18,7 +18,7 @@ const InboundList = () => {
             <HeaderTaskbar />
 
             <div className="flex flex-col gap-18">
-                <TableThree />
+                <InboundTable />
             </div>
         </DefaultLayout>
     );
