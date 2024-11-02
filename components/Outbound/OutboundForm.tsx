@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { FaPlus } from "react-icons/fa6";
 
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
-import ProductsTable from "@/components/Tables/ProductsTable";
+import ProductsTable from "@/components/Tables/ProductsTableBeforeCheck";
 import IconButton from "@/components/UI/IconButton";
 import { ProductInfor } from "@/types/inbound";
 

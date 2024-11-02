@@ -2,10 +2,11 @@
 import { BranchBodyType } from "@/lib/schemaValidate/branchSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
+import { InboundBodyType } from "@/lib/schemaValidate/inboundSchema";
 
-export const getListBranch = async (page: number, size: number, token: string) => {
+export const getListInbound = async (page: number, size: number, token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/inbound`, {
             headers: { Authorization: `Bearer ${token}` },
             params: { page, size },
         });
@@ -19,9 +20,9 @@ export const getListBranch = async (page: number, size: number, token: string) =
     }
 };
 
-export const getBranchById = async (id: string, token: string) => {
+export const getInboundById = async (id: string, token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/admin/branch/${id}`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/inbound/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -58,44 +59,86 @@ export const createInitInbound = async (inboundType: "NHAP_TU_NHA_CUNG_CAP" | "C
     }
 };
 
-export const createBranch = async (branch: BranchBodyType, token: string) => {
+export const submitDraft = async (inboundDraft: InboundBodyType, token: string) => {
     try {
-        const res = await httpRequest.post("dsd/api/v1/admin/branch", branch, {
+        const res = await httpRequest.post("dsd/api/v1/staff/inbound/submit-draft", inboundDraft, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data) {
-            toast.success("Tạo mới chi nhánh thành công");
-            return res;
-        }
-
-        if (res.errors) {
-            toast.error("Chi nhánh đã tồn tại");
+            toast.success("Lưu phiếu nhập thành công");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Tạo mới chi nhánh thất bại");
+            toast.error("Lưu phiếu nhập thất bại");
             console.log(error);
         }
     }
 };
 
-export const updateBranch = async (branch: BranchBodyType, id: string, token: string) => {
+export const changeInboundStatus = async (id: string, status: string, token: string) => {
     try {
-        const res = await httpRequest.put(`dsd/api/v1/admin/branch/${id}`, branch, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await httpRequest.put(
+            `dsd/api/v1/staff/inbound/${id}/update-status`,
+            {},
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { type: status },
+            }
+        );
 
-        if (res.data) {
-            toast.success("Cập nhật chi nhánh thành công");
+        if (res.status === "SUCCESS") {
+            toast.success("Thay đổi trạng thái phiếu nhập thành công");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Cập nhật chi nhánh thất bại");
+            toast.error("Thay đổi trạng thái phiếu nhập thất bại");
+            console.log(error);
+        }
+    }
+};
+
+export const updateInbound = async (inbound: InboundBodyType, id: string, token: string) => {
+    try {
+        const res = await httpRequest.put(`dsd/api/v1/staff/inbound/${id}`, inbound, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.data) {
+            toast.success("Cập nhật phiếu nhập thành công");
+            return res;
+        }
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Cập nhật phiếu nhập thất bại");
+            console.log(error);
+        }
+    }
+};
+
+export const submitInbound = async (id: string, token: string) => {
+    try {
+        const res = await httpRequest.put(
+            `dsd/api/v1/staff/inbound/${id}/submit`,
+            {},
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        );
+
+        if (res.status === "SUCCESS") {
+            toast.success("Nhập hàng thành công");
+            return res;
+        }
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Nhập hàng thất bại");
             console.log(error);
         }
     }

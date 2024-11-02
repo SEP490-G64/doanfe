@@ -2,18 +2,18 @@ import Image from "next/image";
 import { IoTrashBinOutline } from "react-icons/io5";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 
-import { ProductInfor } from "@/types/inbound";
 import IconButton from "../UI/IconButton";
 import { useState } from "react";
+import { ProductInboundType } from "@/lib/schemaValidate/inboundSchema";
 
-const ProductsTable = ({
+const ProductsTableBeforeCheck = ({
     data,
     active,
     setProducts,
 }: {
-    data: ProductInfor[];
+    data: ProductInboundType[];
     active: boolean;
-    setProducts: (data: ProductInfor[]) => void;
+    setProducts: any;
 }) => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [removedItemIndex, setRemovedItemIndex] = useState<number>(-1);
@@ -25,7 +25,12 @@ const ProductsTable = ({
 
     const handleDelete = () => {
         data.splice(removedItemIndex, 1);
-        setProducts(data);
+        setProducts("productInbounds", data);
+    };
+
+    const handleChangeQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        data[index].requestQuantity = Number(e.target.value);
+        setProducts("productInbounds", data);
     };
 
     return (
@@ -34,13 +39,12 @@ const ProductsTable = ({
                 <thead className="rounded-sm bg-gray-2 text-left">
                     <tr>
                         <th className="p-4 text-center font-medium text-black">STT</th>
-                        <th className="p-4 text-center font-medium text-black">Ảnh</th>
+                        {/*<th className="p-4 text-center font-medium text-black">Ảnh</th>*/}
                         <th className="p-4 text-center font-medium text-black">Tên sản phẩm</th>
                         <th className="p-4 text-center font-medium text-black">Đơn vị</th>
                         <th className="p-4 text-center font-medium text-black">Số lượng đặt</th>
-                        <th className="p-4 text-center font-medium text-black">Đơn giá</th>
                         <th className="p-4 text-center font-medium text-black">Chiết khấu</th>
-                        <th className="p-4 text-center font-medium text-black">Thành tiền</th>
+                        <th></th>
                     </tr>
                 </thead>
 
@@ -51,20 +55,20 @@ const ProductsTable = ({
                                 <p className="text-meta-5">{key + 1}</p>
                             </td>
 
-                            <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                <div className="flex items-center justify-center">
-                                    <Image src={product.image} alt="product-image" width={48} height={48} />
-                                </div>
-                            </td>
+                            {/*<td className="border-b border-[#eee] px-4 py-5 text-center">*/}
+                            {/*    <div className="flex items-center justify-center">*/}
+                            {/*        <Image src={product.image} alt="product-image" width={48} height={48} />*/}
+                            {/*    </div>*/}
+                            {/*</td>*/}
 
                             <td className="border-b border-[#eee] px-4 py-5 text-left">
-                                <p className="text-black dark:text-white">{product.name}</p>
+                                <p className="text-black dark:text-white">{product.productName}</p>
                             </td>
 
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="text"
-                                    value={product.unit}
+                                    defaultValue={product.baseUnit.unitName}
                                     disabled={!active}
                                     className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
@@ -73,22 +77,15 @@ const ProductsTable = ({
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="text"
-                                    value={product.quantity}
+                                    value={product.requestQuantity}
                                     disabled={!active}
+                                    onChange={(e) => handleChangeQuantity(e, key)}
                                     className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
                             </td>
 
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                <p className="text-black dark:text-white">{product.price}</p>
-                            </td>
-
-                            <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                <p className="text-meta-5">{product.discount * 100}%</p>
-                            </td>
-
-                            <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                <p className="text-meta-5">{product.total}</p>
+                                <p className="text-meta-5">{product.discount ? product.discount : ""}%</p>
                             </td>
 
                             {active && (
@@ -110,10 +107,6 @@ const ProductsTable = ({
                         <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
                         <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
                         <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-right text-danger">Tổng</td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center text-danger">
-                            {data.reduce((prev, curr) => prev + curr.total, 0)}
-                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -147,4 +140,4 @@ const ProductsTable = ({
     );
 };
 
-export default ProductsTable;
+export default ProductsTableBeforeCheck;

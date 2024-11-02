@@ -3,6 +3,19 @@ import { SupplierBodyType } from "@/lib/schemaValidate/supplierSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 
+export const getAllSupplier = async (token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/supplier`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
+    }
+};
+
 export const getListSupplier = async (page: number, size: number, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/supplier`, {
