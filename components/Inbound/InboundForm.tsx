@@ -37,6 +37,7 @@ import Loader from "@/components/common/Loader";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import ProductsTableAfterCheck from "@/components/Tables/ProductsTableAfterCheck";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -237,16 +238,23 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                 {/* <!--  Thông tin người duyệt --> */}
                 {viewMode !== "create" && userInfo?.roles[0].type !== "ADMIN" && (
-                    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div
+                        className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <div className="p-6.5">
                             <div className="flex flex-col gap-6 xl:flex-row">
                                 <div className="flex w-full items-center gap-2 xl:w-1/2">
-                                    <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                    <label
+                                        className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                         Người duyệt: <span className="text-meta-1">*</span>
                                     </label>
                                     <input
@@ -258,7 +266,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 </div>
 
                                 <div className="flex w-full items-center gap-2 xl:w-1/2">
-                                    <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                    <label
+                                        className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                         Ngày duyệt: <span className="text-meta-1">*</span>
                                     </label>
                                     <DatePickerOne disabled={viewMode === "details"} />
@@ -270,7 +279,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
                 {/* <!-- Input Fields --> */}
                 <div className="flex gap-3">
-                    <div className="w-7/12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div
+                        className="w-7/12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                             <h3 className="font-medium text-black dark:text-white">Thông tin nhà cung cấp</h3>
                         </div>
@@ -330,7 +340,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                         </div>
                     </div>
 
-                    <div className="w-5/12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div
+                        className="w-5/12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                             <h3 className="font-medium text-black dark:text-white">Thông tin đơn đặt hàng</h3>
                         </div>
@@ -386,7 +397,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                     </div>
                 </div>
 
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                <div
+                    className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                         <h3 className="font-medium text-black dark:text-white">Danh sách sản phẩm</h3>
                     </div>
@@ -394,7 +406,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                         {viewMode !== "details" &&
                             ["CHUA_LUU", "BAN_NHAP", "KIEM_HANG"].includes(inboundStatus as string) && (
                                 <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                    <label className="mb-3 block self-center whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                    <label
+                                        className="mb-3 block self-center whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                         Tên sản phẩm <span className="text-meta-1">*</span>
                                     </label>
                                     <input
@@ -420,16 +433,16 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         products.map((p) =>
                                             !p.batchList
                                                 ? {
-                                                      ...p,
-                                                      batchList: [
-                                                          {
-                                                              batchCode: undefined,
-                                                              inboundBatchQuantity: undefined,
-                                                              inboundPrice: undefined,
-                                                              expireDate: undefined,
-                                                          },
-                                                      ],
-                                                  }
+                                                    ...p,
+                                                    batchList: [
+                                                        {
+                                                            batchCode: undefined,
+                                                            inboundBatchQuantity: undefined,
+                                                            inboundPrice: undefined,
+                                                            expireDate: undefined,
+                                                        },
+                                                    ],
+                                                }
                                                 : p
                                         ) || []
                                     }
@@ -536,6 +549,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 </Modal>
             </form>
         );
+    }
 };
 
 export default InboundForm;

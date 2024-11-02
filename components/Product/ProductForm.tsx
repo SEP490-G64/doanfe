@@ -26,6 +26,9 @@ import { Type } from "@/types/type";
 import { Manufacturer } from "@/types/manufacturer";
 import { getAllUnit } from "@/services/unitServices";
 import { Unit } from "@/types/unit";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -36,6 +39,10 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     const [typeOpts, setTypeOpts] = useState([]);
     const [manOpts, setManOpts] = useState([]);
     const [unitOpts, setUnitOpts] = useState([]);
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
+
     const specialConditionOpts = [
         {
             value: "NHIET_DO",
@@ -228,14 +235,20 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <>
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
                     <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
                         <div className="flex flex-col gap-9">
                             {/* <!-- Input Fields --> */}
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Thông tin sản phẩm</h3>
                                 </div>
@@ -260,7 +273,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Số đăng ký <span className="text-meta-1">*</span>
                                             </label>
                                             <input
@@ -280,7 +294,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Bào chế <span className="text-meta-1">*</span>
                                             </label>
                                             <input
@@ -298,7 +313,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                         </div>
 
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Hoạt chất <span className="text-meta-1">*</span>
                                             </label>
                                             <input
@@ -355,14 +371,16 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             </div>
 
                             {/* <!-- Giá sản phẩm --> */}
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Giá sản phẩm</h3>
                                 </div>
                                 <div className="p-6.5">
                                     <div className="flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Giá nhập
                                             </label>
                                             <input
@@ -374,7 +392,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                         </div>
 
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Giá bán <span className="text-meta-1">*</span>
                                             </label>
                                             <input
@@ -388,8 +407,10 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 </div>
                             </div>
 
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                                <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                                <div
+                                    className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Điều kiện đặc biệt</h3>
                                     {viewMode !== "details" && (
                                         <IconButton
@@ -410,7 +431,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     {specialConditionsForm.fields.map((field, index) => (
                                         <div key={field.id} className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                             <div className="w-6/12">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                <label
+                                                    className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Kiểu điều kiện
                                                 </label>
                                                 <SelectGroupTwo
@@ -431,7 +453,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             </div>
 
                                             <div className="w-5/12">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                <label
+                                                    className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Hướng dẫn xử lý (Nếu cần)
                                                 </label>
                                                 <input
@@ -467,8 +490,10 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 </div>
                             </div>
 
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                                <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                                <div
+                                    className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Đơn vị quy đổi</h3>
                                     {viewMode !== "details" && (
                                         <IconButton
@@ -489,7 +514,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     {unitConversionForm.fields.map((field, index) => (
                                         <div key={field.id} className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                             <div className="w-6/12">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                <label
+                                                    className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Đơn vị <span className="text-meta-1">*</span>
                                                 </label>
                                                 <SelectGroupTwo
@@ -510,7 +536,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             </div>
 
                                             <div className="w-5/12">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                <label
+                                                    className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Số lượng <span className="text-meta-1">*</span>
                                                 </label>
                                                 <input
@@ -549,7 +576,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                         <div className="flex flex-col gap-9">
                             {/* <!-- File upload --> */}
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Ảnh sản phẩm</h3>
                                 </div>
@@ -558,7 +586,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 </div>
                             </div>
                             {/* <!-- Textarea Fields --> */}
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Phân loại sản phẩm</h3>
                                 </div>
@@ -623,14 +652,16 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             </div>
 
                             {/* <!-- Checkbox and radio --> */}
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Tình trạng thuốc</h3>
                                 </div>
                                 <div className="p-6.5">
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Tình trạng
                                             </label>
                                             <SelectGroupTwo
@@ -649,7 +680,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                         </div>
 
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Có thể bán
                                             </label>
                                             {/* <SwitcherThree /> */}
@@ -657,7 +689,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     </div>
                                     <div className="flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Tồn kho
                                             </label>
                                             <input
@@ -669,7 +702,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                         </div>
 
                                         <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            <label
+                                                className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Tồn chi nhánh
                                             </label>
                                             <input
@@ -684,7 +718,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             </div>
 
                             {/* <!-- Select input --> */}
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">
                                         Thông tin sản phẩm trong kho
@@ -695,7 +730,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     <div className="p-6.5" key={field.id}>
                                         <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                             <div className="w-full xl:w-1/2">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                <label
+                                                    className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Chi nhánh
                                                 </label>
                                                 <input
@@ -706,7 +742,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 />
                                             </div>
                                             <div className="w-full xl:w-1/2">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                <label
+                                                    className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Vị trí
                                                 </label>
                                                 <input
@@ -726,7 +763,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                         <div className="flex flex-col gap-6 xl:flex-row">
                                             <div className="w-full xl:w-1/2">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                <label
+                                                    className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Số lượng tối thiểu
                                                 </label>
                                                 <input
@@ -743,7 +781,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 )}
                                             </div>
                                             <div className="w-full xl:w-1/2">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                <label
+                                                    className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Số lượng tối đa
                                                 </label>
                                                 <input
@@ -838,6 +877,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                 </form>
             </>
         );
+    }
 };
 
 export default ProductForm;

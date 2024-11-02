@@ -9,7 +9,7 @@ interface Params extends DataSearch {
     size?: string;
 }
 
-export const getListBranch = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
+export const getListBranch = async (page: number, size: number, dataSearch: DataSearch, token: string) => {
     const params: Params = {
         page,
         size,

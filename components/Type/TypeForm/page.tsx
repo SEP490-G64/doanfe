@@ -11,12 +11,18 @@ import { TypeBody, TypeBodyType } from "@/lib/schemaValidate/typeSchema";
 import Loader from "@/components/common/Loader";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createType, getTypeById, updateType } from "@/services/typeServices";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "create"; typeId?: string }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
     const { isOpen, onOpenChange } = useDisclosure();
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const {
         register,
@@ -82,11 +88,17 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <div className="flex flex-col gap-9">
                 {/* <!-- Contact Form --> */}
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                <div
+                    className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                         <div className="p-6.5">
                             <div className="mb-4.5">
@@ -197,6 +209,7 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
                 </Modal>
             </div>
         );
+    }
 };
 
 export default TypeForm;

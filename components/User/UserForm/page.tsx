@@ -12,6 +12,10 @@ import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDi
 import { createUser, getUserById, updateUser } from "@/services/userServices";
 import { getListBranch } from "@/services/branchServices";
 import {Branch} from "@/types/branch";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
+import { DataSearch } from "@/types/product";
 
 const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "create" | "reject" | "approve"; userId?: string }) => {
     const { isOpen, onOpenChange } = useDisclosure();
@@ -21,6 +25,13 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
     const [branches, setBranches] = useState<Branch[]>([]);
     const [status, setStatus] = useState<string>("");
     const [role, setRole] = useState<string>("");
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        status: "",
+    });
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const {
         register,
@@ -77,7 +88,7 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
 
     const getBranches = async () => {
         try {
-            const response = await getListBranch(0, 10, sessionToken);
+            const response = await getListBranch(0, 10, dataSearch, sessionToken);
 
             setBranches(response.data);
         } catch (error) {
@@ -120,11 +131,17 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <div className="flex flex-col gap-9">
                 {/* <!-- Contact Form --> */}
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                <div
+                    className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                         <div className="p-6.5">
                             <div className="mb-4.5"
@@ -391,6 +408,7 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
                 </Modal>
             </div>
         );
+    }
 };
 
 export default UserForm;

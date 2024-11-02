@@ -73,7 +73,7 @@ export const createManufacturer = async (manufacturer: ManufacturerBodyType, tok
         if (res.errors) {
             if (res.errors.includes("error.manufacturer.exist")) {
                 toast.error("Tên và địa chỉ nhà sản xuất đã tồn tại");
-            } else if (res.errors.includes("error.manufacturer.taxcode_not_exist")) {
+            } else if (res.errors.includes("error.manufacturer.taxcode_exist")) {
                 toast.error("Mã số thuế của nhà sản xuất đã tồn tại");
             }
             return res;
@@ -101,7 +101,7 @@ export const updateManufacturer = async (manufacturer: ManufacturerBodyType, id:
         if (res.errors) {
             if (res.errors.includes("error.manufacturer.exist")) {
                 toast.error("Tên và địa chỉ nhà sản xuất đã tồn tại");
-            } else if (res.errors.includes("error.manufacturer.taxcode_not_exist")) {
+            } else if (res.errors.includes("error.manufacturer.taxcode_exist")) {
                 toast.error("Mã số thuế của nhà sản xuất đã tồn tại");
             }
             return res;
