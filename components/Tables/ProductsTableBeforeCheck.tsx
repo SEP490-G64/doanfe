@@ -43,7 +43,7 @@ const ProductsTableBeforeCheck = ({
                         <th className="p-4 text-center font-medium text-black">Tên sản phẩm</th>
                         <th className="p-4 text-center font-medium text-black">Đơn vị</th>
                         <th className="p-4 text-center font-medium text-black">Số lượng đặt</th>
-                        <th className="p-4 text-center font-medium text-black">Chiết khấu</th>
+                        {/*<th className="p-4 text-center font-medium text-black">Chiết khấu</th>*/}
                         <th></th>
                     </tr>
                 </thead>
@@ -69,7 +69,8 @@ const ProductsTableBeforeCheck = ({
                                 <input
                                     type="text"
                                     defaultValue={product.baseUnit.unitName}
-                                    disabled={!active}
+                                    // disabled={!active}
+                                    disabled
                                     className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
                             </td>
@@ -80,13 +81,13 @@ const ProductsTableBeforeCheck = ({
                                     value={product.requestQuantity}
                                     disabled={!active}
                                     onChange={(e) => handleChangeQuantity(e, key)}
-                                    className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    className="w-24 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
                             </td>
 
-                            <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                <p className="text-meta-5">{product.discount ? product.discount : ""}%</p>
-                            </td>
+                            {/*<td className="border-b border-[#eee] px-4 py-5 text-center">*/}
+                            {/*    <p className="text-meta-5">{product.discount ? product.discount : ""}%</p>*/}
+                            {/*</td>*/}
 
                             {active && (
                                 <td>

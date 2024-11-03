@@ -50,6 +50,39 @@ export const getProductById = async (id: string, token: string) => {
         }
     }
 };
+
+export const getProductBySupplierId = async (supplierId: string, keyword: string, token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/products-by-supplier/${supplierId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { keyword },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
+export const getAllowedProducts = async (keyword: string, token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/allow-products`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { keyword },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
 export const createProduct = async (product: ProductBodyType, token: string) => {
     try {
         const res = await httpRequest.post("dsd/api/v1/staff/product", product, {

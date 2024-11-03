@@ -58,7 +58,7 @@ const CategoryesTable = () => {
                     response.data.map((item: Category, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
-                    }))
+                    })),
                 );
                 setTotal(response.total);
             }
@@ -187,7 +187,8 @@ const CategoryesTable = () => {
     if (loading) return <Loader />;
     else
         return (
-            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+            <div
+                className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                 <div className="max-w-full overflow-x-auto">
                     <Table
                         bottomContent={
@@ -245,7 +246,7 @@ const CategoryesTable = () => {
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["categoryName", "taxRate"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["categoryName", "categoryDescription"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>
