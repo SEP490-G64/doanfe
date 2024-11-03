@@ -1,9 +1,13 @@
 export interface ProductInfor {
     image?: string;
+    id?: number;
     registrationCode?: string;
     productName?: string;
-    baseUnit?: { id: number };
     discount?: number;
+    baseUnit?: {
+        id?: number;
+        unitName?: string;
+    };
     requestQuantity?: number;
 }
 

@@ -2,8 +2,13 @@ import z from "zod";
 
 const BranchProduct = z
     .object({
-        branchId: z.string().trim().min(1, "Vui lòng nhập mã chi nhánh"),
-        storageLocation: z.object({ selfName: z.string().trim() }),
+        branchId: z.string().trim().optional(),
+        branchName: z.string().trim().optional(),
+        branch: z.object({
+            id: z.string().trim().optional(),
+            branchName: z.string().trim().optional(),
+        }),
+        storageLocation: z.object({ selfName: z.string().trim().optional() }),
         minQuantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
         maxQuantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
         quantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
@@ -42,9 +47,11 @@ export const ProductBody = z
         type: z.object({ id: z.string().trim().min(1, "Vui lòng chọn loại sản phẩm") }),
         manufacturer: z.object({ id: z.string().trim().min(1, "Vui lòng chọn nhà sản xuất") }),
         unitConversions: z.array(UnitConversion).optional(),
-        baseUnit: z.string().trim().optional(),
+        baseUnit: z.object({ id: z.string().trim().min(1, "Vui lòng chọn đơn vị") }),
         branchProducts: z.array(BranchProduct).optional(),
         specialConditions: z.array(SpecialCondition).optional(),
+        inboundPrice: z.coerce.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
+        sellPrice: z.coerce.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
     })
     .strict();
 

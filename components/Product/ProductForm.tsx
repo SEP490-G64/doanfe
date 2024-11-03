@@ -1,22 +1,25 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BsLifePreserver } from "react-icons/bs";
 import { IoInformationCircle, IoTrashBinOutline } from "react-icons/io5";
 import { BiCategory } from "react-icons/bi";
 import { MdOutlineBloodtype, MdOutlinePrecisionManufacturing } from "react-icons/md";
+import { debounce } from "lodash";
+import ReactSelect from "react-select";
 import { FaPlus } from "react-icons/fa6";
+import { BsLifePreserver } from "react-icons/bs";
+import { jwtDecode } from "jwt-decode";
 
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 import UploadImage from "@/components/UI/UploadImage";
 import Loader from "@/components/common/Loader";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { ProductBody, ProductBodyType } from "@/lib/schemaValidate/productSchema";
-import { createProduct, getProductById, updateProduct } from "@/services/productServices";
+import { createProduct, getAllowedProducts, getProductById, updateProduct } from "@/services/productServices";
 import { getAllCategory } from "@/services/categoryServices";
 import { getAllType } from "@/services/typeServices";
 import { getAllManufacturer } from "@/services/manufacturerServices";
@@ -26,12 +29,18 @@ import { Type } from "@/types/type";
 import { Manufacturer } from "@/types/manufacturer";
 import { getAllUnit } from "@/services/unitServices";
 import { Unit } from "@/types/unit";
+import { TokenDecoded } from "@/types/tokenDecoded";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
+    const [isFetchingProduct, setIsFetchingProduct] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
     const { isOpen, onOpenChange } = useDisclosure();
+    const [productOpts, setProductOpts] = useState<ProductBodyType[]>([]);
+    const [product, setProduct] = useState<ProductBodyType>();
     const [cateOpts, setCateOpts] = useState([]);
     const [typeOpts, setTypeOpts] = useState([]);
     const [manOpts, setManOpts] = useState([]);
@@ -122,15 +131,51 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
             branchProducts: [
                 {
                     branchId: undefined,
-                    storageLocation: { selfName: "Chi nhánh số 2" },
+                    branch: { id: undefined, branchName: undefined },
+                    storageLocation: { selfName: undefined },
                     maxQuantity: undefined,
                     minQuantity: undefined,
                     quantity: undefined,
                 },
             ],
             specialConditions: undefined,
+            inboundPrice: undefined,
+            sellPrice: undefined,
         },
     });
+
+    const getProductOpts = async (inputString: string) => {
+        if (isFetchingProduct) return;
+        setIsFetchingProduct(true);
+        try {
+            const response = await getAllowedProducts(inputString, sessionToken);
+
+            if (response.message === "200 OK") {
+                setProductOpts(response.data);
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsFetchingProduct(false);
+        }
+    };
+
+    // Debounced fetch options
+    const debouncedFetchOptions = useCallback(
+        debounce((inputValue: string) => {
+            if (inputValue) {
+                getProductOpts(inputValue);
+            } else {
+                setProductOpts([]);
+            }
+        }, 500),
+        []
+    );
+
+    const handleTypeProduct = (inputString: string) => {
+        debouncedFetchOptions(inputString);
+        return inputString;
+    };
 
     const unitConversionForm = useFieldArray({
         control,
@@ -242,6 +287,48 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <div className="p-6.5">
                                     <div className="mb-4.5">
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            Tra cứu sản phẩm
+                                        </label>
+                                        <ReactSelect
+                                            defaultValue={product ? product.registrationCode : ""}
+                                            onChange={(optionValue) => {
+                                                if (!optionValue) return;
+                                                const option = productOpts.find(
+                                                    (opt) => opt.registrationCode === optionValue.value
+                                                );
+                                                setProduct(option);
+                                                option?.productName && setValue("productName", option.productName);
+                                                option?.registrationCode &&
+                                                    setValue("registrationCode", option.registrationCode);
+                                                option?.activeIngredient &&
+                                                    setValue("activeIngredient", option.activeIngredient);
+                                                option?.excipient && setValue("excipient", option.excipient);
+                                                option?.formulation && setValue("formulation", option.formulation);
+                                                option?.urlImage && setValue("urlImage", option.urlImage);
+                                            }}
+                                            onInputChange={handleTypeProduct}
+                                            options={productOpts.map((option) => ({
+                                                value: option.registrationCode,
+                                                label: option.productName,
+                                            }))}
+                                            placeholder="Tìm kiếm sản phẩm..."
+                                            isSearchable
+                                            isClearable
+                                            isLoading={isFetchingProduct}
+                                            styles={{
+                                                control: (baseStyles, state) => ({
+                                                    ...baseStyles,
+                                                    width: "100%",
+                                                    padding: "0.5rem 1rem",
+                                                    cursor: "text",
+                                                }),
+                                            }}
+                                            className={"w-full"}
+                                        />
+                                    </div>
+
+                                    <div className="mb-4.5">
+                                        <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                             Tên sản phẩm <span className="text-meta-1">*</span>
                                         </label>
                                         <input
@@ -338,16 +425,17 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                             Quy cách đóng gói <span className="text-meta-1">*</span>
                                         </label>
-                                        <input
-                                            {...register("baseUnit")}
-                                            type="text"
-                                            placeholder="Nhập quy cách đóng gói"
+                                        <SelectGroupTwo
+                                            register={{ ...register("baseUnit.id") }}
+                                            watch={watch("baseUnit.id")}
+                                            icon={<BsLifePreserver />}
+                                            placeholder="Chọn đơn vị"
                                             disabled={viewMode === "details"}
-                                            className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                            data={unitOpts}
                                         />
-                                        {errors.baseUnit && (
+                                        {errors.baseUnit?.id && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                                {errors.baseUnit.message}
+                                                {errors.baseUnit.id.message}
                                             </span>
                                         )}
                                     </div>
@@ -355,38 +443,44 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             </div>
 
                             {/* <!-- Giá sản phẩm --> */}
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                                <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-                                    <h3 className="font-medium text-black dark:text-white">Giá sản phẩm</h3>
-                                </div>
-                                <div className="p-6.5">
-                                    <div className="flex flex-col gap-6 xl:flex-row">
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Giá nhập
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Nhập giá nhập"
-                                                disabled
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
-                                        </div>
+                            {viewMode !== "create" && (
+                                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                                    <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                                        <h3 className="font-medium text-black dark:text-white">Giá sản phẩm</h3>
+                                    </div>
+                                    <div className="p-6.5">
+                                        <div className="flex flex-col gap-6 xl:flex-row">
+                                            <div className="w-full xl:w-1/2">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Giá nhập
+                                                </label>
+                                                <input
+                                                    {...register("inboundPrice")}
+                                                    type="text"
+                                                    placeholder="Nhập giá nhập"
+                                                    disabled
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                            </div>
 
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Giá bán <span className="text-meta-1">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                placeholder="Nhập giá bán"
-                                                disabled={viewMode === "details"}
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
+                                            <div className="w-full xl:w-1/2">
+                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                    Giá bán <span className="text-meta-1">*</span>
+                                                </label>
+                                                <input
+                                                    {...register("sellPrice")}
+                                                    type="text"
+                                                    placeholder="Nhập giá bán"
+                                                    disabled={
+                                                        viewMode === "details" || userInfo?.roles[0].type !== "MANAGER"
+                                                    }
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
@@ -505,6 +599,11 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 {errors.unitConversions?.[index]?.id && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
                                                         {errors.unitConversions?.[index]?.id.message}
+                                                    </span>
+                                                )}
+                                                {watch("baseUnit.id") === watch(`unitConversions.${index}.id`) && (
+                                                    <span className="mt-1 block w-full text-sm text-rose-500">
+                                                        Đơn vị quy đổi không thể trùng với đơn vị cơ sở
                                                     </span>
                                                 )}
                                             </div>
@@ -694,31 +793,36 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 {branchProductForm.fields.map((field, index) => (
                                     <div className="p-6.5" key={field.id}>
                                         <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                            <div className="w-full xl:w-1/2">
-                                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                    Chi nhánh
-                                                </label>
-                                                <input
-                                                    {...register(`branchProducts.${index}.storageLocation.selfName`)}
-                                                    type="text"
-                                                    disabled
-                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                                />
-                                            </div>
-                                            <div className="w-full xl:w-1/2">
+                                            {viewMode !== "create" && (
+                                                <div className="w-full xl:w-1/2">
+                                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                                        Chi nhánh
+                                                    </label>
+                                                    <input
+                                                        {...register(`branchProducts.${index}.branch.branchName`)}
+                                                        type="text"
+                                                        disabled
+                                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className={`${viewMode !== "create" ? "w-1/2" : "w-full"}`}>
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Vị trí
                                                 </label>
                                                 <input
-                                                    {...register(`branchProducts.${index}.branchId`)}
+                                                    {...register(`branchProducts.${index}.storageLocation.selfName`)}
                                                     type="text"
                                                     placeholder="Nhập vị trí"
                                                     disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
-                                                {errors.branchProducts?.[index]?.branchId && (
+                                                {errors.branchProducts?.[index]?.storageLocation?.selfName && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
-                                                        {errors.branchProducts?.[index]?.branchId.message}
+                                                        {
+                                                            errors.branchProducts?.[index]?.storageLocation.selfName
+                                                                .message
+                                                        }
                                                     </span>
                                                 )}
                                             </div>

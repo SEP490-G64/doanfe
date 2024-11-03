@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
-import { FaPlus } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
-import { TfiSupport } from "react-icons/tfi";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Button,
     Modal,
@@ -15,6 +15,11 @@ import {
     Select,
     SelectItem,
 } from "@nextui-org/react";
+import ReactSelect from "react-select";
+import { debounce } from "lodash";
+import { jwtDecode } from "jwt-decode";
+import { FaPlus } from "react-icons/fa6";
+import { TfiSupport } from "react-icons/tfi";
 
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
@@ -28,18 +33,18 @@ import {
     submitInbound,
 } from "@/services/inboundServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { InboundBody, InboundBodyType } from "@/lib/schemaValidate/inboundSchema";
 import { getAllSupplier } from "@/services/supplierServices";
 import { Supplier } from "@/types/supplier";
 import Loader from "@/components/common/Loader";
 import { TokenDecoded } from "@/types/tokenDecoded";
-import { jwtDecode } from "jwt-decode";
 import ProductsTableAfterCheck from "@/components/Tables/ProductsTableAfterCheck";
+import { getProductBySupplierId } from "@/services/productServices";
+import { ProductInfor } from "@/types/inbound";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
     const [loading, setLoading] = useState(false);
+    const [isFetchingProduct, setIsFetchingProduct] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
@@ -48,20 +53,12 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const [branch, setBranch] = useState<{ id: number; branchName: string } | undefined>();
     const [inboundStatus, setInboundStatus] = useState<string | undefined>();
     const [suppliers, setSuppliers] = useState([]);
+    const [productOpts, setProductOpts] = useState<ProductInfor[]>([]);
     const { isOpen, onOpenChange } = useDisclosure();
     const [inboundType, setInboundType] = useState<"NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO">(
         "NHAP_TU_NHA_CUNG_CAP"
     );
-    const [product, setProduct] = useState<{
-        registrationCode?: string;
-        productName?: string;
-        discount?: number;
-        baseUnit?: {
-            id?: number;
-            unitName?: string;
-        };
-        requestQuantity?: number;
-    }>();
+    const [product, setProduct] = useState<ProductInfor>();
 
     const {
         register,
@@ -85,18 +82,23 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     });
 
     const products = watch("productInbounds");
+    const selectedSupId = watch("supplier.id");
 
-    const handleTypeProduct = (e) => {
-        setProduct({
-            registrationCode: e.target.value,
-            productName: e.target.value,
-            discount: 10,
-            baseUnit: {
-                id: 1,
-                unitName: "Viên",
-            },
-            requestQuantity: 1,
-        });
+    // Debounced fetch options
+    const debouncedFetchOptions = useCallback(
+        debounce((inputValue: string) => {
+            if (inputValue) {
+                getProductOpts(inputValue);
+            } else {
+                setProductOpts([]);
+            }
+        }, 500),
+        [selectedSupId]
+    );
+
+    const handleTypeProduct = (inputString: string) => {
+        debouncedFetchOptions(inputString);
+        return inputString;
     };
 
     const addItem = (e?: React.MouseEvent) => {
@@ -175,6 +177,22 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         }
     };
 
+    const getProductOpts = async (inputString: string) => {
+        if (isFetchingProduct) return;
+        setIsFetchingProduct(true);
+        try {
+            const response = await getProductBySupplierId(selectedSupId.toString(), inputString, sessionToken);
+
+            if (response.message === "200 OK") {
+                setProductOpts(response.data);
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsFetchingProduct(false);
+        }
+    };
+
     useEffect(() => {
         getSupplierOpts();
         if (viewMode === "create") {
@@ -184,7 +202,6 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         }
     }, []);
 
-    const selectedSupId = watch("supplier.id");
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
 
     useEffect(() => {
@@ -218,7 +235,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
-        console.log(inbound.productInbounds);
+        // console.log(inbound.productInbounds);
         setLoading(true);
         try {
             const response = await submitDraft(inbound, sessionToken);
@@ -397,11 +414,53 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     <label className="mb-3 block self-center whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                         Tên sản phẩm <span className="text-meta-1">*</span>
                                     </label>
-                                    <input
-                                        type="text"
-                                        placeholder="Nhập tên sảm phẩm"
-                                        onChange={(e) => handleTypeProduct(e)}
-                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    {/*<input*/}
+                                    {/*    type="text"*/}
+                                    {/*    placeholder="Nhập tên sảm phẩm"*/}
+                                    {/*    onChange={(e) => handleTypeProduct(e)}*/}
+                                    {/*    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"*/}
+                                    {/*/>*/}
+                                    {/*<select*/}
+                                    {/*    value={product ? product.id : ""}*/}
+                                    {/*    onChange={(e) => {*/}
+                                    {/*        const option = productOpts.find((opt) => opt.id === Number(e.target.value));*/}
+                                    {/*        setProduct(option);*/}
+                                    {/*    }}*/}
+                                    {/*>*/}
+                                    {/*    <option value="" disabled>*/}
+                                    {/*        Select an option*/}
+                                    {/*    </option>*/}
+                                    {/*    {productOpts.map((option) => (*/}
+                                    {/*        <option key={option.id} value={option.id}>*/}
+                                    {/*            {option.productName}*/}
+                                    {/*        </option>*/}
+                                    {/*    ))}*/}
+                                    {/*</select>*/}
+                                    <ReactSelect
+                                        defaultValue={product ? product.id : ""}
+                                        onChange={(optionValue) => {
+                                            if (!optionValue) return;
+                                            const option = productOpts.find((opt) => opt.id === optionValue.value);
+                                            setProduct(option);
+                                        }}
+                                        onInputChange={handleTypeProduct}
+                                        options={productOpts.map((option) => ({
+                                            value: option.id,
+                                            label: option.productName,
+                                        }))}
+                                        placeholder="Tìm kiếm sản phẩm..."
+                                        isSearchable
+                                        isClearable
+                                        isLoading={isFetchingProduct}
+                                        styles={{
+                                            control: (baseStyles, state) => ({
+                                                ...baseStyles,
+                                                width: "100%",
+                                                padding: "0.75rem 1.25rem",
+                                                cursor: "text",
+                                            }),
+                                        }}
+                                        className={"w-full"}
                                     />
                                     <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)} />
                                 </div>
@@ -452,7 +511,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 <button
                                     className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                     type="submit"
-                                    // onClick={() => console.log(errors)}
+                                    onClick={() => console.log(errors)}
                                 >
                                     {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                 </button>

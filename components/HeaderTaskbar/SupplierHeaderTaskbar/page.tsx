@@ -50,7 +50,7 @@ function HeaderTaskbar({ buttons }: { buttons?: string }) {
                     label="Thêm mới"
                     size="small"
                     icon={<FaPlus />}
-                    onClick={() => router.push("/manufacturers/create")}
+                    onClick={() => router.push("/suppliers/create")}
                 />
             </div>
         </div>
