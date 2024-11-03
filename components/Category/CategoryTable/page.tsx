@@ -73,7 +73,7 @@ const CategoriesTable = () => {
                     response.data.map((item: Category, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
-                    }))
+                    })),
                 );
                 setTotal(response.total);
             }

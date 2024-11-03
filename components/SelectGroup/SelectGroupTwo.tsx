@@ -14,7 +14,7 @@ const SelectGroupTwo = ({
     register: any;
     watch: any;
     disabled?: boolean;
-    data: { label: string; value: string }[];
+    data: { label: string; value: string | number }[];
 }) => {
     const selectedValue = watch;
 

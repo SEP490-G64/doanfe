@@ -117,13 +117,7 @@ const TypesTable = () => {
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((type: Type, columnKey: React.Key) => {
-        const cellValue =
-            type[
-                columnKey as
-                    | "id"
-                    | "typeName"
-                    | "typeDescription"
-            ];
+        const cellValue = type[columnKey as "id" | "typeName" | "typeDescription"];
 
         switch (columnKey) {
             case "no.":
@@ -131,11 +125,15 @@ const TypesTable = () => {
             case "typeName":
                 return <h5 className="font-normal text-black dark:text-white">{type.typeName}</h5>;
             case "typeDescription":
-                return <h5 className="font-normal text-black dark:text-white">{type.typeDescription ?
-                    (type.typeDescription.length > 100 ?
-                        type.typeDescription.substring(0, 100) + "..." : type.typeDescription)
-                    : "Không mô tả"}
-                </h5>;
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {type.typeDescription
+                            ? type.typeDescription.length > 50
+                                ? type.typeDescription.substring(0, 50) + "..."
+                                : type.typeDescription
+                            : "Không mô tả"}
+                    </h5>
+                );
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">

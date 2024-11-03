@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { UserBody, UserBodyType } from "@/lib/schemaValidate/userSchema";
 import { useRouter } from "next/navigation";
+import { FaStore, FaUserCheck } from "react-icons/fa";
+
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
@@ -16,8 +18,15 @@ import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import Unauthorized from "@/components/common/Unauthorized";
 import { DataSearch } from "@/types/product";
+import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 
-const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "create" | "reject" | "approve"; userId?: string }) => {
+const UserForm = ({
+    viewMode,
+    userId,
+}: {
+    viewMode: "details" | "update" | "create" | "reject" | "approve";
+    userId?: string;
+}) => {
     const { isOpen, onOpenChange } = useDisclosure();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -32,6 +41,11 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
 
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
+    const roleOptions = [
+        { value: 3, label: "ADMIN" },
+        { value: 2, label: "MANAGER" },
+        { value: 1, label: "STAFF" },
+    ];
 
     const {
         register,
@@ -49,7 +63,7 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
             lastName: undefined,
             status: undefined,
             branch: undefined,
-            roles: undefined
+            roles: undefined,
         },
     });
 
@@ -61,7 +75,7 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
         setLoading(true);
         try {
             const response = await getUserById(userId as string, sessionToken);
-            console.log(response)
+            console.log(response);
 
             if (response.message === "200 OK") {
                 const fields: ["userName", "email", "phone", "firstName", "lastName", "status", "roles", "branch"] = [
@@ -72,7 +86,7 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
                     "lastName",
                     "status",
                     "roles",
-                    "branch"
+                    "branch",
                 ];
 
                 fields.forEach((field) => setValue(field, response.data[field]));
@@ -94,7 +108,7 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
         } catch (error) {
             console.error("Lỗi khi lấy danh sách :", error);
         }
-    }
+    };
 
     useEffect(() => {
         getBranches();
@@ -144,8 +158,7 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
                     className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                         <div className="p-6.5">
-                            <div className="mb-4.5"
-                                 hidden={viewMode === "approve" || viewMode === "reject"}>
+                            <div className="mb-4.5" hidden={viewMode === "approve" || viewMode === "reject"}>
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                     Tên người dùng <span className="text-meta-1">*</span>
                                 </label>
@@ -220,8 +233,10 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
                                     )}
                                 </div>
 
-                                <div className="w-full xl:w-1/2"
-                                     hidden={viewMode === "approve" || viewMode === "reject"}>
+                                <div
+                                    className="w-full xl:w-1/2"
+                                    hidden={viewMode === "approve" || viewMode === "reject"}
+                                >
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                         Số điện thoại
                                     </label>
@@ -241,29 +256,31 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
                             </div>
 
                             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                <div className="w-full xl:w-1/2"
-                                     hidden={viewMode === "approve" || viewMode === "reject"}>
+                                <div
+                                    className="w-full xl:w-1/2"
+                                    hidden={viewMode === "approve" || viewMode === "reject"}
+                                >
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                         Vai Trò <span className="text-meta-1">*</span>
                                     </label>
-                                    <select
-                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                        {...register(`roles.${0}.id`)}
-                                        disabled={viewMode !== "create" && viewMode !== "update"}
-                                    >
-                                        <option value={0}>Chọn vai trò</option>
-                                        <option value={3}>ADMIN</option>
-                                        <option value={2}>MANAGER</option>
-                                        <option value={1}>STAFF</option>
-                                    </select>
+                                    <SelectGroupTwo
+                                        icon={<FaUserCheck />}
+                                        placeholder={"Chọn vai trò"}
+                                        register={{ ...register(`roles.${0}.id`) }}
+                                        watch={watch(`roles.${0}.id`)}
+                                        data={roleOptions}
+                                    />
+
                                     {errors.roles?.[0]?.id && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
                                             {errors.roles[0].id.message}
                                         </span>
                                     )}
                                 </div>
-                                <div className="w-full xl:w-1/2"
-                                     hidden={viewMode === "approve" || viewMode === "reject"}>
+                                <div
+                                    className="w-full xl:w-1/2"
+                                    hidden={viewMode === "approve" || viewMode === "reject"}
+                                >
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                         Trạng thái hoạt động <span className="text-meta-1">*</span>
                                     </label>
@@ -310,23 +327,23 @@ const UserForm = ({ viewMode, userId }: { viewMode: "details" | "update" | "crea
                                 </div>
                             </div>
 
-                            <div className="mb-4.5"
-                                 hidden={viewMode === "reject"}>
+                            <div className="mb-4.5" hidden={viewMode === "reject"}>
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                     Làm việc tại chi nhánh <span className="text-meta-1">*</span>
                                 </label>
-                                <select
-                                    {...register("branch.id")}
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                <SelectGroupTwo
+                                    icon={<FaStore />}
+                                    placeholder={"Chọn chi nhánh làm việc"}
+                                    register={{ ...register("branch.id") }}
+                                    watch={watch("branch.id")}
                                     disabled={viewMode !== "create" && viewMode !== "update" && viewMode !== "approve"}
-                                >
-                                    <option value={0}>Chọn chi nhánh làm việc</option>
-                                    {branches.map((branch, index) => (
-                                        <option key={index} value={branch.id}>
-                                            {branch.branchName} - {branch.location}
-                                        </option>
-                                    ))}
-                                </select>
+                                    data={
+                                        branches.map((branch) => ({
+                                            label: branch.branchName,
+                                            value: branch.id.toString(),
+                                        })) as { label: string; value: string }[]
+                                    }
+                                />
 
                                 {errors.branch?.id && (
                                     <span className="mt-1 block w-full text-sm text-rose-500">
