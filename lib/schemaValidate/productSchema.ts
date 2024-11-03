@@ -1,8 +1,10 @@
 import z from "zod";
 
+const Branch = z.object({ id: z.string().trim(), branchName: z.string().trim() }).strict();
+
 const BranchProduct = z
     .object({
-        branchId: z.string().trim().min(1, "Vui lòng nhập mã chi nhánh"),
+        branch: Branch,
         storageLocation: z.object({ selfName: z.string().trim() }),
         minQuantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
         maxQuantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
@@ -22,7 +24,14 @@ const SpecialCondition = z
     })
     .strict();
 
-const UnitConversion = z.object({ id: z.string().trim(), quantity: z.coerce.number() }).strict();
+const Unit = z.object({ id: z.string().trim(), unitName: z.string().trim() }).strict();
+
+const UnitConversion = z
+    .object({
+        smallerUnit: Unit,
+        factorConversion: z.coerce.number({ message: "Vui lòng nhập số" }),
+    })
+    .strict();
 
 export const ProductBody = z
     .object({
@@ -42,30 +51,10 @@ export const ProductBody = z
         type: z.object({ id: z.string().trim().min(1, "Vui lòng chọn loại sản phẩm") }),
         manufacturer: z.object({ id: z.string().trim().min(1, "Vui lòng chọn nhà sản xuất") }),
         unitConversions: z.array(UnitConversion).optional(),
-        baseUnit: z.string().trim().optional(),
+        baseUnit: Unit,
         branchProducts: z.array(BranchProduct).optional(),
         specialConditions: z.array(SpecialCondition).optional(),
     })
     .strict();
 
 export type ProductBodyType = z.TypeOf<typeof ProductBody>;
-
-export const BranchRes = z.object({
-    data: z.object({
-        message: z.string(),
-        status: z.string(),
-        data: z.object({
-            id: z.number(),
-            branchName: z.string().trim().min(1).max(100),
-            location: z.string().trim().max(256),
-            contactPerson: z.string().trim().max(100),
-            phoneNumber: z.string().trim().min(1).max(11),
-            capacity: z.number(),
-            activeStatus: z.boolean(),
-            branchType: z.enum(["MAIN", "SUB"]),
-        }),
-    }),
-    message: z.string(),
-});
-
-export type BranchResType = z.TypeOf<typeof BranchRes>;

@@ -3,8 +3,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { FaPlus } from "react-icons/fa6";
-import { FaFileImport } from "react-icons/fa6";
-
 import Button from "@/components/UI/Button";
 import { DataSearch } from "@/types/product";
 import SelectGroupOne from "@/components/SelectGroup/SelectGroupOne";
@@ -36,10 +34,11 @@ function HeaderTaskbar({
 
     return (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
-                <div className="relative">
+            <div className="flex-1 flex gap-2 items-center">
+                {/* Ô tìm kiếm */}
+                <div className="relative flex-1">
                     <button
-                        className="absolute left-0 top-1/2 -translate-y-1/2 rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
+                        className="absolute left-0 top-0 h-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700 flex items-center justify-center"
                         onClick={handleSearch}
                     >
                         <svg
@@ -70,30 +69,35 @@ function HeaderTaskbar({
                         value={dataSearch?.keyword}
                         placeholder="Nhập để tìm kiếm..."
                         onChange={(e) => setDataSearch({ ...dataSearch, keyword: e.target.value })}
-                        className="w-full bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125"
+                        className="w-full bg-white pl-12 pr-4 py-2 font-medium focus:outline-none"
+                    />
+                </div>
+
+                {/* Select kiểu chi nhánh */}
+                <div className="flex-shrink-0 max-w-xs">
+                    <SelectGroupOne
+                        placeHolder={"Chọn kiểu chi nhánh"}
+                        optsData={branchTypeOpts}
+                        dataSearch={dataSearch}
+                        setDataSearch={setDataSearch}
+                        dataKey="branchType"
+                    />
+                </div>
+
+                {/* Select trạng thái */}
+                <div className="flex-shrink-0 max-w-xs">
+                    <SelectGroupOne
+                        placeHolder={"Chọn trạng thái"}
+                        optsData={statusOpts}
+                        dataSearch={dataSearch}
+                        setDataSearch={setDataSearch}
+                        dataKey="activeStatus"
                     />
                 </div>
             </div>
 
-            <div className="mt-2 flex gap-2">
-                <SelectGroupOne
-                    placeHolder={"Chọn kiểu chi nhánh"}
-                    optsData={branchTypeOpts}
-                    dataSearch={dataSearch}
-                    setDataSearch={setDataSearch}
-                    dataKey="branchType"
-                />
-
-                <SelectGroupOne
-                    placeHolder={"Chọn trạng thái"}
-                    optsData={statusOpts}
-                    dataSearch={dataSearch}
-                    setDataSearch={setDataSearch}
-                    dataKey="activeStatus"
-                />
-            </div>
-
-            <div className="flex gap-2">
+            {/* Nút thêm mới */}
+            <div className="flex gap-2 mt-2 sm:mt-0">
                 <Button
                     label="Thêm mới"
                     size="small"

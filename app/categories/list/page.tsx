@@ -2,7 +2,7 @@
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import CategoryesTable from "@/components/Category/CategoryTable/page";
+import CategoriesTable from "@/components/Category/CategoryTable/page";
 
 export const metadata: Metadata = {
     title: "Danh sách nhóm sản phẩm",
@@ -14,7 +14,7 @@ const CategoryList = () => {
         <DefaultLayout>
             <Breadcrumb pageName="Danh sách nhóm sản phẩm" />
 
-            <CategoryesTable />
+            <CategoriesTable />
         </DefaultLayout>
     );
 };

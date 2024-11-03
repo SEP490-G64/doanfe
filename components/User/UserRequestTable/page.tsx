@@ -195,6 +195,7 @@ const UserRequestTable = () => {
         return (
             <div
                 className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                Tìm thấy <span className="font-bold text-blue-600">{total}</span> yêu cầu đăng kí
                 <div className="max-w-full overflow-x-auto">
                     <Table
                         bottomContent={

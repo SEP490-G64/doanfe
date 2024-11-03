@@ -34,7 +34,7 @@ import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import Unauthorized from "@/components/common/Unauthorized";
 
-const CategoryesTable = () => {
+const CategoriesTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
@@ -218,8 +218,8 @@ const CategoryesTable = () => {
                     setDataSearch={setDataSearch}
                     handleSearch={handleSearch}
                 />
-                <div
-                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                    Tìm thấy <span className="font-bold text-blue-600">{total}</span> nhóm sản phẩm
                     <div className="max-w-full overflow-x-auto">
                         <Table
                             bottomContent={
@@ -275,13 +275,7 @@ const CategoryesTable = () => {
                             <TableBody items={CategoryData ?? []} emptyContent={"Không có dữ liệu"}>
                                 {(item) => (
                                     <TableRow key={item?.id}>
-                                        {(columnKey) => (
-                                            <TableCell
-                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["categoryName", "taxRate"].includes(columnKey as string) ? "text-left" : ""}`}
-                                            >
-                                                {renderCell(item, columnKey)}
-                                            </TableCell>
-                                        )}
+                                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
                                     </TableRow>
                                 )}
                             </TableBody>
@@ -319,4 +313,4 @@ const CategoryesTable = () => {
     }
 };
 
-export default CategoryesTable;
+export default CategoriesTable;

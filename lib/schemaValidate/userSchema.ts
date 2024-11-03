@@ -12,10 +12,10 @@ export const UserBody = z
             .string()
             .trim()
             .min(1, "Tên người dùng không được để trống")
-            .max(100, "Tên người dùng không quá 256 kí tự"),
+            .max(100, "Tên người dùng không quá 100 kí tự"),
         email: z.string().email("Email không đúng định dạng"),
-        firstName: z.string().max(256, "Họ không quá 256 kí tự").optional(),
-        lastName: z.string().max(256, "Tên không quá 256 kí tự").optional(),
+        firstName: z.string().max(255, "Họ không quá 255 kí tự").optional(),
+        lastName: z.string().max(255, "Tên không quá 255 kí tự").optional(),
         phone: z
             .string()
             .trim()
@@ -42,9 +42,9 @@ export const UserRes = z.object({
             userName: z.string().min(1).max(100),
             email: z.string().email(),
             phone: z.string().max(11),
-            firstName: z.string().max(256),
-            lastName: z.string().max(256),
-            status: z.string().max(256),
+            firstName: z.string().max(255),
+            lastName: z.string().max(255),
+            status: z.string(),
             roles: z
                 .array(
                     z.object({

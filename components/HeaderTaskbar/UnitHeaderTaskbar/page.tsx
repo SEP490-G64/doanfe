@@ -27,7 +27,7 @@ function UnitHeaderTaskbar({
             <div className="flex-1">
                 <div className="relative">
                     <button
-                        className="absolute left-0 top-1/2 -translate-y-1/2 rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
+                        className="absolute left-0 top-0 flex h-full items-center justify-center rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
                         onClick={handleSearch}
                     >
                         <svg
@@ -58,7 +58,7 @@ function UnitHeaderTaskbar({
                         value={dataSearch?.keyword}
                         placeholder="Nhập để tìm kiếm..."
                         onChange={(e) => setDataSearch({ ...dataSearch, keyword: e.target.value })}
-                        className="w-full bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125"
+                        className="w-full bg-white py-2 pl-12 pr-4 font-medium focus:outline-none xl:w-125"
                     />
                 </div>
             </div>

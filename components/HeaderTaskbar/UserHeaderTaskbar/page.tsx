@@ -7,13 +7,13 @@ import { DataSearch } from "@/types/product";
 import { useRouter } from "next/navigation";
 import SelectGroupOne from "@/components/SelectGroup/SelectGroupOne";
 
-function UserHeaderTaskbar ({
-                           sessionToken,
-                           buttons,
-                           dataSearch,
-                           setDataSearch,
-                           handleSearch,
-                       }: {
+function UserHeaderTaskbar({
+                               sessionToken,
+                               buttons,
+                               dataSearch,
+                               setDataSearch,
+                               handleSearch,
+                           }: {
     sessionToken: string;
     buttons?: string;
     dataSearch?: DataSearch;
@@ -28,11 +28,13 @@ function UserHeaderTaskbar ({
     ];
 
     return (
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex-1">
-                <div className="relative">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Nhóm ô tìm kiếm và Select */}
+            <div className="flex flex-1 gap-2 items-center">
+                {/* Ô tìm kiếm */}
+                <div className="relative flex-1">
                     <button
-                        className="absolute left-0 top-1/2 -translate-y-1/2 rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
+                        className="absolute left-0 top-0 flex h-full items-center justify-center rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
                         onClick={handleSearch}
                     >
                         <svg
@@ -63,11 +65,12 @@ function UserHeaderTaskbar ({
                         value={dataSearch?.keyword}
                         placeholder="Nhập để tìm kiếm..."
                         onChange={(e) => setDataSearch({ ...dataSearch, keyword: e.target.value })}
-                        className="w-full bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125"
+                        className="w-full bg-white py-2 pl-12 pr-4 font-medium focus:outline-none"
                     />
                 </div>
 
-                <div className="mt-2 flex gap-2">
+                {/* Select trạng thái */}
+                <div className="max-w-xs flex-shrink-0">
                     <SelectGroupOne
                         placeHolder={"Chọn trạng thái"}
                         optsData={statusOpts}
@@ -77,10 +80,17 @@ function UserHeaderTaskbar ({
                     />
                 </div>
             </div>
-            <div className="flex gap-2">
+
+            {/* Các nút thao tác */}
+            <div className="flex gap-2 mt-2 sm:mt-0">
                 {buttons === "import" && (
-                    <Button label="Nhập file" size="small" icon={<FaFileImport />} type="success" onClick={() => {
-                    }} />
+                    <Button
+                        label="Nhập file"
+                        size="small"
+                        icon={<FaFileImport />}
+                        type="success"
+                        onClick={() => {}}
+                    />
                 )}
                 <Button
                     label="Thêm mới"
