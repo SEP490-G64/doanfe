@@ -126,8 +126,8 @@ const CategoriesTable = () => {
                 return <h5 className="font-normal text-black dark:text-white">{category.categoryName}</h5>;
             case "categoryDescription":
                 return <h5 className="font-normal text-black dark:text-white">{category.categoryDescription ?
-                    (category.categoryDescription.length > 100 ?
-                        category.categoryDescription.substring(0, 100) + "..." : category.categoryDescription)
+                    (category.categoryDescription.length > 50 ?
+                        category.categoryDescription.substring(0, 50) + "..." : category.categoryDescription)
                     : "Không mô tả"}
                 </h5>;
             case "taxRate":
