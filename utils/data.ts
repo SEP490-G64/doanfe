@@ -60,11 +60,12 @@ export const productColumns = [
     { name: "Hình ảnh", uid: "urlImage" },
     { name: "Tên sản phẩm", uid: "productName" },
     { name: "Mã đăng ký", uid: "registrationCode" },
+    { name: "Nhóm sản phẩm", uid: "categoryName" },
+    { name: "Loại sản phẩm", uid: "typeName" },
+    { name: "Nhà sản xuất", uid: "manufacturerName" },
     { name: "Giá nhập", uid: "inboundPrice" },
     { name: "Giá bán", uid: "sellPrice" },
     { name: "Trạng thái", uid: "status" },
-    { name: "Số lượng tối thiểu", uid: "minQuantity" },
-    { name: "Số lượng tối đa", uid: "maxQuantity" },
     { name: "Tác vụ", uid: "actions" },
 ];
 

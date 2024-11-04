@@ -123,15 +123,15 @@ const ProductsTable = () => {
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((product: Product, columnKey: React.Key) => {
-        const cellValue = product[columnKey as "id" | "minQuantity" | "maxQuantity" | "quantity"];
+        const cellValue = product[columnKey as "id"];
 
         switch (columnKey) {
             case "no.":
                 return <h5 className="text-black dark:text-white">{product.index}</h5>;
             case "urlImage":
-                return product.productBaseDTO.urlImage ? (
+                return product.urlImage ? (
                     <img
-                        src={product.productBaseDTO.urlImage}
+                        src={product.urlImage}
                         loading={"lazy"}
                         alt="product-image"
                         width={64}
@@ -141,35 +141,53 @@ const ProductsTable = () => {
                     <Image src={"/images/no-image.png"} loading={"lazy"} alt="product-image" width={64} height={64} />
                 );
             case "productName":
-                return <h5 className="font-normal text-black dark:text-white">{product.productBaseDTO.productName}</h5>;
+                return <h5 className="font-normal text-black dark:text-white">{product.productName}</h5>;
             case "registrationCode":
                 return (
                     <h5 className="font-normal text-black dark:text-white">
-                        {product.productBaseDTO.registrationCode}
+                        {product.registrationCode}
                     </h5>
                 );
+            case "categoryName":
+                return <h5 className="font-normal text-black dark:text-white">{product.categoryName}</h5>;
+            case "typeName":
+                return <h5 className="font-normal text-black dark:text-white">{product.typeName}</h5>;
+            case "manufacturerName":
+                return <h5 className="font-normal text-black dark:text-white">{product.manufacturerName}</h5>;
             case "inboundPrice":
                 return (
-                    <h5 className="font-normal text-black dark:text-white">
-                        {product.productBaseDTO.inboundPrice?.toLocaleString()}
+                    <h5
+                        className={`font-normal ${
+                            product.inboundPrice ? "text-black dark:text-white" : "text-red"
+                        }`}
+                    >
+                        {product.inboundPrice
+                            ? `${product.inboundPrice.toLocaleString()} VND`
+                            : "Chưa tính giá nhập"}
                     </h5>
                 );
             case "sellPrice":
                 return (
-                    <h5 className="font-normal text-black dark:text-white">
-                        {product.productBaseDTO.sellPrice?.toLocaleString()}
+                    <h5
+                        className={`font-normal ${
+                            product.sellPrice ? "text-black dark:text-white" : "text-red"
+                        }`}
+                    >
+                        {product.sellPrice
+                            ? `${product.sellPrice.toLocaleString()} VND`
+                            : "Chưa quyết định giá bán"}
                     </h5>
                 );
             case "status":
                 return (
                     <p
                         className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                            product.productBaseDTO.status === "CON_HANG"
+                            product.status === "CON_HANG"
                                 ? "bg-success/10 text-success"
                                 : "bg-danger/10 text-danger"
                         }`}
                     >
-                        {product.productBaseDTO.status === "CON_HANG" ? "Còn hàng" : "Hết hàng"}
+                        {product.status === "CON_HANG" ? "Còn hàng" : "Hết hàng"}
                     </p>
                 );
             case "actions":

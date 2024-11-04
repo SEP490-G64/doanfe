@@ -22,8 +22,8 @@ const BranchProduct = z
     })
     .strict()
     .refine((data) => (data.minQuantity ?? 0) <= (data.maxQuantity ?? 0), {
-        message: "Số lượng tối thiểu phải nhỏ hơn hoặc bằng số lượng tối đa",
-        path: ["minQuantity"], // Đặt thông báo lỗi tại vị trí `minQuantity`
+        message: "Định mức trên phải lớn hơn định mức dưới",
+        path: ["maxQuantity"], // Đặt thông báo lỗi tại vị trí maxQuantity
     });
 
 const SpecialCondition = z
@@ -54,7 +54,7 @@ export const ProductBody = z
         registrationCode: z.string().trim().min(1, "Vui lòng nhập mã đăng ký sản phẩm").max(255, "Giới hạn 255 kí tự"),
         urlImage: z.string().trim().optional(),
         activeIngredient: z.string().trim().min(1, "Vui lòng nhập hoạt chất").max(255, "Giới hạn 255 kí tự"),
-        excipient: z.string().trim().min(1, "Vui lòng nhập tá dược").max(255, "Giới hạn 255 kí tự"),
+        excipient: z.string().trim().max(255, "Giới hạn 255 kí tự"),
         formulation: z.string().trim().min(1, "Vui lòng nhập bào chế").max(255, "Giới hạn 255 kí tự"),
         status: z.preprocess(
             (val) => (val === null || val === undefined || val === "" ? undefined : val), // Turn null to undefined
