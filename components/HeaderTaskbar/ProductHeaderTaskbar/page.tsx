@@ -102,7 +102,7 @@ function HeaderTaskbar({
                 {/* Khối này chỉ để 4 ô search*/}
                 <div className="mt-2 flex gap-2">
                     <SelectGroupOne
-                        placeHolder={"Chọn nhóm thuốc"}
+                        placeHolder={"Chọn nhóm sản phẩm"}
                         optsData={cateOpts}
                         dataSearch={dataSearch}
                         setDataSearch={setDataSearch}
@@ -110,7 +110,7 @@ function HeaderTaskbar({
                     />
 
                     <SelectGroupOne
-                        placeHolder={"Chọn loại thuốc"}
+                        placeHolder={"Chọn loại sản phẩm"}
                         optsData={typeOpts}
                         dataSearch={dataSearch}
                         setDataSearch={setDataSearch}

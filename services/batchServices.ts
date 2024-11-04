@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BranchBodyType } from "@/lib/schemaValidate/branchSchema";
+import { BatchBodyType } from "@/lib/schemaValidate/batchSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 import { DataSearch } from "@/types/supplier";
@@ -9,7 +9,7 @@ interface Params extends DataSearch {
     size?: string;
 }
 
-export const getListBranch = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
+export const getListBatch = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
     const params: Params = {
         page,
         size,
@@ -22,7 +22,7 @@ export const getListBranch = async (page: string, size: string, dataSearch: Data
     }
 
     try {
-        const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/batch`, {
             headers: { Authorization: `Bearer ${token}` },
             params,
         });
@@ -34,9 +34,9 @@ export const getListBranch = async (page: string, size: string, dataSearch: Data
     }
 };
 
-export const getBranchById = async (id: string, token: string) => {
+export const getBatchById = async (id: string, token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/admin/branch/${id}`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/batch/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -46,68 +46,68 @@ export const getBranchById = async (id: string, token: string) => {
         else console.log(error);
     }
 };
-export const createBranch = async (branch: BranchBodyType, token: string) => {
+export const createBatch = async (branch: BatchBodyType, token: string) => {
     try {
-        const res = await httpRequest.post("dsd/api/v1/admin/branch", branch, {
+        const res = await httpRequest.post("dsd/api/v1/staff/batch", branch, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data) {
-            toast.success("Tạo mới chi nhánh thành công");
+            toast.success("Tạo mới lô sản phẩm thành công");
             return res;
         }
 
         if (res.errors) {
-            toast.error("Chi nhánh đã tồn tại");
+            toast.error("Lô sản phẩm đã tồn tại");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Tạo mới chi nhánh thất bại");
+            toast.error("Tạo mới lô sản phẩm thất bại");
             console.log(error);
         }
     }
 };
 
-export const updateBranch = async (branch: BranchBodyType, id: string, token: string) => {
+export const updateBatch = async (branch: BatchBodyType, id: string, token: string) => {
     try {
-        const res = await httpRequest.put(`dsd/api/v1/admin/branch/${id}`, branch, {
+        const res = await httpRequest.put(`dsd/api/v1/staff/batch/${id}`, branch, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data) {
-            toast.success("Cập nhật chi nhánh thành công");
+            toast.success("Cập nhật lô sản phẩm thành công");
             return res;
         }
 
         if (res.errors) {
-            toast.error("Chi nhánh đã tồn tại");
+            toast.error("Lô sản phẩm đã tồn tại");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Cập nhật chi nhánh thất bại");
+            toast.error("Cập nhật lô sản phẩm thất bại");
             console.log(error);
         }
     }
 };
 
-export const deleteBranch = async (id: string, token: string) => {
+export const deleteBatch = async (id: string, token: string) => {
     try {
-        const res = await httpRequest.deleteAsync(`dsd/api/v1/admin/branch/${id}`, {
+        const res = await httpRequest.deleteAsync(`dsd/api/v1/staff/batch/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data === "200 OK") {
-            toast.success("Xóa chi nhánh thành công");
+            toast.success("Xóa lô sản phẩm thành công");
             return res.data;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Xóa chi nhánh thất bại");
+            toast.error("Xóa lô sản phẩm thất bại");
             console.log(error);
         }
     }

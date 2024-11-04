@@ -60,11 +60,12 @@ export const productColumns = [
     { name: "Hình ảnh", uid: "urlImage" },
     { name: "Tên sản phẩm", uid: "productName" },
     { name: "Mã đăng ký", uid: "registrationCode" },
-    { name: "Nhóm sản phẩm", uid: "categoryName" },
-    { name: "Loại sản phẩm", uid: "typeName" },
+    { name: "Thuộc nhóm", uid: "categoryName" },
+    { name: "Phân loại", uid: "typeName" },
     { name: "Nhà sản xuất", uid: "manufacturerName" },
     { name: "Giá nhập", uid: "inboundPrice" },
     { name: "Giá bán", uid: "sellPrice" },
+    { name: "Số lượng", uid: "unitConversions" },
     { name: "Trạng thái", uid: "status" },
     { name: "Tác vụ", uid: "actions" },
 ];
@@ -82,5 +83,14 @@ export const inboundColumns = [
 export const allowProductColumns = [
     { name: "Mã đăng ký", uid: "registrationCode" },
     { name: "Tên sản phẩm", uid: "productName" },
+    { name: "Tác vụ", uid: "actions" },
+];
+
+export const batchColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Mã lô", uid: "batchCode" },
+    { name: "Ngày sản xuất", uid: "produceDate" },
+    { name: "Ngày hết hạn", uid: "expireDate" },
+    { name: "Giá nhập", uid: "inboundPrice" },
     { name: "Tác vụ", uid: "actions" },
 ];

@@ -31,6 +31,7 @@ import { Unit } from "@/types/unit";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import Unauthorized from "@/components/common/Unauthorized";
+import { number } from "zod";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -46,6 +47,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     const [typeOpts, setTypeOpts] = useState([]);
     const [manOpts, setManOpts] = useState([]);
     const [unitOpts, setUnitOpts] = useState([]);
+    const [totalQuantity, setTotalQuantity] = useState(number);
 
     const specialConditionOpts = [
         {
@@ -246,6 +248,13 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                 setValue(`branchProducts.0.minQuantity`, branchProduct ? branchProduct.minQuantity : undefined);
                 setValue(`branchProducts.0.maxQuantity`, branchProduct ? branchProduct.maxQuantity : undefined);
                 setValue(`branchProducts.0.quantity`, branchProduct ? branchProduct.quantity : 0);
+
+                // Tính tổng quantity trong branchProducts
+                const totalQuantity = response.data.branchProducts.reduce((total, product) => {
+                    return total + (product.quantity || 0); // Sử dụng giá trị 0 nếu quantity không tồn tại
+                }, 0);
+
+                setTotalQuantity(totalQuantity);
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -783,6 +792,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 Tồn kho
                                             </label>
                                             <input
+                                                value={totalQuantity}
                                                 type="text"
                                                 placeholder="0"
                                                 disabled

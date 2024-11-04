@@ -14,6 +14,22 @@ export type Product = {
     categoryName: string;
     typeName: string;
     manufacturerName: string;
+    quantity: number;
+    unitConversions?: Array<UnitConversion>;
+};
+
+export type UnitConversion = {
+    index: number;
+    id: string;
+    largerUnit?: {
+        id?: string;
+        unitName?: string;
+    };
+    smallerUnit: {
+        id?: string;
+        unitName?: string;
+    };
+    factorConversion: number;
 };
 
 export type DataSearch = {
