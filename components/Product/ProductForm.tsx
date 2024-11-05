@@ -310,7 +310,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     <h3 className="font-medium text-black dark:text-white">Thông tin sản phẩm</h3>
                                 </div>
                                 <div className="p-6.5">
-                                    <div className="mb-4.5" hidden={viewMode == "update"}>
+                                    <div className="mb-4.5" hidden={viewMode == "details"}>
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                             Tra cứu sản phẩm
                                         </label>
