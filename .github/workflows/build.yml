@@ -2,10 +2,12 @@ name: GitHub Actions CI
 run-name: CI for NextJS
 on:
     pull_request:
+      branches:
+        - "develop"
+        - "main"
     workflow_dispatch:
     push:
         branches:
-            - "develop"
             - "main"
 jobs:
     NextJS-Build:
@@ -36,10 +38,14 @@ jobs:
 
     Push-To-Image-Repo:
         if: github.ref_name == 'main'
+        needs: NextJS-Build
         runs-on: ubuntu-latest
         env:
             IMAGE_NAME: hrm-fe
         steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
             - name: Install doctl
               uses: digitalocean/action-doctl@v2
               with:
