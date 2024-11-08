@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 import { login } from "@/services/authServices";
 import { LoginBody, LoginBodyType } from "@/lib/schemaValidate/authSchema";
@@ -37,7 +37,6 @@ function LoginForm() {
         try {
             const response = await login(user);
 
-            console.log("response: ", response);
             if (response && response.message === "200 OK") {
                 toast.success("Đăng nhập thành công");
 
@@ -70,7 +69,7 @@ function LoginForm() {
 
     return (
         <>
-            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                 <div className="mb-4">
                     <label className="mb-2.5 block font-medium text-black dark:text-white">Email</label>
                     <div className="relative">
@@ -81,7 +80,7 @@ function LoginForm() {
                             {...register("email")}
                         />
                         {errors.email && (
-                            <span className="block w-full mt-1 text-sm text-rose-500">{errors.email.message}</span>
+                            <span className="mt-1 block w-full text-sm text-rose-500">{errors.email.message}</span>
                         )}
 
                         <span className="absolute right-4 top-4">
@@ -105,7 +104,12 @@ function LoginForm() {
                 </div>
 
                 <div className="mb-6">
-                    <label className="mb-2.5 block font-medium text-black dark:text-white">Mật khẩu</label>
+                    <label className="mb-2.5 flex justify-between font-medium text-black dark:text-white">
+                        Mật khẩu
+                        <Link href="/forgot-password" className="text-primary">
+                            Quên mật khẩu?
+                        </Link>
+                    </label>
                     <div className="relative">
                         <input
                             type="password"
@@ -114,7 +118,7 @@ function LoginForm() {
                             {...register("password")}
                         />
                         {errors.password && (
-                            <span className="block w-full mt-1 text-sm text-rose-500">{errors.password.message}</span>
+                            <span className="mt-1 block w-full text-sm text-rose-500">{errors.password.message}</span>
                         )}
 
                         <span className="absolute right-4 top-4">
@@ -145,20 +149,19 @@ function LoginForm() {
                     <input
                         type="submit"
                         value="Đăng nhập"
-                        className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                        className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-primary/90"
                     />
                 </div>
 
                 <div className="mt-6 text-center">
                     <p>
                         Chưa có tài khoản?{" "}
-                        <Link href="/auth/signup" className="text-primary">
+                        <Link href="/register" className="text-primary">
                             Đăng ký
                         </Link>
                     </p>
                 </div>
             </form>
-            <ToastContainer autoClose={3000} />
         </>
     );
 }

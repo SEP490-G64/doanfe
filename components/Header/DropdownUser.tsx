@@ -19,19 +19,19 @@ const DropdownUser = () => {
             <Link onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-4" href="#">
                 <span className="hidden text-right lg:block">
                     <span className="block text-sm font-medium text-black dark:text-white">{userInfo?.userName}</span>
-                    <span className="block text-xs">{userInfo?.roles[1].type}</span>
+                    <span className="block text-xs">{userInfo?.roles[0].type}</span>
                 </span>
 
                 {/* <span className="h-12 w-12 rounded-full">
           <Image
             width={112}
             height={112}
-            src={"/images/user/user-01.png"}
+            src={'/images/user/user-01.png'}
             style={{
-              width: "auto",
-              height: "auto",
+              width: 'auto',
+              height: 'auto',
             }}
-            alt="User"
+            alt='User'
           />
         </span> */}
 
