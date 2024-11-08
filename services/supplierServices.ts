@@ -2,6 +2,12 @@
 import { SupplierBodyType } from "@/lib/schemaValidate/supplierSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
+import { DataSearch } from "@/types/supplier";
+
+interface Params extends DataSearch {
+    page?: string;
+    size?: string;
+}
 
 export const getAllSupplier = async (token: string) => {
     try {
@@ -16,11 +22,22 @@ export const getAllSupplier = async (token: string) => {
     }
 };
 
-export const getListSupplier = async (page: number, size: number, token: string) => {
+export const getListSupplier = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    for (const searchKey in dataSearch) {
+        if (dataSearch[searchKey as keyof typeof dataSearch]) {
+            params[searchKey as keyof typeof params] = dataSearch[searchKey as keyof typeof dataSearch];
+        }
+    }
+
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/supplier`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { page, size },
+            params,
         });
 
         return res;
@@ -56,7 +73,7 @@ export const createSupplier = async (Supplier: SupplierBodyType, token: string) 
         if (res.errors) {
             if (res.errors.includes("error.supplier.exist")) {
                 toast.error("Tên và địa chỉ nhà cung cấp đã tồn tại");
-            } else if (res.errors.includes("error.supplier.taxcode_not_exist")) {
+            } else if (res.errors.includes("error.supplier.taxcode_exist")) {
                 toast.error("Mã số thuế của nhà cung cấp đã tồn tại");
             }
             return res;
@@ -84,7 +101,7 @@ export const updateSupplier = async (Supplier: SupplierBodyType, id: string, tok
         if (res.errors) {
             if (res.errors.includes("error.supplier.exist")) {
                 toast.error("Tên và địa chỉ nhà cung cấp đã tồn tại");
-            } else if (res.errors.includes("error.supplier.taxcode_not_exist")) {
+            } else if (res.errors.includes("error.supplier.taxcode_exist")) {
                 toast.error("Mã số thuế của nhà cung cấp đã tồn tại");
             }
             return res;

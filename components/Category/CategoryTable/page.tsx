@@ -28,8 +28,13 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { categoryColumns } from "@/utils/data";
 import { Category } from "@/types/category";
+import { DataSearch } from "@/types/product";
+import HeaderTaskbar from "@/components/HeaderTaskbar/CategoryHeaderTaskbar/page";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
-const CategoryesTable = () => {
+const CategoriesTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
@@ -39,6 +44,13 @@ const CategoryesTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        status: "",
+    });
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -51,14 +63,17 @@ const CategoryesTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListCategory(page - 1, rowsPerPage, sessionToken);
+            const response = await getListCategory((page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken);
 
             if (response.message === "200 OK") {
                 setCategoryData(
                     response.data.map((item: Category, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
-                    }))
+                    })),
                 );
                 setTotal(response.total);
             }
@@ -72,6 +87,10 @@ const CategoryesTable = () => {
     const handleOpenModal = (CategoryId: string) => {
         setSelectedId(CategoryId);
         onOpen();
+    };
+
+    const handleSearch = async () => {
+        await getListCategoryByPage();
     };
 
     const handleDelete = async (CategoryId: string) => {
@@ -106,15 +125,11 @@ const CategoryesTable = () => {
             case "categoryName":
                 return <h5 className="font-normal text-black dark:text-white">{category.categoryName}</h5>;
             case "categoryDescription":
-                return (
-                    <h5 className="font-normal text-black dark:text-white">
-                        {category.categoryDescription
-                            ? category.categoryDescription.length > 100
-                                ? category.categoryDescription.substring(0, 100) + "..."
-                                : category.categoryDescription
-                            : "Không mô tả"}
-                    </h5>
-                );
+                return <h5 className="font-normal text-black dark:text-white">{category.categoryDescription ?
+                    (category.categoryDescription.length > 50 ?
+                        category.categoryDescription.substring(0, 50) + "..." : category.categoryDescription)
+                    : "Không mô tả"}
+                </h5>;
             case "taxRate":
                 return <h5> {category.taxRate == 0 ? "Không mất thuế" : category.taxRate + "%"} </h5>;
             case "actions":
@@ -189,107 +204,113 @@ const CategoryesTable = () => {
     }, []);
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
-            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
-                <div className="max-w-full overflow-x-auto">
-                    <Table
-                        bottomContent={
-                            totalPages > 0 ? (
-                                <div className="flex w-full justify-between">
-                                    <Select
-                                        label="Số bản ghi / trang"
-                                        selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => {
-                                            setRowsPerPage(parseInt(e.target.value));
-                                            setPage(1);
-                                        }}
-                                        size="sm"
-                                        className="max-w-xs"
-                                    >
-                                        <SelectItem key={5} value={5}>
-                                            5
-                                        </SelectItem>
-                                        <SelectItem key={10} value={10}>
-                                            10
-                                        </SelectItem>
-                                        <SelectItem key={15} value={15}>
-                                            15
-                                        </SelectItem>
-                                        <SelectItem key={20} value={20}>
-                                            20
-                                        </SelectItem>
-                                    </Select>
-                                    <Pagination
-                                        isCompact
-                                        showControls
-                                        showShadow
-                                        color="primary"
-                                        page={page}
-                                        total={totalPages}
-                                        onChange={(page) => setPage(page)}
-                                    />
-                                </div>
-                            ) : null
-                        }
-                        aria-label="Category Table"
-                    >
-                        <TableHeader>
-                            <TableHeader columns={categoryColumns}>
-                                {(column) => (
-                                    <TableColumn
-                                        key={column.uid}
-                                        className="py-4 text-sm font-medium text-black"
-                                        align="center"
-                                    >
-                                        {column.name}
-                                    </TableColumn>
-                                )}
-                            </TableHeader>
-                        </TableHeader>
-                        <TableBody items={CategoryData ?? []}>
-                            {(item) => (
-                                <TableRow key={item?.id}>
-                                    {(columnKey) => (
-                                        <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["categoryName", "categoryDescription"].includes(columnKey as string) ? "text-left" : ""}`}
+            <>
+                <HeaderTaskbar
+                    sessionToken={sessionToken}
+                    dataSearch={dataSearch}
+                    setDataSearch={setDataSearch}
+                    handleSearch={handleSearch}
+                />
+                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                    Tìm thấy <span className="font-bold text-blue-600">{total}</span> nhóm sản phẩm
+                    <div className="max-w-full overflow-x-auto">
+                        <Table
+                            bottomContent={
+                                totalPages > 0 ? (
+                                    <div className="flex w-full justify-between">
+                                        <Select
+                                            label="Số bản ghi / trang"
+                                            selectedKeys={[rowsPerPage.toString()]}
+                                            onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                            size="sm"
+                                            className="max-w-xs"
                                         >
-                                            {renderCell(item, columnKey)}
-                                        </TableCell>
+                                            <SelectItem key={5} value={5}>
+                                                5
+                                            </SelectItem>
+                                            <SelectItem key={10} value={10}>
+                                                10
+                                            </SelectItem>
+                                            <SelectItem key={15} value={15}>
+                                                15
+                                            </SelectItem>
+                                            <SelectItem key={20} value={20}>
+                                                20
+                                            </SelectItem>
+                                        </Select>
+                                        <Pagination
+                                            isCompact
+                                            showControls
+                                            showShadow
+                                            color="primary"
+                                            page={page}
+                                            total={totalPages}
+                                            onChange={(page) => setPage(page)}
+                                        />
+                                    </div>
+                                ) : null
+                            }
+                            aria-label="Category Table"
+                        >
+                            <TableHeader>
+                                <TableHeader columns={categoryColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            className="py-4 text-sm font-medium text-black"
+                                            align="center"
+                                        >
+                                            {column.name}
+                                        </TableColumn>
                                     )}
-                                </TableRow>
+                                </TableHeader>
+                            </TableHeader>
+                            <TableBody items={CategoryData ?? []} emptyContent={"Không có dữ liệu"}>
+                                {(item) => (
+                                    <TableRow key={item?.id}>
+                                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                        <ModalContent>
+                            {(onClose) => (
+                                <>
+                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                    <ModalBody>
+                                        <p>Bạn có chắc muốn xóa nhóm sản phẩm này không?</p>
+                                    </ModalBody>
+                                    <ModalFooter>
+                                        <Button color="default" variant="light" onPress={onClose}>
+                                            Hủy
+                                        </Button>
+                                        <Button
+                                            color="danger"
+                                            onPress={() => {
+                                                handleDelete(selectedId);
+                                                onClose();
+                                            }}
+                                        >
+                                            Xóa
+                                        </Button>
+                                    </ModalFooter>
+                                </>
                             )}
-                        </TableBody>
-                    </Table>
+                        </ModalContent>
+                    </Modal>
                 </div>
-                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                <ModalBody>
-                                    <p>Bạn có chắc muốn xóa nhóm sản phẩm này không?</p>
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button color="default" variant="light" onPress={onClose}>
-                                        Hủy
-                                    </Button>
-                                    <Button
-                                        color="danger"
-                                        onPress={() => {
-                                            handleDelete(selectedId);
-                                            onClose();
-                                        }}
-                                    >
-                                        Xóa
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
-            </div>
+            </>
         );
+    }
 };
 
-export default CategoryesTable;
+export default CategoriesTable;

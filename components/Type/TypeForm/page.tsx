@@ -11,12 +11,18 @@ import { TypeBody, TypeBodyType } from "@/lib/schemaValidate/typeSchema";
 import Loader from "@/components/common/Loader";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createType, getTypeById, updateType } from "@/services/typeServices";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "create"; typeId?: string }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
     const { isOpen, onOpenChange } = useDisclosure();
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const {
         register,
@@ -82,7 +88,12 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <div className="flex flex-col gap-9">
                 {/* <!-- Contact Form --> */}
@@ -111,13 +122,13 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                     Mô tả
                                 </label>
-                                <input
-                                    type="text"
+                                <textarea
+                                    rows={5}
                                     placeholder="Nhập mô tả"
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                     {...register("typeDescription")}
                                     disabled={viewMode === "details"}
-                                />
+                                    className="w-full rounded-lg border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                ></textarea>
                                 {errors.typeDescription && (
                                     <span className="mt-1 block w-full text-sm text-rose-500">
                                         {errors.typeDescription.message}
@@ -197,6 +208,7 @@ const TypeForm = ({ viewMode, typeId }: { viewMode: "details" | "update" | "crea
                 </Modal>
             </div>
         );
+    }
 };
 
 export default TypeForm;

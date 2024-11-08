@@ -12,7 +12,6 @@ import { debounce } from "lodash";
 import ReactSelect from "react-select";
 import { FaPlus } from "react-icons/fa6";
 import { BsLifePreserver } from "react-icons/bs";
-import { jwtDecode } from "jwt-decode";
 
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 import UploadImage from "@/components/UI/UploadImage";
@@ -30,6 +29,9 @@ import { Manufacturer } from "@/types/manufacturer";
 import { getAllUnit } from "@/services/unitServices";
 import { Unit } from "@/types/unit";
 import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
+import { number } from "zod";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -45,6 +47,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     const [typeOpts, setTypeOpts] = useState([]);
     const [manOpts, setManOpts] = useState([]);
     const [unitOpts, setUnitOpts] = useState([]);
+    const [totalQuantity, setTotalQuantity] = useState(number);
+
     const specialConditionOpts = [
         {
             value: "NHIET_DO",
@@ -130,9 +134,9 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
             unitConversions: undefined,
             branchProducts: [
                 {
-                    branchId: undefined,
+                    id: undefined,
                     branch: { id: undefined, branchName: undefined },
-                    storageLocation: { selfName: undefined },
+                    storageLocation: { shelfName: undefined },
                     maxQuantity: undefined,
                     minQuantity: undefined,
                     quantity: undefined,
@@ -235,6 +239,22 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                 ];
 
                 fields.forEach((field) => setValue(field, response.data[field]));
+
+                const branchProduct = response.data.branchProducts.find(product => product.branch?.id === userInfo?.branch?.id);
+
+                // Cập nhật các trường của sản phẩm đầu tiên (index 0)
+                setValue(`branchProducts.0.branch.branchName`, branchProduct ? branchProduct.branch?.branchName : userInfo?.branch?.branchName);
+                setValue(`branchProducts.0.storageLocation.shelfName`, branchProduct ? branchProduct.storageLocation?.shelfName : undefined);
+                setValue(`branchProducts.0.minQuantity`, branchProduct ? branchProduct.minQuantity : undefined);
+                setValue(`branchProducts.0.maxQuantity`, branchProduct ? branchProduct.maxQuantity : undefined);
+                setValue(`branchProducts.0.quantity`, branchProduct ? branchProduct.quantity : 0);
+
+                // Tính tổng quantity trong branchProducts
+                const totalQuantity = response.data.branchProducts.reduce((total, product) => {
+                    return total + (product.quantity || 0); // Sử dụng giá trị 0 nếu quantity không tồn tại
+                }, 0);
+
+                setTotalQuantity(totalQuantity);
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -273,11 +293,16 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <>
-                <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                    <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
+                <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
+                    <div className="grid grid-cols-1 gap-9 sm:grid-cols-[2fr_1fr]">
                         <div className="flex flex-col gap-9">
                             {/* <!-- Input Fields --> */}
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -285,7 +310,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     <h3 className="font-medium text-black dark:text-white">Thông tin sản phẩm</h3>
                                 </div>
                                 <div className="p-6.5">
-                                    <div className="mb-4.5">
+                                    <div className="mb-4.5" hidden={viewMode == "details"}>
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                             Tra cứu sản phẩm
                                         </label>
@@ -366,7 +391,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     </div>
 
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                        <div className="w-full xl:w-1/2">
+                                        <div className="w-full">
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Bào chế <span className="text-meta-1">*</span>
                                             </label>
@@ -383,8 +408,10 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </span>
                                             )}
                                         </div>
+                                    </div>
 
-                                        <div className="w-full xl:w-1/2">
+                                    <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                        <div className="w-full">
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Hoạt chất <span className="text-meta-1">*</span>
                                             </label>
@@ -405,15 +432,15 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                     <div className="mb-4.5">
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Tá dược <span className="text-meta-1">*</span>
+                                            Tá dược
                                         </label>
-                                        <input
+                                        <textarea
+                                            rows={5}
                                             {...register("excipient")}
-                                            type="text"
                                             placeholder="Nhập tá dược"
                                             disabled={viewMode === "details"}
-                                            className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                        />
+                                            className="w-full rounded-lg border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                        ></textarea>
                                         {errors.excipient && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
                                                 {errors.excipient.message}
@@ -423,7 +450,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                     <div>
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            Quy cách đóng gói <span className="text-meta-1">*</span>
+                                            Đơn vị cơ sở <span className="text-meta-1">*</span>
                                         </label>
                                         <SelectGroupTwo
                                             register={{ ...register("baseUnit.id") }}
@@ -503,7 +530,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <div className="p-6.5">
                                     {specialConditionsForm.fields.map((field, index) => (
                                         <div key={field.id} className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                            <div className="w-6/12">
+                                            <div className="w-3/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Kiểu điều kiện
                                                 </label>
@@ -524,7 +551,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 )}
                                             </div>
 
-                                            <div className="w-5/12">
+                                            <div className="w-8/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Hướng dẫn xử lý (Nếu cần)
                                                 </label>
@@ -564,6 +591,11 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Đơn vị quy đổi</h3>
+                                    {!watch("baseUnit.id") && (
+                                        <span className="mt-2 text-sm text-rose-500">
+                                            Vui lòng chọn đơn vị cơ sở trước khi thêm chuyển đổi đơn vị
+                                        </span>
+                                    )}
                                     {viewMode !== "details" && (
                                         <IconButton
                                             icon={<FaPlus />}
@@ -571,9 +603,16 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             size="small"
                                             onClick={(e) => {
                                                 e?.preventDefault();
+
+                                                if (!watch("baseUnit.id")) {
+                                                    return;
+                                                }
+
                                                 unitConversionForm.append({
                                                     id: "",
-                                                    quantity: 0,
+                                                    largerUnit: { id: "" },
+                                                    smallerUnit: { id: "" },
+                                                    factorConversion: 0,
                                                 });
                                             }}
                                         />
@@ -582,46 +621,46 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <div className="p-6.5">
                                     {unitConversionForm.fields.map((field, index) => (
                                         <div key={field.id} className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                            <div className="w-6/12">
+                                            <div className="w-5/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Đơn vị <span className="text-meta-1">*</span>
                                                 </label>
                                                 <SelectGroupTwo
                                                     register={{
-                                                        ...register(`unitConversions.${index}.id`),
+                                                        ...register(`unitConversions.${index}.smallerUnit.id`),
                                                     }}
-                                                    watch={watch(`unitConversions.${index}.id`)}
+                                                    watch={watch(`unitConversions.${index}.smallerUnit.id`)}
                                                     icon={<BsLifePreserver />}
                                                     placeholder="Chọn đơn vị"
                                                     disabled={viewMode === "details"}
                                                     data={unitOpts}
                                                 />
-                                                {errors.unitConversions?.[index]?.id && (
+                                                {errors.unitConversions?.[index]?.smallerUnit?.id && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
-                                                        {errors.unitConversions?.[index]?.id.message}
+                                                        {errors.unitConversions?.[index]?.smallerUnit?.id.message}
                                                     </span>
                                                 )}
-                                                {watch("baseUnit.id") === watch(`unitConversions.${index}.id`) && (
+                                                {watch("baseUnit.id") === watch(`unitConversions.${index}.smallerUnit.id`) && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
                                                         Đơn vị quy đổi không thể trùng với đơn vị cơ sở
                                                     </span>
                                                 )}
                                             </div>
 
-                                            <div className="w-5/12">
+                                            <div className="w-6/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                    Số lượng <span className="text-meta-1">*</span>
+                                                    Số lượng (1 đơn vị cơ sở = ? đơn vị) <span className="text-meta-1">*</span>
                                                 </label>
                                                 <input
-                                                    {...register(`unitConversions.${index}.quantity`)}
+                                                    {...register(`unitConversions.${index}.factorConversion`)}
                                                     type="text"
                                                     placeholder="Nhập số lượng"
                                                     disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
-                                                {errors.unitConversions?.[index]?.quantity && (
+                                                {errors.unitConversions?.[index]?.factorConversion && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
-                                                        {errors.unitConversions?.[index]?.quantity.message}
+                                                        {errors.unitConversions?.[index]?.factorConversion.message}
                                                     </span>
                                                 )}
                                             </div>
@@ -728,7 +767,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 </div>
                                 <div className="p-6.5">
                                     <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                        <div className="w-full xl:w-1/2">
+                                        <div className="w-full">
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Tình trạng
                                             </label>
@@ -746,13 +785,6 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </span>
                                             )}
                                         </div>
-
-                                        <div className="w-full xl:w-1/2">
-                                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Có thể bán
-                                            </label>
-                                            {/* <SwitcherThree /> */}
-                                        </div>
                                     </div>
                                     <div className="flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full xl:w-1/2">
@@ -761,7 +793,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             </label>
                                             <input
                                                 type="text"
-                                                placeholder="200"
+                                                value={totalQuantity ? 0 : totalQuantity}
                                                 disabled
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
@@ -771,12 +803,17 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                 Tồn chi nhánh
                                             </label>
-                                            <input
-                                                type="text"
-                                                placeholder="25"
-                                                disabled
-                                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
+                                            {branchProductForm.fields.map((field, index) => (
+                                                <input
+                                                    key={field.id}
+                                                    hidden={index !== 0}
+                                                    {...register(`branchProducts.${index}.quantity`)}
+                                                    type="text"
+                                                    placeholder="0"
+                                                    disabled
+                                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                />
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
@@ -791,10 +828,10 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 </div>
 
                                 {branchProductForm.fields.map((field, index) => (
-                                    <div className="p-6.5" key={field.id}>
+                                    <div className="p-6.5" key={field.id} hidden={index !== 0}>
                                         <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                             {viewMode !== "create" && (
-                                                <div className="w-full xl:w-1/2">
+                                                <div className="w-full">
                                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                         Chi nhánh
                                                     </label>
@@ -806,21 +843,24 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     />
                                                 </div>
                                             )}
-                                            <div className={`${viewMode !== "create" ? "w-1/2" : "w-full"}`}>
+                                        </div>
+
+                                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                            <div className="w-full">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                                     Vị trí
                                                 </label>
                                                 <input
-                                                    {...register(`branchProducts.${index}.storageLocation.selfName`)}
+                                                    {...register(`branchProducts.${index}.storageLocation.shelfName`)}
                                                     type="text"
                                                     placeholder="Nhập vị trí"
                                                     disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
-                                                {errors.branchProducts?.[index]?.storageLocation?.selfName && (
+                                                {errors.branchProducts?.[index]?.storageLocation?.shelfName && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
                                                         {
-                                                            errors.branchProducts?.[index]?.storageLocation.selfName
+                                                            errors.branchProducts?.[index]?.storageLocation.shelfName
                                                                 .message
                                                         }
                                                     </span>
@@ -831,12 +871,12 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                         <div className="flex flex-col gap-6 xl:flex-row">
                                             <div className="w-full xl:w-1/2">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                    Số lượng tối thiểu
+                                                    Định mức dưới
                                                 </label>
                                                 <input
                                                     {...register(`branchProducts.${index}.minQuantity`)}
-                                                    type="text"
-                                                    placeholder="Nhập số lượng tối thiểu"
+                                                    type="number"
+                                                    placeholder="Nhập định mức dưới"
                                                     disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
@@ -848,12 +888,12 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             </div>
                                             <div className="w-full xl:w-1/2">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                    Số lượng tối đa
+                                                    Định mức trên
                                                 </label>
                                                 <input
                                                     {...register(`branchProducts.${index}.maxQuantity`)}
-                                                    type="text"
-                                                    placeholder="Nhập số lượng tối đa"
+                                                    type="number"
+                                                    placeholder="Nhập định mức trên"
                                                     disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
@@ -942,6 +982,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                 </form>
             </>
         );
+    }
 };
 
 export default ProductForm;

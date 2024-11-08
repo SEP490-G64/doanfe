@@ -11,12 +11,18 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { createSupplier, getSupplierById, updateSupplier } from "@/services/supplierServices";
 import Loader from "@/components/common/Loader";
 import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update" | "create"; supplierId?: string }) => {
     const { isOpen, onOpenChange } = useDisclosure();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const {
         register,
@@ -96,11 +102,17 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <div className="flex flex-col gap-9">
                 {/* <!-- Contact Form --> */}
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                <div
+                    className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                         <div className="p-6.5">
                             <div className="mb-4.5">
@@ -299,6 +311,7 @@ const SupplierForm = ({ viewMode, supplierId }: { viewMode: "details" | "update"
                 </Modal>
             </div>
         );
+    }
 };
 
 export default SupplierForm;

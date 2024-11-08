@@ -23,11 +23,16 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { activateUser, deleteUser, getListUser } from "@/services/userServices";
+import {activateUser, deleteUser, getListUser} from "@/services/userServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { userColumns } from "@/utils/data";
 import { User } from "@/types/user";
+import UserHeaderTaskbar from "@/components/HeaderTaskbar/UserHeaderTaskbar/page";
+import { DataSearch } from "@/types/product";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const UsersTable = () => {
     const router = useRouter();
@@ -40,6 +45,13 @@ const UsersTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        status: "",
+    });
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -52,7 +64,12 @@ const UsersTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListUser(page - 1, rowsPerPage, sessionToken);
+            const response = await getListUser(
+                (page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setUserData(
@@ -74,6 +91,10 @@ const UsersTable = () => {
         setSelectedId(UserId);
         setAction(Action);
         onOpen();
+    };
+
+    const handleSearch = async () => {
+        await getListUserByPage();
     };
 
     const handleDelete = async (UserId: string) => {
@@ -289,144 +310,158 @@ const UsersTable = () => {
     }, []);
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
-            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
-                <div className="max-w-full overflow-x-auto">
-                    <Table
-                        bottomContent={
-                            totalPages > 0 ? (
-                                <div className="flex w-full justify-between">
-                                    <Select
-                                        label="Số bản ghi / trang"
-                                        selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => {
-                                            setRowsPerPage(parseInt(e.target.value));
-                                            setPage(1);
-                                        }}
-                                        size="sm"
-                                        className="max-w-xs"
-                                    >
-                                        <SelectItem key={5} value={5}>
-                                            5
-                                        </SelectItem>
-                                        <SelectItem key={10} value={10}>
-                                            10
-                                        </SelectItem>
-                                        <SelectItem key={15} value={15}>
-                                            15
-                                        </SelectItem>
-                                        <SelectItem key={20} value={20}>
-                                            20
-                                        </SelectItem>
-                                    </Select>
-                                    <Pagination
-                                        isCompact
-                                        showControls
-                                        showShadow
-                                        color="primary"
-                                        page={page}
-                                        total={totalPages}
-                                        onChange={(page) => setPage(page)}
-                                    />
-                                </div>
-                            ) : null
-                        }
-                        aria-label="User Table"
-                    >
-                        <TableHeader>
-                            <TableHeader columns={userColumns}>
-                                {(column) => (
-                                    <TableColumn
-                                        key={column.uid}
-                                        className="py-4 text-sm font-medium text-black"
-                                        align="center"
-                                    >
-                                        {column.name}
-                                    </TableColumn>
-                                )}
-                            </TableHeader>
-                        </TableHeader>
-                        <TableBody items={UserData ?? []}>
-                            {(item) => (
-                                <TableRow key={item?.id}>
-                                    {(columnKey) => (
-                                        <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["userName", "email"].includes(columnKey as string) ? "text-left" : ""}`}
+            <>
+                <UserHeaderTaskbar
+                    sessionToken={sessionToken}
+                    buttons={"import"}
+                    dataSearch={dataSearch}
+                    setDataSearch={setDataSearch}
+                    handleSearch={handleSearch}
+                />
+                <div
+                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                    Tìm thấy <span className="font-bold text-blue-600">{total}</span> người dùng
+                    <div className="max-w-full overflow-x-auto">
+                        <Table
+                            bottomContent={
+                                totalPages > 0 ? (
+                                    <div className="flex w-full justify-between">
+                                        <Select
+                                            label="Số bản ghi / trang"
+                                            selectedKeys={[rowsPerPage.toString()]}
+                                            onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                            size="sm"
+                                            className="max-w-xs"
                                         >
-                                            {renderCell(item, columnKey)}
-                                        </TableCell>
+                                            <SelectItem key={5} value={5}>
+                                                5
+                                            </SelectItem>
+                                            <SelectItem key={10} value={10}>
+                                                10
+                                            </SelectItem>
+                                            <SelectItem key={15} value={15}>
+                                                15
+                                            </SelectItem>
+                                            <SelectItem key={20} value={20}>
+                                                20
+                                            </SelectItem>
+                                        </Select>
+                                        <Pagination
+                                            isCompact
+                                            showControls
+                                            showShadow
+                                            color="primary"
+                                            page={page}
+                                            total={totalPages}
+                                            onChange={(page) => setPage(page)}
+                                        />
+                                    </div>
+                                ) : null
+                            }
+                            aria-label="User Table"
+                        >
+                            <TableHeader>
+                                <TableHeader columns={userColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            className="py-4 text-sm font-medium text-black"
+                                            align="center"
+                                        >
+                                            {column.name}
+                                        </TableColumn>
                                     )}
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                <ModalBody>
-                                    {(() => {
-                                        switch (action) {
-                                            case "DELETE":
-                                                return <p>Bạn có chắc muốn xóa người dùng này không?</p>;
-                                            case "ACTIVATE":
-                                                return <p>Bạn có chắc muốn kích hoạt người dùng này không?</p>;
-                                            case "DEACTIVATE":
-                                                return <p>Bạn có chắc muốn vô hiệu hóa người dùng này không?</p>;
-                                        }
-                                    })()}
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button color="default" variant="light" onPress={onClose}>
-                                        Hủy
-                                    </Button>
-                                    <Button
-                                        color={(() => {
-                                            switch (action) {
-                                                case "DELETE":
-                                                    return "danger";
-                                                case "ACTIVATE":
-                                                    return "success";
-                                                case "DEACTIVATE":
-                                                    return "warning";
-                                            }
-                                        })()}
-                                        onPress={() => {
-                                            {
-                                                (() => {
-                                                    switch (action) {
-                                                        case "DELETE":
-                                                            handleDelete(selectedId);
-                                                        case "ACTIVATE":
-                                                        case "DEACTIVATE":
-                                                            handleActivate(selectedId);
-                                                    }
-                                                })();
-                                            }
-                                            onClose();
-                                        }}
-                                    >
+                                </TableHeader>
+                            </TableHeader>
+                            <TableBody items={UserData ?? []} emptyContent={"Không có dữ liệu"}>
+                                {(item) => (
+                                    <TableRow key={item?.id}>
+                                        {(columnKey) => (
+                                            <TableCell
+                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["userName", "email"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            >
+                                                {renderCell(item, columnKey)}
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                        <ModalContent>
+                            {(onClose) => (
+                                <>
+                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                    <ModalBody>
                                         {(() => {
                                             switch (action) {
                                                 case "DELETE":
-                                                    return "Xóa";
+                                                    return <p>Bạn có chắc muốn xóa người dùng này không?</p>;
                                                 case "ACTIVATE":
-                                                    return "Kích hoạt";
+                                                    return <p>Bạn có chắc muốn kích hoạt người dùng này không?</p>;
                                                 case "DEACTIVATE":
-                                                    return "Vô hiệu hóa";
+                                                    return <p>Bạn có chắc muốn vô hiệu hóa người dùng này không?</p>;
                                             }
                                         })()}
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
-            </div>
+                                    </ModalBody>
+                                    <ModalFooter>
+                                        <Button color="default" variant="light" onPress={onClose}>
+                                            Hủy
+                                        </Button>
+                                        <Button
+                                            color={(() => {
+                                                switch (action) {
+                                                    case "DELETE":
+                                                        return "danger";
+                                                    case "ACTIVATE":
+                                                        return "success";
+                                                    case "DEACTIVATE":
+                                                        return "warning";
+                                                }
+                                            })()}
+                                            onPress={() => {
+                                                {
+                                                    (() => {
+                                                        switch (action) {
+                                                            case "DELETE":
+                                                                handleDelete(selectedId);
+                                                            case "ACTIVATE":
+                                                            case "DEACTIVATE":
+                                                                handleActivate(selectedId);
+                                                        }
+                                                    })()
+                                                }
+                                                onClose();
+                                            }}
+                                        >
+                                            {(() => {
+                                                switch (action) {
+                                                    case "DELETE":
+                                                        return "Xóa";
+                                                    case "ACTIVATE":
+                                                        return "Kích hoạt";
+                                                    case "DEACTIVATE":
+                                                        return "Vô hiệu hóa";
+                                                }
+                                            })()}
+                                        </Button>
+                                    </ModalFooter>
+                                </>
+                            )}
+                        </ModalContent>
+                    </Modal>
+                </div>
+            </>
         );
+    }
 };
 
 export default UsersTable;

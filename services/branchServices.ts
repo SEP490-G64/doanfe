@@ -2,6 +2,12 @@
 import { BranchBodyType } from "@/lib/schemaValidate/branchSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
+import { DataSearch } from "@/types/supplier";
+
+interface Params extends DataSearch {
+    page?: string;
+    size?: string;
+}
 
 export const getAllBranch = async (token: string) => {
     try {
@@ -17,11 +23,22 @@ export const getAllBranch = async (token: string) => {
     }
 };
 
-export const getListBranch = async (page: number, size: number, token: string) => {
+export const getListBranch = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    for (const searchKey in dataSearch) {
+        if (dataSearch[searchKey as keyof typeof dataSearch]) {
+            params[searchKey as keyof typeof params] = dataSearch[searchKey as keyof typeof dataSearch];
+        }
+    }
+
     try {
         const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { page, size },
+            params,
         });
 
         return res;
@@ -43,6 +60,7 @@ export const getBranchById = async (id: string, token: string) => {
         else console.log(error);
     }
 };
+
 export const createBranch = async (branch: BranchBodyType, token: string) => {
     try {
         const res = await httpRequest.post("dsd/api/v1/admin/branch", branch, {
@@ -75,6 +93,11 @@ export const updateBranch = async (branch: BranchBodyType, id: string, token: st
 
         if (res.data) {
             toast.success("Cập nhật chi nhánh thành công");
+            return res;
+        }
+
+        if (res.errors) {
+            toast.error("Chi nhánh đã tồn tại");
             return res;
         }
     } catch (error: any) {

@@ -11,6 +11,9 @@ import {toast} from "react-toastify";
 import {ProfileBody, ProfileBodyType} from "@/lib/schemaValidate/profileSchema";
 import {getProfile, updateProfile} from "@/services/profileServices";
 import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure} from "@nextui-org/react";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 function UpdateProfileForm() {
     const [loading, setLoading] = useState(false);
@@ -18,6 +21,9 @@ function UpdateProfileForm() {
     const { sessionToken } = useAppContext();
     const { isOpen, onOpenChange } = useDisclosure();
     const [user, setUser] = useState<ProfileBodyType | undefined>(undefined);
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const {
         register,
@@ -93,7 +99,12 @@ function UpdateProfileForm() {
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <>
                 <div className="text-center">
@@ -103,7 +114,7 @@ function UpdateProfileForm() {
                     <p className="font-medium">{user?.roles && user.roles.length > 0 ? user.roles[0].type : "No role assigned"}</p>
                 </div>
                 <div className="flex flex-col gap-9">
-                <div
+                    <div
                         className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                             <div className="p-6.5">
@@ -228,7 +239,7 @@ function UpdateProfileForm() {
                                 </div>
                             </div>
                         </form>
-                </div>
+                    </div>
                     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                         <ModalContent>
                             {(onClose) => (
@@ -248,7 +259,7 @@ function UpdateProfileForm() {
                                                 onClose();
                                             }}
                                         >
-                                        Chắc chắn
+                                            Chắc chắn
                                         </Button>
                                     </ModalFooter>
                                 </>
@@ -258,6 +269,7 @@ function UpdateProfileForm() {
                 </div>
             </>
         );
+    }
 }
 
 export default UpdateProfileForm;

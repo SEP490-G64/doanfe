@@ -29,6 +29,9 @@ import { Inbound } from "@/types/inbound";
 import { getListInbound } from "@/services/inboundServices";
 import { inboundColumns } from "@/utils/data";
 import { formatDateTime } from "@/utils/methods";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const InboundTable = () => {
     const router = useRouter();
@@ -40,6 +43,9 @@ const InboundTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -213,9 +219,16 @@ const InboundTable = () => {
     }, []);
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
-            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+            <div
+                className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                Tìm thấy <span className="font-bold text-blue-600">{total}</span> đơn nhập hàng
                 <div className="max-w-full overflow-x-auto">
                     <Table
                         bottomContent={
@@ -314,6 +327,7 @@ const InboundTable = () => {
                 {/*</Modal>*/}
             </div>
         );
+    }
 };
 
 export default InboundTable;

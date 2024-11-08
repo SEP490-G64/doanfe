@@ -3,3 +3,7 @@ export type Unit = {
     id: string;
     unitName: string;
 };
+
+export type DataSearch = {
+    keyword?: string;
+};

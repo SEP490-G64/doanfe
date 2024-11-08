@@ -31,6 +31,9 @@ import { User } from "@/types/user";
 import { CiNoWaitingSign } from "react-icons/ci";
 import SwitcherStatus from "@/components/Switchers/SwitcherStatus";
 import UserForm from "@/components/User/UserForm/page";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const UserRequestTable = () => {
     const router = useRouter();
@@ -43,6 +46,9 @@ const UserRequestTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -180,9 +186,16 @@ const UserRequestTable = () => {
     }, []);
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
-            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+            <div
+                className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                Tìm thấy <span className="font-bold text-blue-600">{total}</span> yêu cầu đăng kí
                 <div className="max-w-full overflow-x-auto">
                     <Table
                         bottomContent={
@@ -318,6 +331,7 @@ const UserRequestTable = () => {
                 </Modal>
             </div>
         );
+    }
 };
 
 export default UserRequestTable;

@@ -85,6 +85,7 @@ export const getAllowedProducts = async (keyword: string, token: string) => {
 
 export const createProduct = async (product: ProductBodyType, token: string) => {
     try {
+        console.log(product);
         const res = await httpRequest.post("dsd/api/v1/staff/product", product, {
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -109,12 +110,17 @@ export const createProduct = async (product: ProductBodyType, token: string) => 
 
 export const updateProduct = async (product: ProductBodyType, id: string, token: string) => {
     try {
-        const res = await httpRequest.put(`dsd/api/v1/product/${id}`, product, {
+        const res = await httpRequest.put(`dsd/api/v1/staff/product/${id}`, product, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data) {
             toast.success("Cập nhật sản phẩm thành công");
+            return res;
+        }
+
+        if (res.errors) {
+            toast.error("Sản phẩm đã tồn tại");
             return res;
         }
     } catch (error: any) {

@@ -2,7 +2,7 @@ import z from "zod";
 import { BranchBody } from "@/lib/schemaValidate/branchSchema";
 
 // Biểu thức chính quy cho số điện thoại Việt Nam
-const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7}|(0[2-9]\d{7}))$/;
+const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7,8}|(0[2-9]\d{7,8}))$/;
 
 export const ProfileBody = z
     .object({
@@ -10,10 +10,10 @@ export const ProfileBody = z
             .string()
             .trim()
             .min(1, "Tên người dùng không được để trống")
-            .max(100, "Tên người dùng không quá 256 kí tự"),
+            .max(100, "Tên người dùng không quá 100 kí tự"),
         email: z.string().email("Email không đúng định dạng"),
-        firstName: z.string().max(256, "Họ không quá 256 kí tự").optional(),
-        lastName: z.string().max(256, "Tên không quá 256 kí tự").optional(),
+        firstName: z.string().max(255, "Họ không quá 255 kí tự").optional(),
+        lastName: z.string().max(255, "Tên không quá 255 kí tự").optional(),
         phone: z
             .string()
             .trim()
@@ -46,9 +46,9 @@ export const ProfileRes = z.object({
             userName: z.string().min(1).max(100),
             email: z.string().email(),
             phone: z.string().max(11),
-            firstName: z.string().max(256),
-            lastName: z.string().max(256),
-            status: z.string().max(256),
+            firstName: z.string().max(255),
+            lastName: z.string().max(255),
+            status: z.string(),
         }),
     }),
     message: z.string(),

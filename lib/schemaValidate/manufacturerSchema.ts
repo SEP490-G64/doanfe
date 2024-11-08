@@ -1,14 +1,15 @@
 import z from "zod";
 
 // Biểu thức chính quy cho số điện thoại Việt Nam
-const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7}|(0[2-9]\d{7, 8}))$/;
+const phoneNumberRegex =
+    /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7,8}|(0[2-9]\d{7, 8}))$/;
 // Biểu thức chính quy cho mã số thuế tại Việt Nam
 const taxCodeRegex = /^(0[0-9]{9}|[1-9][0-9]{9}|[1-9][0-9]{13})$/;
 
 export const ManufacturerBody = z
     .object({
         manufacturerName: z.string().trim().min(1, "Vui lòng nhập tên nhà sản xuất").max(100, "Giới hạn 100 kí tự"),
-        address: z.string().trim().max(256, "Giới hạn 255 kí tự").optional(),
+        address: z.string().trim().max(255, "Giới hạn 255 kí tự").optional(),
         email: z
             .string()
             .trim()
@@ -47,7 +48,7 @@ export const ManufacturerRes = z.object({
         data: z.object({
             id: z.number(),
             manufacturerName: z.string().trim().min(1).max(100),
-            address: z.string().trim().min(1).max(256),
+            address: z.string().trim().min(1).max(255),
             email: z.string().email(),
             phoneNumber: z.string().trim().max(11),
             taxCode: z.string().trim().max(14),

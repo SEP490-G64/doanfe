@@ -28,6 +28,11 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { supplierColumns } from "@/utils/data";
 import { Supplier } from "@/types/supplier";
+import { DataSearch } from "@/types/product";
+import HeaderTaskbar from "@/components/HeaderTaskbar/SupplierHeaderTaskbar/page";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const SuppliersTable = () => {
     const router = useRouter();
@@ -39,6 +44,13 @@ const SuppliersTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        status: "",
+    });
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -51,7 +63,10 @@ const SuppliersTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListSupplier(page - 1, rowsPerPage, sessionToken);
+            const response = await getListSupplier((page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken);
 
             if (response.message === "200 OK") {
                 setSupplierData(
@@ -72,6 +87,10 @@ const SuppliersTable = () => {
     const handleOpenModal = (SupplierId: string) => {
         setSelectedId(SupplierId);
         onOpen();
+    };
+
+    const handleSearch = async () => {
+        await getListSupplierByPage();
     };
 
     const handleDelete = async (SupplierId: string) => {
@@ -191,107 +210,120 @@ const SuppliersTable = () => {
     }, []);
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
-            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
-                <div className="max-w-full overflow-x-auto">
-                    <Table
-                        bottomContent={
-                            totalPages > 0 ? (
-                                <div className="flex w-full justify-between">
-                                    <Select
-                                        label="Số bản ghi / trang"
-                                        selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => {
-                                            setRowsPerPage(parseInt(e.target.value));
-                                            setPage(1);
-                                        }}
-                                        size="sm"
-                                        className="max-w-xs"
-                                    >
-                                        <SelectItem key={5} value={5}>
-                                            5
-                                        </SelectItem>
-                                        <SelectItem key={10} value={10}>
-                                            10
-                                        </SelectItem>
-                                        <SelectItem key={15} value={15}>
-                                            15
-                                        </SelectItem>
-                                        <SelectItem key={20} value={20}>
-                                            20
-                                        </SelectItem>
-                                    </Select>
-                                    <Pagination
-                                        isCompact
-                                        showControls
-                                        showShadow
-                                        color="primary"
-                                        page={page}
-                                        total={totalPages}
-                                        onChange={(page) => setPage(page)}
-                                    />
-                                </div>
-                            ) : null
-                        }
-                        aria-label="Supplier Table"
-                    >
-                        <TableHeader>
-                            <TableHeader columns={supplierColumns}>
-                                {(column) => (
-                                    <TableColumn
-                                        key={column.uid}
-                                        className="py-4 text-sm font-medium text-black"
-                                        align="center"
-                                    >
-                                        {column.name}
-                                    </TableColumn>
-                                )}
-                            </TableHeader>
-                        </TableHeader>
-                        <TableBody items={SupplierData ?? []}>
-                            {(item) => (
-                                <TableRow key={item?.id}>
-                                    {(columnKey) => (
-                                        <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["supplierName", "address"].includes(columnKey as string) ? "text-left" : ""}`}
+            <>
+                <HeaderTaskbar
+                    sessionToken={sessionToken}
+                    dataSearch={dataSearch}
+                    setDataSearch={setDataSearch}
+                    handleSearch={handleSearch}
+                />
+                <div
+                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                    Tìm thấy <span className="font-bold text-blue-600">{total}</span> nhà cung cấp
+                    <div className="max-w-full overflow-x-auto">
+                        <Table
+                            bottomContent={
+                                totalPages > 0 ? (
+                                    <div className="flex w-full justify-between">
+                                        <Select
+                                            label="Số bản ghi / trang"
+                                            selectedKeys={[rowsPerPage.toString()]}
+                                            onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                            size="sm"
+                                            className="max-w-xs"
                                         >
-                                            {renderCell(item, columnKey)}
-                                        </TableCell>
+                                            <SelectItem key={5} value={5}>
+                                                5
+                                            </SelectItem>
+                                            <SelectItem key={10} value={10}>
+                                                10
+                                            </SelectItem>
+                                            <SelectItem key={15} value={15}>
+                                                15
+                                            </SelectItem>
+                                            <SelectItem key={20} value={20}>
+                                                20
+                                            </SelectItem>
+                                        </Select>
+                                        <Pagination
+                                            isCompact
+                                            showControls
+                                            showShadow
+                                            color="primary"
+                                            page={page}
+                                            total={totalPages}
+                                            onChange={(page) => setPage(page)}
+                                        />
+                                    </div>
+                                ) : null
+                            }
+                            aria-label="Supplier Table"
+                        >
+                            <TableHeader>
+                                <TableHeader columns={supplierColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            className="py-4 text-sm font-medium text-black"
+                                            align="center"
+                                        >
+                                            {column.name}
+                                        </TableColumn>
                                     )}
-                                </TableRow>
+                                </TableHeader>
+                            </TableHeader>
+                            <TableBody items={SupplierData ?? []} emptyContent={"Không có dữ liệu"}>
+                                {(item) => (
+                                    <TableRow key={item?.id}>
+                                        {(columnKey) => (
+                                            <TableCell
+                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["supplierName", "address"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            >
+                                                {renderCell(item, columnKey)}
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                        <ModalContent>
+                            {(onClose) => (
+                                <>
+                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                    <ModalBody>
+                                        <p>Bạn có chắc muốn xóa nhà cung cấp này không?</p>
+                                    </ModalBody>
+                                    <ModalFooter>
+                                        <Button color="default" variant="light" onPress={onClose}>
+                                            Hủy
+                                        </Button>
+                                        <Button
+                                            color="danger"
+                                            onPress={() => {
+                                                handleDelete(selectedId);
+                                                onClose();
+                                            }}
+                                        >
+                                            Xóa
+                                        </Button>
+                                    </ModalFooter>
+                                </>
                             )}
-                        </TableBody>
-                    </Table>
+                        </ModalContent>
+                    </Modal>
                 </div>
-                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                <ModalBody>
-                                    <p>Bạn có chắc muốn xóa nhà cung cấp này không?</p>
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button color="default" variant="light" onPress={onClose}>
-                                        Hủy
-                                    </Button>
-                                    <Button
-                                        color="danger"
-                                        onPress={() => {
-                                            handleDelete(selectedId);
-                                            onClose();
-                                        }}
-                                    >
-                                        Xóa
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
-            </div>
+            </>
         );
+    }
 };
 
 export default SuppliersTable;

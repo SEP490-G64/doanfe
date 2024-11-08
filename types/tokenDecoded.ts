@@ -6,6 +6,10 @@ export interface TokenDecoded extends JwtPayload {
         userName: string;
         email: string;
         phone: string;
+        branch: {
+            id: string;
+            branchName: string;
+        };
         roles: {
             id: string;
             name: string;

@@ -1,25 +1,35 @@
 export type Product = {
     index: number;
     id: string;
-    productBaseDTO: {
-        id: string;
-        productName: string;
-        registrationCode: string;
-        urlImage: string;
-        activeIngredient: string;
-        excipient: string;
-        formulation: string;
-        inboundPrice: number;
-        sellPrice: number;
-        status: string;
-        baseUnit: string;
-        categoryName: string;
-        typeName: string;
-        manufacturerName: string;
-    };
-    minQuantity: number;
-    maxQuantity: number;
+    productName: string;
+    registrationCode: string;
+    urlImage: string;
+    activeIngredient: string;
+    excipient: string;
+    formulation: string;
+    inboundPrice: number;
+    sellPrice: number;
+    status: string;
+    baseUnit: string;
+    categoryName: string;
+    typeName: string;
+    manufacturerName: string;
     quantity: number;
+    unitConversions?: Array<UnitConversion>;
+};
+
+export type UnitConversion = {
+    index: number;
+    id: string;
+    largerUnit?: {
+        id?: string;
+        unitName?: string;
+    };
+    smallerUnit: {
+        id?: string;
+        unitName?: string;
+    };
+    factorConversion: number;
 };
 
 export type DataSearch = {
@@ -28,4 +38,20 @@ export type DataSearch = {
     categoryId?: string;
     manufacturerId?: string;
     status?: string;
+};
+
+export type AllowProduct = {
+    index: number;
+    id: string;
+    productName: string;
+    productCode: string;
+    registrationCode: string;
+    urlImage: string;
+    activeIngredient: string;
+    excipient: string;
+    formulation: string;
+};
+
+export type ProductDataSearch = {
+    keyword?: string;
 };

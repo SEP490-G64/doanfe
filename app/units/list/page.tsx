@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import UnitHeaderTaskbar from "@/components/HeaderTaskbar/UnitHeaderTaskbar/page";
 
 export const metadata: Metadata = {
     title: "Danh sách đơn vị ",
@@ -19,11 +18,7 @@ const UnitList = () => {
         <DefaultLayout>
             <Breadcrumb pageName="Danh sách đơn vị" />
 
-            <UnitHeaderTaskbar />
-
-            <div className="flex flex-col gap-18">
-                <UnitTable />
-            </div>
+            <UnitTable />
         </DefaultLayout>
     );
 };

@@ -5,3 +5,7 @@
     categoryDescription: string;
     taxRate: number;
 };
+
+export type DataSearch = {
+    keyword?: string;
+};

@@ -16,7 +16,7 @@ export const TypeRes = z.object({
         data: z.object({
             id: z.number(),
             typeName: z.string().trim().min(1).max(100),
-            typeDescription: z.string().trim().max(1000),
+            typeDescription: z.string().trim().max(500),
         }),
     }),
     message: z.string(),

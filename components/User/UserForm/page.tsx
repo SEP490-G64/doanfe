@@ -6,14 +6,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { UserBody, UserBodyType } from "@/lib/schemaValidate/userSchema";
 import { useRouter } from "next/navigation";
-import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import { FaStore, FaUserCheck } from "react-icons/fa";
 
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
+import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import { createUser, getUserById, updateUser } from "@/services/userServices";
 import { getListBranch } from "@/services/branchServices";
-import { Branch } from "@/types/branch";
+import {Branch} from "@/types/branch";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
+import { DataSearch } from "@/types/product";
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 
 const UserForm = ({
@@ -30,6 +34,13 @@ const UserForm = ({
     const [branches, setBranches] = useState<Branch[]>([]);
     const [status, setStatus] = useState<string>("");
     const [role, setRole] = useState<string>("");
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        status: "",
+    });
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
     const roleOptions = [
         { value: 3, label: "ADMIN" },
         { value: 2, label: "MANAGER" },
@@ -91,7 +102,7 @@ const UserForm = ({
 
     const getBranches = async () => {
         try {
-            const response = await getListBranch(0, 10, sessionToken);
+            const response = await getListBranch(0, 10, dataSearch, sessionToken);
 
             setBranches(response.data);
         } catch (error) {
@@ -134,11 +145,17 @@ const UserForm = ({
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <div className="flex flex-col gap-9">
                 {/* <!-- Contact Form --> */}
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                <div
+                    className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                         <div className="p-6.5">
                             <div className="mb-4.5" hidden={viewMode === "approve" || viewMode === "reject"}>
@@ -408,6 +425,7 @@ const UserForm = ({
                 </Modal>
             </div>
         );
+    }
 };
 
 export default UserForm;

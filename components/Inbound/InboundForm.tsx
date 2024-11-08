@@ -43,6 +43,7 @@ import { getAllowedProducts, getProductBySupplierId } from "@/services/productSe
 import { ProductInfor } from "@/types/inbound";
 import { getAllBranch } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
+import Unauthorized from "@/components/common/Unauthorized";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -288,7 +289,12 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     };
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                 {/* <!--  Thông tin người duyệt --> */}
@@ -717,6 +723,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 </Modal>
             </form>
         );
+    }
 };
 
 export default InboundForm;

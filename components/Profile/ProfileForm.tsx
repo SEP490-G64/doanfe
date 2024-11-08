@@ -9,12 +9,18 @@ import Image from "next/image";
 import {toast} from "react-toastify";
 import {getProfile} from "@/services/profileServices";
 import {ProfileBody, ProfileBodyType} from "@/lib/schemaValidate/profileSchema";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
+import Unauthorized from "@/components/common/Unauthorized";
 
 function ProfileForm() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
     const [user, setUser] = useState<ProfileBodyType | undefined>(undefined);
+
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
     
     const getProfileDetails = async () => {
         if (loading) {
@@ -42,7 +48,12 @@ function ProfileForm() {
     }, []);
 
     if (loading) return <Loader />;
-    else
+    else {
+        if (!userInfo) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
         return (
             <>
                 <div className="relative z-20 h-35 md:h-65">
@@ -133,6 +144,7 @@ function ProfileForm() {
                 </div>
             </>
         );
+    }
 }
 
 export default ProfileForm;
