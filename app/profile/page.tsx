@@ -1,8 +1,9 @@
 import React from "react";
 import Image from "next/image";
 import { Metadata } from "next";
+import dynamic from "next/dynamic";
+
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import ProfileForm from "@/components/Profile/ProfileForm"
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { useRouter } from "next/navigation";
 
@@ -10,6 +11,10 @@ export const metadata: Metadata = {
     title: "Hồ sơ cá nhân",
     description: "This is Next.js Profile Details Page TailAdmin Dashboard Template",
 };
+
+const ProfileForm = dynamic(() => import("@/components/Profile/ProfileForm"), {
+    ssr: false,
+});
 
 const Profile: React.FC = () => {
     return (

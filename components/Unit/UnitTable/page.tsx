@@ -117,12 +117,7 @@ const UnitsTable = () => {
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((unit: Unit, columnKey: React.Key) => {
-        const cellValue =
-            unit[
-                columnKey as
-                    | "id"
-                    | "unitName"
-            ];
+        const cellValue = unit[columnKey as "id" | "unitName"];
 
         switch (columnKey) {
             case "no.":
@@ -275,7 +270,7 @@ const UnitsTable = () => {
                                     <TableRow key={item?.id}>
                                         {(columnKey) => (
                                             <TableCell
-                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["unitName"].includes(columnKey as string) ? "text-left" : ""}`}
+                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark`}
                                             >
                                                 {renderCell(item, columnKey)}
                                             </TableCell>

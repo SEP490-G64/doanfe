@@ -135,7 +135,14 @@ const InboundTable = () => {
     const renderCell = useCallback((inbound: Inbound, columnKey: React.Key) => {
         const cellValue =
             inbound[
-                columnKey as "id" | "inboundCode" | "inboundType" | "inboundBatchDetails" | "inboundDetails" | "status"
+                columnKey as
+                    | "id"
+                    | "inboundCode"
+                    | "inboundType"
+                    | "inboundBatchDetails"
+                    | "inboundDetails"
+                    | "status"
+                    | "totalPrice"
             ];
 
         switch (columnKey) {
@@ -144,13 +151,29 @@ const InboundTable = () => {
             case "inboundCode":
                 return <h5 className="font-normal text-black dark:text-white">{inbound.inboundCode}</h5>;
             case "supplierName":
-                return <p className="font-normal text-black dark:text-white">{inbound.supplier?.supplierName}</p>;
+                return (
+                    <p className="font-normal text-black dark:text-white">
+                        {inbound.supplier?.supplierName || inbound.fromBranch?.branchName}
+                    </p>
+                );
+            case "inboundType":
+                return (
+                    <p className="font-normal text-black dark:text-white">
+                        {inbound.inboundType === "CHUYEN_KHO_NOI_BO" ? "Chuyển kho nội bộ" : "Nhập từ nhà cung cấp"}
+                    </p>
+                );
             case "createdBy":
                 return (
                     <p className="font-normal text-black dark:text-white">{`${inbound.createdBy.firstName} ${inbound.createdBy.lastName}`}</p>
                 );
             case "status":
                 return renderInboundStatus(inbound.status);
+            case "totalPrice":
+                return (
+                    <p className={"font-normal text-primary"}>
+                        {inbound.totalPrice && inbound.totalPrice.toLocaleString()}
+                    </p>
+                );
             case "createdDate":
                 return <p className="font-normal text-black dark:text-white">{formatDateTime(inbound.createdDate)}</p>;
             case "actions":
@@ -214,7 +237,10 @@ const InboundTable = () => {
                                     <Select
                                         label="Số bản ghi / trang"
                                         selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                        onChange={(e) => {
+                                            setRowsPerPage(parseInt(e.target.value));
+                                            setPage(1);
+                                        }}
                                         size="sm"
                                         className="max-w-xs"
                                     >

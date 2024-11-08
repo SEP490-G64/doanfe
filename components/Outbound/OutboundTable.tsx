@@ -23,18 +23,19 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteBranch, getListBranch } from "@/services/branchServices";
+import { deleteBranch, getListOutbound } from "@/services/outboundServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
-import { branchColumns } from "@/utils/data";
-import { Branch } from "@/types/branch";
+import { outboundColumns } from "@/utils/data";
+import { Outbound } from "@/types/outbound";
+import { formatDateTime } from "@/utils/methods";
 
 const OutboundTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [branchData, setBranchData] = useState<Branch[]>([]);
+    const [outboundData, setOutboundData] = useState<Outbound[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -44,18 +45,18 @@ const OutboundTable = () => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
 
-    const getListBranchByPage = async () => {
+    const getListOutboundByPage = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getListBranch(page - 1, rowsPerPage, sessionToken);
+            const response = await getListOutbound(page - 1, rowsPerPage, sessionToken);
 
             if (response.message === "200 OK") {
-                setBranchData(
-                    response.data.map((item: Branch, index: number) => ({
+                setOutboundData(
+                    response.data.map((item: Outbound, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
                     }))
@@ -69,22 +70,22 @@ const OutboundTable = () => {
         }
     };
 
-    const handleOpenModal = (branchId: string) => {
-        setSelectedId(branchId);
+    const handleOpenModal = (outboundId: string) => {
+        setSelectedId(outboundId);
         onOpen();
     };
 
-    const handleDelete = async (branchId: string) => {
+    const handleDelete = async (outboundId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteBranch(branchId, sessionToken);
+            const response = await deleteBranch(outboundId, sessionToken);
 
             if (response === "200 OK") {
-                await getListBranchByPage();
+                await getListOutboundByPage();
             }
         } catch (error) {
             console.log(error);
@@ -94,46 +95,110 @@ const OutboundTable = () => {
     };
 
     useEffect(() => {
-        getListBranchByPage();
+        getListOutboundByPage();
     }, [page, rowsPerPage]);
 
-    const renderCell = useCallback((branch: Branch, columnKey: React.Key) => {
+    const renderOutboundStatus = useCallback((status: string) => {
+        switch (status) {
+            case "CHUA_LUU":
+                return (
+                    <p className={"inline-flex rounded-full bg-danger/10 px-3 py-1 text-sm font-medium text-danger"}>
+                        Khởi tạo
+                    </p>
+                );
+            case "BAN_NHAP":
+                return (
+                    <p className={"inline-flex rounded-full bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Bản nháp
+                    </p>
+                );
+            case "CHO_DUYET":
+                return (
+                    <p className={"inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"}>
+                        Chờ duyệt
+                    </p>
+                );
+            case "DANG_XU_LY":
+                return (
+                    <p className={"inline-flex rounded-full bg-warning/10 px-3 py-1 text-sm font-medium text-primary"}>
+                        Đang xử lý
+                    </p>
+                );
+            case "DANG_THANH_TOAN":
+                return (
+                    <p className={"inline-flex rounded-full bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Đang thanh toán
+                    </p>
+                );
+            case "HOAN_THANH":
+                return (
+                    <p className={"inline-flex rounded-full bg-success/10 px-3 py-1 text-sm font-medium text-success"}>
+                        Hoàn thành
+                    </p>
+                );
+        }
+    }, []);
+
+    const renderOutboundType = useCallback((outboundType: string) => {
+        switch (outboundType) {
+            case "CHUYEN_KHO_NOI_BO":
+                return <p className="font-normal text-black dark:text-white">Chuyển kho nội bộ</p>;
+            case "TRA_HANG":
+                return <p className="font-normal text-black dark:text-white">Trả hàng</p>;
+            case "HUY_HANG":
+                return <p className="font-normal text-black dark:text-white">Hủy hàng</p>;
+            case "BAN_HANG":
+                return <p className="font-normal text-black dark:text-white">Bán hàng</p>;
+        }
+    }, []);
+
+    const renderCell = useCallback((outbound: Outbound, columnKey: React.Key) => {
         const cellValue =
-            branch[
+            outbound[
                 columnKey as
                     | "id"
-                    | "branchName"
-                    | "location"
-                    | "contactPerson"
-                    | "phoneNumber"
-                    | "branchType"
-                    | "capacity"
-                    | "activeStatus"
-                    | "actions"
+                    | "outBoundCode"
+                    | "outboundType"
+                    | "outboundBatchDetails"
+                    | "outboundDetails"
+                    | "status"
+                    | "totalPrice"
             ];
 
         switch (columnKey) {
             case "no.":
-                return <h5 className="text-black dark:text-white">{branch.index}</h5>;
-            case "branchName":
-                return <h5 className="font-normal text-black dark:text-white">{branch.branchName}</h5>;
-            case "activeStatus":
+                return <h5 className="text-black dark:text-white">{outbound.index}</h5>;
+            case "outboundCode":
+                return <h5 className="font-normal text-black dark:text-white">{outbound.outBoundCode}</h5>;
+            case "outboundName":
                 return (
-                    <p
-                        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                            branch.activeStatus ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                        }`}
-                    >
-                        {branch.activeStatus ? "Đang hoạt động" : "Không hoạt động"}
+                    <p className="font-normal text-black dark:text-white">
+                        {outbound.supplier?.supplierName || outbound.fromBranch?.branchName}
                     </p>
                 );
+            case "outboundType":
+                return renderOutboundType(outbound.outboundType);
+            case "createdBy":
+                return (
+                    <p className="font-normal text-black dark:text-white">{`${outbound.createdBy.firstName} ${outbound.createdBy.lastName}`}</p>
+                );
+            case "status":
+                return renderOutboundStatus(outbound.status);
+            case "totalPrice":
+                return (
+                    <p className={"font-normal text-primary"}>
+                        {outbound.totalPrice && outbound.totalPrice.toLocaleString()}
+                    </p>
+                );
+            case "createdDate":
+                return <p className="font-normal text-black dark:text-white">{formatDateTime(outbound.createdDate)}</p>;
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
                         <Tooltip content="Chi tiết">
                             <button
                                 className="hover:text-primary"
-                                onClick={() => router.push(`/branches/details/${branch.id}`)}
+                                onClick={() => router.push(`/outbound/details/${outbound.id}`)}
                             >
                                 <svg
                                     className="fill-current"
@@ -157,38 +222,9 @@ const OutboundTable = () => {
                         <Tooltip color="secondary" content="Cập nhật">
                             <button
                                 className="hover:text-secondary"
-                                onClick={() => router.push(`/branches/update/${branch.id}`)}
+                                onClick={() => router.push(`/outbound/update/${outbound.id}`)}
                             >
                                 <FaPencil />
-                            </button>
-                        </Tooltip>
-                        <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(branch.id)}>
-                                <svg
-                                    className="fill-current"
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 18 18"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M13.7535 2.47502H11.5879V1.9969C11.5879 1.15315 10.9129 0.478149 10.0691 0.478149H7.90352C7.05977 0.478149 6.38477 1.15315 6.38477 1.9969V2.47502H4.21914C3.40352 2.47502 2.72852 3.15002 2.72852 3.96565V4.8094C2.72852 5.42815 3.09414 5.9344 3.62852 6.1594L4.07852 15.4688C4.13477 16.6219 5.09102 17.5219 6.24414 17.5219H11.7004C12.8535 17.5219 13.8098 16.6219 13.866 15.4688L14.3441 6.13127C14.8785 5.90627 15.2441 5.3719 15.2441 4.78127V3.93752C15.2441 3.15002 14.5691 2.47502 13.7535 2.47502ZM7.67852 1.9969C7.67852 1.85627 7.79102 1.74377 7.93164 1.74377H10.0973C10.2379 1.74377 10.3504 1.85627 10.3504 1.9969V2.47502H7.70664V1.9969H7.67852ZM4.02227 3.96565C4.02227 3.85315 4.10664 3.74065 4.24727 3.74065H13.7535C13.866 3.74065 13.9785 3.82502 13.9785 3.96565V4.8094C13.9785 4.9219 13.8941 5.0344 13.7535 5.0344H4.24727C4.13477 5.0344 4.02227 4.95002 4.02227 4.8094V3.96565ZM11.7285 16.2563H6.27227C5.79414 16.2563 5.40039 15.8906 5.37227 15.3844L4.95039 6.2719H13.0785L12.6566 15.3844C12.6004 15.8625 12.2066 16.2563 11.7285 16.2563Z"
-                                        fill=""
-                                    />
-                                    <path
-                                        d="M9.00039 9.11255C8.66289 9.11255 8.35352 9.3938 8.35352 9.75942V13.3313C8.35352 13.6688 8.63477 13.9782 9.00039 13.9782C9.33789 13.9782 9.64727 13.6969 9.64727 13.3313V9.75942C9.64727 9.3938 9.33789 9.11255 9.00039 9.11255Z"
-                                        fill=""
-                                    />
-                                    <path
-                                        d="M11.2502 9.67504C10.8846 9.64692 10.6033 9.90004 10.5752 10.2657L10.4064 12.7407C10.3783 13.0782 10.6314 13.3875 10.9971 13.4157C11.0252 13.4157 11.0252 13.4157 11.0533 13.4157C11.3908 13.4157 11.6721 13.1625 11.6721 12.825L11.8408 10.35C11.8408 9.98442 11.5877 9.70317 11.2502 9.67504Z"
-                                        fill=""
-                                    />
-                                    <path
-                                        d="M6.72245 9.67504C6.38495 9.70317 6.1037 10.0125 6.13182 10.35L6.3287 12.825C6.35683 13.1625 6.63808 13.4157 6.94745 13.4157C6.97558 13.4157 6.97558 13.4157 7.0037 13.4157C7.3412 13.3875 7.62245 13.0782 7.59433 12.7407L7.39745 10.2657C7.39745 9.90004 7.08808 9.64692 6.72245 9.67504Z"
-                                        fill=""
-                                    />
-                                </svg>
                             </button>
                         </Tooltip>
                     </div>
@@ -210,7 +246,10 @@ const OutboundTable = () => {
                                     <Select
                                         label="Số bản ghi / trang"
                                         selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                        onChange={(e) => {
+                                            setRowsPerPage(parseInt(e.target.value));
+                                            setPage(1);
+                                        }}
                                         size="sm"
                                         className="max-w-xs"
                                     >
@@ -239,10 +278,10 @@ const OutboundTable = () => {
                                 </div>
                             ) : null
                         }
-                        aria-label="Branch Table"
+                        aria-label="Outbound Table"
                     >
                         <TableHeader>
-                            <TableHeader columns={branchColumns}>
+                            <TableHeader columns={outboundColumns}>
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
@@ -254,12 +293,12 @@ const OutboundTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={branchData ?? []}>
+                        <TableBody items={outboundData ?? []}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["branchName", "location"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["outboundName", "location"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>
@@ -275,7 +314,7 @@ const OutboundTable = () => {
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa chi nhánh này không</p>
+                                    <p>Bạn có chắc muốn xóa đơn xuất này không</p>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={onClose}>

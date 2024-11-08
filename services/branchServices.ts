@@ -9,6 +9,20 @@ interface Params extends DataSearch {
     size?: string;
 }
 
+export const getAllBranch = async (token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { activeStatus: true },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
+    }
+};
+
 export const getListBranch = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
     const params: Params = {
         page,
@@ -46,6 +60,7 @@ export const getBranchById = async (id: string, token: string) => {
         else console.log(error);
     }
 };
+
 export const createBranch = async (branch: BranchBodyType, token: string) => {
     try {
         const res = await httpRequest.post("dsd/api/v1/admin/branch", branch, {

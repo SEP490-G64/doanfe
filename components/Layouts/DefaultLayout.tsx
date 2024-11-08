@@ -4,7 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 
 export default function DefaultLayout({ children }: { children: React.ReactNode }) {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
     return (
         <>
             {/* <!-- ===== Page Wrapper Start ===== --> */}
@@ -14,7 +14,9 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
                 {/* <!-- ===== Sidebar End ===== --> */}
 
                 {/* <!-- ===== Content Area Start ===== --> */}
-                <div className="relative flex flex-1 flex-col lg:ml-72.5">
+                <div
+                    className={`relative flex flex-1 flex-col duration-300 ease-linear ${sidebarOpen ? "mr-72.5 translate-x-72.5" : "translate-x-0"}`}
+                >
                     {/* <!-- ===== Header Start ===== --> */}
                     <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
                     {/* <!-- ===== Header End ===== --> */}
