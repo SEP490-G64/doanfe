@@ -2,10 +2,12 @@ name: GitHub Actions CI
 run-name: CI for NextJS
 on:
     pull_request:
+      branches:
+        - "develop"
+        - "main"
     workflow_dispatch:
     push:
         branches:
-            - "develop"
             - "main"
 jobs:
     NextJS-Build:
