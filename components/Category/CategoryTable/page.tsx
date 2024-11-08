@@ -58,7 +58,7 @@ const CategoryesTable = () => {
                     response.data.map((item: Category, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
-                    })),
+                    }))
                 );
                 setTotal(response.total);
             }
@@ -106,11 +106,15 @@ const CategoryesTable = () => {
             case "categoryName":
                 return <h5 className="font-normal text-black dark:text-white">{category.categoryName}</h5>;
             case "categoryDescription":
-                return <h5 className="font-normal text-black dark:text-white">{category.categoryDescription ?
-                    (category.categoryDescription.length > 100 ?
-                        category.categoryDescription.substring(0, 100) + "..." : category.categoryDescription)
-                    : "Không mô tả"}
-                </h5>;
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {category.categoryDescription
+                            ? category.categoryDescription.length > 100
+                                ? category.categoryDescription.substring(0, 100) + "..."
+                                : category.categoryDescription
+                            : "Không mô tả"}
+                    </h5>
+                );
             case "taxRate":
                 return <h5> {category.taxRate == 0 ? "Không mất thuế" : category.taxRate + "%"} </h5>;
             case "actions":
@@ -187,8 +191,7 @@ const CategoryesTable = () => {
     if (loading) return <Loader />;
     else
         return (
-            <div
-                className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                 <div className="max-w-full overflow-x-auto">
                     <Table
                         bottomContent={
@@ -197,7 +200,10 @@ const CategoryesTable = () => {
                                     <Select
                                         label="Số bản ghi / trang"
                                         selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                        onChange={(e) => {
+                                            setRowsPerPage(parseInt(e.target.value));
+                                            setPage(1);
+                                        }}
                                         size="sm"
                                         className="max-w-xs"
                                     >

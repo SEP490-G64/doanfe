@@ -31,7 +31,7 @@ function IconButton({
 
     switch (size) {
         case "small":
-            sizeClass = "px-3 py-1";
+            sizeClass = "px-1 py-1";
             break;
         case "medium":
             sizeClass = "px-6 py-2";

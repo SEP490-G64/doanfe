@@ -2,10 +2,11 @@
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 import { InboundBodyType } from "@/lib/schemaValidate/inboundSchema";
+import { OutboundBodyType } from "@/lib/schemaValidate/outboundSchema";
 
-export const getListInbound = async (page: number, size: number, token: string) => {
+export const getListOutbound = async (page: number, size: number, token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/staff/inbound`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/outbound`, {
             headers: { Authorization: `Bearer ${token}` },
             params: { page, size },
         });
@@ -19,9 +20,9 @@ export const getListInbound = async (page: number, size: number, token: string) 
     }
 };
 
-export const getInboundById = async (id: string, token: string) => {
+export const getOutboundById = async (id: string, token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/staff/inbound/${id}`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/outbound/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -34,33 +35,36 @@ export const getInboundById = async (id: string, token: string) => {
     }
 };
 
-export const createInitInbound = async (inboundType: "NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO", token: string) => {
+export const createInitOutbound = async (
+    outboundType: "HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO",
+    token: string
+) => {
     try {
         const res = await httpRequest.post(
-            `dsd/api/v1/staff/inbound/create-init-inbound`,
+            `dsd/api/v1/staff/outbound/create-init-outbound`,
             {},
             {
                 headers: { Authorization: `Bearer ${token}` },
-                params: { type: inboundType },
+                params: { type: outboundType },
             }
         );
 
         if (res.data) {
-            toast.success("Khởi tạo đơn nhập hàng thành công");
+            toast.success("Khởi tạo đơn xuất hàng thành công");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Khởi tạo đơn nhập hàng thất bại");
+            toast.error("Khởi tạo đơn xuất hàng thất bại");
             console.log(error);
         }
     }
 };
 
-export const submitDraft = async (inboundDraft: InboundBodyType, token: string) => {
+export const submitDraft = async (outboundDraft: OutboundBodyType, token: string) => {
     try {
-        const res = await httpRequest.post("dsd/api/v1/staff/inbound/submit-draft", inboundDraft, {
+        const res = await httpRequest.post("dsd/api/v1/staff/inbound/submit-draft", outboundDraft, {
             headers: { Authorization: `Bearer ${token}` },
         });
 

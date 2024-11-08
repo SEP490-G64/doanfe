@@ -23,7 +23,7 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import {activateUser, deleteUser, getListUser} from "@/services/userServices";
+import { activateUser, deleteUser, getListUser } from "@/services/userServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { userColumns } from "@/utils/data";
@@ -119,7 +119,7 @@ const UsersTable = () => {
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((user: User, columnKey: React.Key) => {
-        const cellValue = user[columnKey as "id" | "userName" | "email" | "branch" | "roles" | "status" ];
+        const cellValue = user[columnKey as "id" | "userName" | "email" | "branch" | "roles" | "status"];
         console.log(user);
 
         switch (columnKey) {
@@ -130,35 +130,39 @@ const UsersTable = () => {
             case "email":
                 return <h5 className="font-normal text-black dark:text-white">{user.email}</h5>;
             case "branch":
-                return <h5 className="font-normal text-black dark:text-white">{user.branch ? user.branch?.location : "Người dùng không thuộc chi nhánh nào"}</h5>;
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {user.branch ? user.branch?.location : "Người dùng không thuộc chi nhánh nào"}
+                    </h5>
+                );
             case "roles":
                 return <h5 className="font-normal text-black dark:text-white">{user.roles?.at(0)?.type}</h5>;
             case "status":
                 return (
-    <p
-        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${(() => {
-            switch (user.status) {
-                case "REJECTED":
-                    return "bg-danger/10 text-danger";
-                case "ACTIVATE":
-                    return "bg-success/10 text-success";
-                case "DEACTIVATE":
-                    return "bg-warning/10 text-warning";
-            }
-        })()}`}
-    >
-        {(() => {
-        switch (user.status) {
-            case "REJECTED":
-                return "Từ chối";
-            case "ACTIVATE":
-                return "Đang kích hoạt";
-            case "DEACTIVATE":
-                return "Vô hiệu hóa";
-        }
-        })()}
-    </p>
-);
+                    <p
+                        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${(() => {
+                            switch (user.status) {
+                                case "REJECTED":
+                                    return "bg-danger/10 text-danger";
+                                case "ACTIVATE":
+                                    return "bg-success/10 text-success";
+                                case "DEACTIVATE":
+                                    return "bg-warning/10 text-warning";
+                            }
+                        })()}`}
+                    >
+                        {(() => {
+                            switch (user.status) {
+                                case "REJECTED":
+                                    return "Từ chối";
+                                case "ACTIVATE":
+                                    return "Đang kích hoạt";
+                                case "DEACTIVATE":
+                                    return "Vô hiệu hóa";
+                            }
+                        })()}
+                    </p>
+                );
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
@@ -202,7 +206,12 @@ const UsersTable = () => {
                             <button
                                 className={`hover:text-${user.status === "ACTIVATE" ? "warning" : "success"}`}
                                 hidden={user.status === "REJECTED" || user.roles?.at(0)?.type === "ADMIN"}
-                                onClick={() => handleOpenModal(user.id.toString(), (user.status === "ACTIVATE" ? "DEACTIVATE" : "ACTIVATE"))}
+                                onClick={() =>
+                                    handleOpenModal(
+                                        user.id.toString(),
+                                        user.status === "ACTIVATE" ? "DEACTIVATE" : "ACTIVATE"
+                                    )
+                                }
                             >
                                 {user.status === "ACTIVATE" ? (
                                     <svg
@@ -240,9 +249,11 @@ const UsersTable = () => {
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger"
-                                    hidden={user.roles?.at(0)?.type === "ADMIN"}
-                                    onClick={() => handleOpenModal(user.id.toString(), "DELETE")}>
+                            <button
+                                className="hover:text-danger"
+                                hidden={user.roles?.at(0)?.type === "ADMIN"}
+                                onClick={() => handleOpenModal(user.id.toString(), "DELETE")}
+                            >
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -289,7 +300,10 @@ const UsersTable = () => {
                                     <Select
                                         label="Số bản ghi / trang"
                                         selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                        onChange={(e) => {
+                                            setRowsPerPage(parseInt(e.target.value));
+                                            setPage(1);
+                                        }}
                                         size="sm"
                                         className="max-w-xs"
                                     >
@@ -381,15 +395,17 @@ const UsersTable = () => {
                                             }
                                         })()}
                                         onPress={() => {
-                                            {(() => {
-                                                switch (action) {
-                                                    case "DELETE":
-                                                        handleDelete(selectedId);
-                                                    case "ACTIVATE":
-                                                    case "DEACTIVATE":
-                                                        handleActivate(selectedId);
-                                                }
-                                            })()}
+                                            {
+                                                (() => {
+                                                    switch (action) {
+                                                        case "DELETE":
+                                                            handleDelete(selectedId);
+                                                        case "ACTIVATE":
+                                                        case "DEACTIVATE":
+                                                            handleActivate(selectedId);
+                                                    }
+                                                })();
+                                            }
                                             onClose();
                                         }}
                                     >

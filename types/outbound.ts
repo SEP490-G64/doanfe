@@ -11,11 +11,11 @@ export interface ProductInfor {
     requestQuantity?: number;
 }
 
-export interface Inbound {
+export interface Outbound {
     index: number;
     id: number;
-    inboundCode: string;
-    inboundType: "NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO";
+    outBoundCode: string;
+    outboundType: "HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO";
     toBranch: {
         id: 1;
         branchName: string;
@@ -40,6 +40,6 @@ export interface Inbound {
     createdDate: string | Date;
     status: string;
     totalPrice: number;
-    inboundDetails: [];
-    inboundBatchDetails: [];
+    outboundDetails: [];
+    outboundBatchDetails: [];
 }

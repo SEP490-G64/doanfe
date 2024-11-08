@@ -3,6 +3,20 @@ import { BranchBodyType } from "@/lib/schemaValidate/branchSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 
+export const getAllBranch = async (token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { activeStatus: true },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
+    }
+};
+
 export const getListBranch = async (page: number, size: number, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {

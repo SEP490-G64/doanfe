@@ -71,9 +71,23 @@ export const productColumns = [
 export const inboundColumns = [
     { name: "STT", uid: "no." },
     { name: "Mã phiếu nhập", uid: "inboundCode" },
-    { name: "Nhà cung cấp", uid: "supplierName" },
+    { name: "Nhập hàng từ", uid: "supplierName" },
+    { name: "Kiểu nhập hàng", uid: "inboundType" },
     { name: "Người tạo", uid: "createdBy" },
     { name: "Trạng thái", uid: "status" },
+    { name: "Tổng tiền", uid: "totalPrice" },
+    { name: "Ngày tạo", uid: "createdDate" },
+    { name: "Tác vụ", uid: "actions" },
+];
+
+export const outboundColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Mã phiếu nhập", uid: "outboundCode" },
+    { name: "Xuất hàng cho", uid: "outboundName" },
+    { name: "Kiểu xuất hàng", uid: "outboundType" },
+    { name: "Người tạo", uid: "createdBy" },
+    { name: "Trạng thái", uid: "status" },
+    { name: "Tổng tiền", uid: "totalPrice" },
     { name: "Ngày tạo", uid: "createdDate" },
     { name: "Tác vụ", uid: "actions" },
 ];
