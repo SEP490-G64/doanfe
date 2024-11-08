@@ -198,7 +198,10 @@ const TypesTable = () => {
                                     <Select
                                         label="Số bản ghi / trang"
                                         selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                                        onChange={(e) => {
+                                            setRowsPerPage(parseInt(e.target.value));
+                                            setPage(1);
+                                        }}
                                         size="sm"
                                         className="max-w-xs"
                                     >

@@ -42,7 +42,7 @@ const ProductsTableBeforeCheck = ({
                         {/*<th className="p-4 text-center font-medium text-black">Ảnh</th>*/}
                         <th className="p-4 text-center font-medium text-black">Tên sản phẩm</th>
                         <th className="p-4 text-center font-medium text-black">Đơn vị</th>
-                        <th className="p-4 text-center font-medium text-black">Số lượng đặt</th>
+                        <th className="p-4 text-center font-medium text-black">Số lượng</th>
                         {/*<th className="p-4 text-center font-medium text-black">Chiết khấu</th>*/}
                         <th></th>
                     </tr>

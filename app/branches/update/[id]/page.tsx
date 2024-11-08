@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import dynamic from "next/dynamic";
 
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -19,4 +20,4 @@ const BranchDetails = ({ params }: { params: { id: string } }) => {
     );
 };
 
-export default BranchDetails;
+export default dynamic(() => Promise.resolve(BranchDetails), { ssr: false });
