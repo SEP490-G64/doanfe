@@ -696,7 +696,10 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     <button
                                         className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                         type="submit"
-                                        onClick={() => setSaveDraft(false)}
+                                        onClick={() => {
+                                            setSaveDraft(false);
+                                            console.log(errors);
+                                        }}
                                         // onClick={() => console.log(errors)}
                                     >
                                         Tạo và gửi đơn
