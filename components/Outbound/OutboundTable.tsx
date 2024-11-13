@@ -118,10 +118,14 @@ const OutboundTable = () => {
                         Chờ duyệt
                     </p>
                 );
-            case "DANG_XU_LY":
+            case "KIEM_HANG":
                 return (
-                    <p className={"inline-flex rounded-full bg-warning/10 px-3 py-1 text-sm font-medium text-primary"}>
-                        Đang xử lý
+                    <p
+                        className={
+                            "inline-flex rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary"
+                        }
+                    >
+                        Kiểm hàng
                     </p>
                 );
             case "DANG_THANH_TOAN":
@@ -157,7 +161,7 @@ const OutboundTable = () => {
             outbound[
                 columnKey as
                     | "id"
-                    | "outBoundCode"
+                    | "outboundCode"
                     | "outboundType"
                     | "outboundBatchDetails"
                     | "outboundDetails"
@@ -169,11 +173,11 @@ const OutboundTable = () => {
             case "no.":
                 return <h5 className="text-black dark:text-white">{outbound.index}</h5>;
             case "outboundCode":
-                return <h5 className="font-normal text-black dark:text-white">{outbound.outBoundCode}</h5>;
+                return <h5 className="font-normal text-black dark:text-white">{outbound.outboundCode}</h5>;
             case "outboundName":
                 return (
                     <p className="font-normal text-black dark:text-white">
-                        {outbound.supplier?.supplierName || outbound.fromBranch?.branchName}
+                        {outbound.supplier?.supplierName || outbound.toBranch?.branchName || "Khách mua"}
                     </p>
                 );
             case "outboundType":

@@ -3,18 +3,42 @@ export interface ProductInfor {
     id?: number;
     registrationCode?: string;
     productName?: string;
-    discount?: number;
+    productCode?: string;
+    product?: {
+        id?: number;
+        registrationCode?: string;
+        productName?: string;
+        productCode?: string;
+    };
+    productBaseUnit?: {
+        id?: number;
+        unitName?: string;
+    };
     baseUnit?: {
         id?: number;
         unitName?: string;
     };
-    requestQuantity?: number;
+    batch?: {
+        id?: string;
+        batchCode?: string;
+        expireDate?: string;
+    };
+    batches?: {
+        id?: string;
+        batchCode?: string;
+        expireDate?: string;
+    }[];
+    targetUnit?: {
+        id?: string;
+    };
+    outboundQuantity?: number;
+    price?: number;
 }
 
 export interface Outbound {
     index: number;
     id: number;
-    outBoundCode: string;
+    outboundCode: string;
     outboundType: "HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO";
     toBranch: {
         id: 1;
