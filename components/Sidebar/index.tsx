@@ -411,12 +411,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             }`}
         >
             {/* <!-- SIDEBAR HEADER --> */}
-            <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
+            <div className="flex items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
                 <Link href="/">
                     <Image width={176} height={32} src={"/images/logo/WLP-logo.png"} alt="Logo" priority />
                 </Link>
 
-                <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-controls="sidebar" className="hidden">
+                {/* <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-controls="sidebar" className="hidden">
                     <svg
                         className="fill-current"
                         width="20"
@@ -430,7 +430,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             fill=""
                         />
                     </svg>
-                </button>
+                </button> */}
             </div>
             {/* <!-- SIDEBAR HEADER --> */}
 

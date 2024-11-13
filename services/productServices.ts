@@ -67,6 +67,22 @@ export const getProductBySupplierId = async (supplierId: string, keyword: string
     }
 };
 
+export const getProductByBranchId = async (branchId: string, keyword: string, token: string, supplierId?: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/products-in-branch/${branchId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { keyword, checkValid: true, supplierId },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
 export const getAllowedProducts = async (keyword: string, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/product/allow-products`, {

@@ -240,11 +240,19 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                 fields.forEach((field) => setValue(field, response.data[field]));
 
-                const branchProduct = response.data.branchProducts.find(product => product.branch?.id === userInfo?.branch?.id);
+                const branchProduct = response.data.branchProducts.find(
+                    (product) => product.branch?.id === userInfo?.branch?.id
+                );
 
                 // Cập nhật các trường của sản phẩm đầu tiên (index 0)
-                setValue(`branchProducts.0.branch.branchName`, branchProduct ? branchProduct.branch?.branchName : userInfo?.branch?.branchName);
-                setValue(`branchProducts.0.storageLocation.shelfName`, branchProduct ? branchProduct.storageLocation?.shelfName : undefined);
+                setValue(
+                    `branchProducts.0.branch.branchName`,
+                    branchProduct ? branchProduct.branch?.branchName : userInfo?.branch?.branchName
+                );
+                setValue(
+                    `branchProducts.0.storageLocation.shelfName`,
+                    branchProduct ? branchProduct.storageLocation?.shelfName : undefined
+                );
                 setValue(`branchProducts.0.minQuantity`, branchProduct ? branchProduct.minQuantity : undefined);
                 setValue(`branchProducts.0.maxQuantity`, branchProduct ? branchProduct.maxQuantity : undefined);
                 setValue(`branchProducts.0.quantity`, branchProduct ? branchProduct.quantity : 0);
@@ -294,10 +302,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <>
@@ -592,7 +598,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Đơn vị quy đổi</h3>
                                     {!watch("baseUnit.id") && (
-                                        <span className="mt-2 text-sm text-rose-500">
+                                        <span className="text-sm text-rose-500">
                                             Vui lòng chọn đơn vị cơ sở trước khi thêm chuyển đổi đơn vị
                                         </span>
                                     )}
@@ -640,7 +646,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                         {errors.unitConversions?.[index]?.smallerUnit?.id.message}
                                                     </span>
                                                 )}
-                                                {watch("baseUnit.id") === watch(`unitConversions.${index}.smallerUnit.id`) && (
+                                                {watch("baseUnit.id") ===
+                                                    watch(`unitConversions.${index}.smallerUnit.id`) && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
                                                         Đơn vị quy đổi không thể trùng với đơn vị cơ sở
                                                     </span>
@@ -649,7 +656,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                             <div className="w-6/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                    Số lượng (1 đơn vị cơ sở = ? đơn vị) <span className="text-meta-1">*</span>
+                                                    Số lượng (1 đơn vị cơ sở = ? đơn vị){" "}
+                                                    <span className="text-meta-1">*</span>
                                                 </label>
                                                 <input
                                                     {...register(`unitConversions.${index}.factorConversion`)}

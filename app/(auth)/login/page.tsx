@@ -23,6 +23,7 @@ const LogIn: React.FC = () => {
                                     alt="Logo"
                                     width={200}
                                     height={55}
+                                    priority
                                 />
                                 <Image
                                     className="dark:hidden"
@@ -30,6 +31,7 @@ const LogIn: React.FC = () => {
                                     alt="Logo"
                                     width={200}
                                     height={55}
+                                    priority
                                 />
                             </Link>
 
