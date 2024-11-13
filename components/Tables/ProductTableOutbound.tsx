@@ -125,36 +125,36 @@ const ProductsTableOutbound = ({
 
                             {/*<td className="border-b border-[#eee] px-4 py-5 text-center">*/}
                             {/*    <div className="flex items-center justify-center">*/}
-                            {/*        <Image src={product.image} alt="product-image" width={48} height={48} />*/}
+                            {/*        <Image src={product?.image} alt="product-image" width={48} height={48} />*/}
                             {/*    </div>*/}
                             {/*</td>*/}
 
                             <td className="border-b border-[#eee] px-4 py-5 text-left">
-                                <p className="text-black dark:text-white">{product.product.productName}</p>
+                                <p className="text-black dark:text-white">{product?.product?.productName}</p>
                             </td>
 
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="text"
                                     defaultValue={
-                                        product.productBaseUnit?.unitName ? product.productBaseUnit.unitName : ""
+                                        product?.productBaseUnit?.unitName ? product?.productBaseUnit.unitName : ""
                                     }
                                     disabled={!active}
                                     className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
                             </td>
 
-                            {product.batches ? (
+                            {product?.batches ? (
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <select
-                                        value={product.batch.batchCode}
+                                        value={product?.batch.batchCode}
                                         onChange={(e) => handleChangeBatchCode(e, key)}
                                         className={`w-full min-w-[40px] appearance-none rounded border border-strokedark bg-transparent px-3 py-2 outline-none transition`}
                                     >
                                         <option value="" className="text-black dark:text-white">
                                             Chọn lô
                                         </option>
-                                        {product.batches.map((batch) => (
+                                        {product?.batches.map((batch) => (
                                             <option
                                                 key={batch.id}
                                                 value={batch.batchCode}
@@ -172,24 +172,24 @@ const ProductsTableOutbound = ({
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <input
                                         type="text"
-                                        value={product.batch.batchCode}
+                                        value={product?.batch.batchCode}
                                         disabled
                                         className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                     />
                                 </td>
                             )}
 
-                            {outboundType === "BAN_HANG" && product.productUnits && (
+                            {outboundType === "BAN_HANG" && product?.productUnits && (
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <select
-                                        value={product.targetUnit?.id}
+                                        value={product?.targetUnit?.id}
                                         onChange={(e) => handleChangeUnit(e, key)}
                                         className={`w-full min-w-[40px] appearance-none rounded border border-strokedark bg-transparent px-3 py-2 outline-none transition`}
                                     >
                                         <option value="" className="text-black dark:text-white">
                                             Chọn đơn vị xuất
                                         </option>
-                                        {product.productUnits.map((unit) => (
+                                        {product?.productUnits.map((unit) => (
                                             <option
                                                 key={unit.id}
                                                 value={unit.id}
@@ -205,7 +205,7 @@ const ProductsTableOutbound = ({
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="number"
-                                    value={product.outboundQuantity}
+                                    value={product?.outboundQuantity}
                                     disabled={!active}
                                     onChange={(e) => handleChangeQuantity(e, key)}
                                     className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -220,7 +220,7 @@ const ProductsTableOutbound = ({
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="number"
-                                    value={product.price}
+                                    value={product?.price}
                                     disabled={!active}
                                     onChange={(e) => handleChangeOutboundPrice(e, key)}
                                     className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -235,7 +235,7 @@ const ProductsTableOutbound = ({
                             {/* <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="number"
-                                    value={product.discount}
+                                    value={product?.discount}
                                     disabled={!active}
                                     onChange={(e) => handleChangeDiscount(e, key)}
                                     className="w-8 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -246,7 +246,7 @@ const ProductsTableOutbound = ({
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="date"
-                                    value={formatDateTimeYYYYMMDD(product.batch.expireDate)}
+                                    value={formatDateTimeYYYYMMDD(product?.batch.expireDate)}
                                     disabled
                                     className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
@@ -254,10 +254,10 @@ const ProductsTableOutbound = ({
 
                             {/*<td className="border-b border-[#eee] px-4 py-5 text-center">*/}
                             {/*    <p className="text-meta-5">*/}
-                            {/*        {product.price &&*/}
-                            {/*            product.outboundQuantity &&*/}
-                            {/*            product.discount &&*/}
-                            {/*            `${(product.price * product.outboundQuantity * (100 - product.discount)) / 100}`}*/}
+                            {/*        {product?.price &&*/}
+                            {/*            product?.outboundQuantity &&*/}
+                            {/*            product?.discount &&*/}
+                            {/*            `${(product?.price * product?.outboundQuantity * (100 - product?.discount)) / 100}`}*/}
                             {/*    </p>*/}
                             {/*</td>*/}
 

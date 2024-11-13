@@ -594,7 +594,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                         )}
 
                     {viewMode === "details" &&
-                        ["CHO_DUYET"].includes(outboundStatus as string) &&
+                        ["CHO_DUYET", "BAN_NHAP"].includes(outboundStatus as string) &&
                         (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") && (
                             <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
                                 <button
