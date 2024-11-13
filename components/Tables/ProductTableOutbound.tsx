@@ -103,15 +103,21 @@ const ProductsTableOutbound = ({
                         <th className="p-4 text-center font-medium text-black">STT</th>
                         {/*<th className="p-4 text-center font-medium text-black">Ảnh</th>*/}
                         <th className="p-4 text-center font-medium text-black">Tên sản phẩm</th>
-                        <th className="p-4 text-center font-medium text-black">Đơn vị</th>
-                        <th className="p-4 text-center font-medium text-black">Mã lô</th>
+                        {outboundType !== "BAN_HANG" && (
+                            <th className="p-4 text-center font-medium text-black">Đơn vị</th>
+                        )}
+                        {outboundType !== "BAN_HANG" && (
+                            <th className="p-4 text-center font-medium text-black">Mã lô</th>
+                        )}
                         {outboundType === "BAN_HANG" && (
                             <th className="p-4 text-center font-medium text-black">Đơn vị xuất</th>
                         )}
                         <th className="p-4 text-center font-medium text-black">Số lượng xuất</th>
                         <th className="p-4 text-center font-medium text-black">Đơn giá</th>
                         {/* <th className="p-4 text-center font-medium text-black">Chiết khấu</th> */}
-                        <th className="p-4 text-center font-medium text-black">Hạn sử dụng</th>
+                        {outboundType !== "BAN_HANG" && (
+                            <th className="p-4 text-center font-medium text-black">Hạn sử dụng</th>
+                        )}
                         {/*<th className="p-4 text-center font-medium text-black">Thành tiền</th>*/}
                     </tr>
                 </thead>
@@ -133,18 +139,20 @@ const ProductsTableOutbound = ({
                                 <p className="text-black dark:text-white">{product?.product?.productName}</p>
                             </td>
 
-                            <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                <input
-                                    type="text"
-                                    defaultValue={
-                                        product?.productBaseUnit?.unitName ? product?.productBaseUnit.unitName : ""
-                                    }
-                                    disabled={!active}
-                                    className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                />
-                            </td>
+                            {outboundType !== "BAN_HANG" && (
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="text"
+                                        defaultValue={
+                                            product?.productBaseUnit?.unitName ? product?.productBaseUnit.unitName : ""
+                                        }
+                                        disabled={!active}
+                                        className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                </td>
+                            )}
 
-                            {product?.batches ? (
+                            {outboundType !== "BAN_HANG" && product?.batches && (
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <select
                                         value={product?.batch.batchCode}
@@ -168,7 +176,9 @@ const ProductsTableOutbound = ({
                                         <span className="mt-1 block w-full text-sm text-rose-500">Trùng mã lô</span>
                                     )}
                                 </td>
-                            ) : (
+                            )}
+
+                            {outboundType !== "BAN_HANG" && !product?.batches && (
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <input
                                         type="text"
@@ -202,6 +212,17 @@ const ProductsTableOutbound = ({
                                 </td>
                             )}
 
+                            {outboundType === "BAN_HANG" && !active && product?.targetUnit?.unitName && (
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="text"
+                                        value={product?.targetUnit?.unitName}
+                                        disabled
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                </td>
+                            )}
+
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="number"
@@ -217,20 +238,31 @@ const ProductsTableOutbound = ({
                                 )}
                             </td>
 
-                            <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                <input
-                                    type="number"
-                                    value={product?.price}
-                                    disabled={!active}
-                                    onChange={(e) => handleChangeOutboundPrice(e, key)}
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                />
-                                {errors.outboundProductDetails?.[key]?.batch?.price && (
-                                    <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.outboundProductDetails?.[key]?.batch?.price.message}
-                                    </span>
-                                )}
-                            </td>
+                            {outboundType !== "BAN_HANG" ? (
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="number"
+                                        value={product?.price}
+                                        disabled={!active}
+                                        onChange={(e) => handleChangeOutboundPrice(e, key)}
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                    {errors.outboundProductDetails?.[key]?.batch?.price && (
+                                        <span className="mt-1 block w-full text-sm text-rose-500">
+                                            {errors.outboundProductDetails?.[key]?.batch?.price.message}
+                                        </span>
+                                    )}
+                                </td>
+                            ) : (
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="number"
+                                        defaultValue={product?.sellPrice || product?.price}
+                                        disabled
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                </td>
+                            )}
 
                             {/* <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
@@ -243,14 +275,16 @@ const ProductsTableOutbound = ({
                                 <p className="inline text-meta-5">%</p>
                             </td> */}
 
-                            <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                <input
-                                    type="date"
-                                    value={formatDateTimeYYYYMMDD(product?.batch.expireDate)}
-                                    disabled
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                />
-                            </td>
+                            {outboundType !== "BAN_HANG" && (
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="date"
+                                        value={formatDateTimeYYYYMMDD(product?.batch.expireDate)}
+                                        disabled
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                </td>
+                            )}
 
                             {/*<td className="border-b border-[#eee] px-4 py-5 text-center">*/}
                             {/*    <p className="text-meta-5">*/}
