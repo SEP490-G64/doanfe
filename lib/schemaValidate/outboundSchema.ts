@@ -30,7 +30,7 @@ const ProductOutbound = z
         }),
         productBaseUnit: z.object({ id: z.number(), unitName: z.string() }),
         baseUnit: z.object({ id: z.number(), unitName: z.string() }),
-        targetUnit: z.object({ id: z.number().optional() }).optional(),
+        targetUnit: z.object({ id: z.number().optional(), unitName: z.string().trim().optional() }).optional(),
         batches: z.array(BatchProduct).optional(),
         batch: BatchProduct,
         productUnits: z.array(z.object({ id: z.number(), unitName: z.string() })).optional(),
