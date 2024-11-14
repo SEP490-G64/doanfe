@@ -21,6 +21,7 @@ import { debounce } from "lodash";
 import { jwtDecode } from "jwt-decode";
 import { FaPlus } from "react-icons/fa6";
 import { TfiSupport } from "react-icons/tfi";
+import { AiOutlineShop } from "react-icons/ai";
 
 import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
@@ -72,6 +73,55 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         manufacturerId: "",
         status: "",
     });
+    const [saveDraft, setSaveDraft] = useState(false);
+
+    const renderInboundStatus = useCallback((status: string | undefined) => {
+        if (!status) return;
+        switch (status) {
+            case "CHUA_LUU":
+                return (
+                    <p className={"inline-flex rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger"}>
+                        Khởi tạo
+                    </p>
+                );
+            case "BAN_NHAP":
+                return (
+                    <p className={"inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Bản nháp
+                    </p>
+                );
+            case "CHO_DUYET":
+                return (
+                    <p className={"inline-flex rounded bg-primary/10 px-3 py-1 text-sm font-medium text-primary"}>
+                        Chờ duyệt
+                    </p>
+                );
+            case "CHO_HANG":
+                return (
+                    <p className={"inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Chờ hàng
+                    </p>
+                );
+            case "KIEM_HANG":
+                return (
+                    <p className={"inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Kiểm hàng
+                    </p>
+                );
+            case "DANG_THANH_TOAN":
+                return (
+                    <p className={"inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Đang thanh toán
+                    </p>
+                );
+            case "HOAN_THANH":
+                return (
+                    <p className={"inline-flex rounded bg-success/10 px-3 py-1 text-sm font-medium text-success"}>
+                        Hoàn thành
+                    </p>
+                );
+        }
+    }, []);
 
     const {
         register,
@@ -200,12 +250,13 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         }
     };
 
-    const getBranchOpts = async (currenBranchId: number) => {
+    const getBranchOpts = async (currentBranchId: string) => {
         try {
             const response = await getAllBranch(sessionToken);
+            console.log(currentBranchId);
 
             if (response.message === "200 OK") {
-                setBranches(response.data.filter((b: Branch) => b.id !== currenBranchId));
+                setBranches(response.data.filter((b: Branch) => b.id !== currentBranchId));
             }
         } catch (error) {
             console.log(error);
@@ -265,13 +316,15 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         e.preventDefault();
         const response = await changeInboundStatus(inboundId as string, status, sessionToken);
         if (response.status === "SUCCESS") {
-            router.push("/inbound/list");
             router.refresh();
+            await getInforInbound();
+            if (inboundStatus === "CHO_HANG") router.push(`/inbound/update/${inboundId}`);
         }
     };
 
-    const handleSubmitInbound = async (e: React.MouseEvent) => {
-        e.preventDefault();
+    const handleSubmitInbound = async (e?: React.MouseEvent) => {
+        e?.preventDefault();
+        console.log("Con c gi dang dien ra vay ?");
         const response = await submitInbound(inboundId as string, sessionToken);
         if (response.status === "SUCCESS") {
             router.push("/inbound/list");
@@ -288,14 +341,18 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         console.log(inbound);
         setLoading(true);
         try {
-            delete inbound.fromBranch;
+            if (inboundType === "NHAP_TU_NHA_CUNG_CAP") delete inbound.fromBranch;
+            else delete inbound.supplier;
             const response = await submitDraft(inbound, sessionToken);
 
             if (response && response.status === "SUCCESS") {
-                router.push("/inbound/list");
-                router.refresh();
                 if (inboundStatus === "KIEM_HANG")
                     await changeInboundStatus(inboundId as string, "KIEM_HANG", sessionToken);
+                if (!saveDraft && inboundStatus === "CHUA_LUU")
+                    await changeInboundStatus(watch("inboundId")!.toString(), "CHO_DUYET", sessionToken);
+                if (!saveDraft && inboundStatus === "KIEM_HANG") await handleSubmitInbound();
+                router.push("/inbound/list");
+                router.refresh();
             }
         } catch (error) {
             console.log(error);
@@ -306,10 +363,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
@@ -408,7 +463,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     </label>
                                     <textarea
                                         {...register("note")}
-                                        rows={2}
+                                        rows={3}
                                         placeholder="Nhập ghi chú"
                                         disabled={viewMode === "details"}
                                         className="w-full rounded-lg border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -425,7 +480,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         <SelectGroupTwo
                                             register={{ ...register("fromBranch.id") }}
                                             watch={watch("fromBranch.id")}
-                                            icon={<TfiSupport />}
+                                            icon={<AiOutlineShop />}
                                             placeholder="Chọn chi nhánh xuất"
                                             disabled={
                                                 viewMode === "details" ||
@@ -476,9 +531,12 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     </label>
                                     <textarea
                                         {...register("note")}
-                                        rows={2}
+                                        rows={3}
                                         placeholder="Nhập ghi chú"
-                                        disabled={viewMode === "details"}
+                                        disabled={
+                                            viewMode === "details" ||
+                                            ["CHO_DUYET", "CHO_HANG", "HOAN_THANH"].includes(inboundStatus as string)
+                                        }
                                         className="w-full rounded-lg border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                     ></textarea>
                                 </div>
@@ -537,6 +595,12 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     disabled
                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                 />
+                            </div>
+                            <div className="mb-4.5">
+                                <label className="mb-3 mr-3 inline-flex text-sm font-medium text-black dark:text-white">
+                                    Trạng thái đơn:
+                                </label>
+                                {renderInboundStatus(inboundStatus)}
                             </div>
                         </div>
                     </div>
@@ -642,16 +706,66 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                             />
                         )}
 
-                        {viewMode !== "details" &&
-                            ["CHUA_LUU", "BAN_NHAP", "KIEM_HANG"].includes(inboundStatus as string) && (
-                                <button
-                                    className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                    onClick={() => console.log(errors)}
-                                >
-                                    {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
-                                </button>
-                            )}
+                        {viewMode === "create" && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={() => {
+                                            setSaveDraft(false);
+                                            console.log(errors);
+                                        }}
+                                        // onClick={() => console.log(errors)}
+                                    >
+                                        Tạo và gửi đơn
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        type="submit"
+                                        onClick={() => setSaveDraft(true)}
+                                    >
+                                        Lưu đơn
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {viewMode === "update" && ["CHUA_LUU", "BAN_NHAP"].includes(inboundStatus as string) && (
+                            <button
+                                className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                type="submit"
+                                // onClick={() => console.log(errors)}
+                            >
+                                Cập nhật
+                            </button>
+                        )}
+
+                        {viewMode === "update" && ["KIEM_HANG"].includes(inboundStatus as string) && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={() => setSaveDraft(false)}
+                                        // onClick={() => console.log(errors)}
+                                    >
+                                        Nhập hàng
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        type="submit"
+                                        onClick={() => setSaveDraft(true)}
+                                    >
+                                        Cập nhật
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {viewMode === "details" &&
                             (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") &&

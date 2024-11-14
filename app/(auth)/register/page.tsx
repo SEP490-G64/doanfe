@@ -22,6 +22,7 @@ const Register: React.FC = () => {
                                 alt="Logo"
                                 width={252}
                                 height={62}
+                                priority
                             />
                             <Image
                                 className="dark:hidden"
@@ -29,6 +30,7 @@ const Register: React.FC = () => {
                                 alt="Logo"
                                 width={252}
                                 height={62}
+                                priority
                             />
                         </Link>
 

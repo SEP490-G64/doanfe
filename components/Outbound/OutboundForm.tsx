@@ -19,29 +19,31 @@ import {
 import { debounce } from "lodash";
 import ReactSelect from "react-select";
 import { FaPlus } from "react-icons/fa6";
+import { TfiSupport } from "react-icons/tfi";
+import { AiOutlineShop } from "react-icons/ai";
 
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
 import IconButton from "@/components/UI/IconButton";
 import Loader from "@/components/common/Loader";
-import { ProductInfor } from "@/types/inbound";
-import { useAppContext } from "../AppProvider/AppProvider";
+import { ProductInfor } from "@/types/outbound";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { OutboundBody, OutboundBodyType } from "@/lib/schemaValidate/outboundSchema";
 import { getAllSupplier } from "@/services/supplierServices";
 import { getAllBranch } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
-import { getAllowedProducts, getProductBySupplierId } from "@/services/productServices";
+import { getProductByBranchId } from "@/services/productServices";
 import { Supplier } from "@/types/supplier";
 import {
-    changeInboundStatus,
+    changeOutboundStatus,
     createInitOutbound,
     getOutboundById,
     submitDraft,
-    submitInbound,
+    submitDraftForSell,
+    submitOutbound,
 } from "@/services/outboundServices";
 import SelectGroupTwo from "../SelectGroup/SelectGroupTwo";
-import { TfiSupport } from "react-icons/tfi";
-import ProductsTableAfterCheck from "../Tables/ProductsTableAfterCheck";
+import ProductsTableOutbound from "../Tables/ProductTableOutbound";
 
 const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update" | "create"; outboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -52,15 +54,56 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     const userInfo = tokenDecoded.information;
     const [user, setUser] = useState<{ firstName: string; lastName: string } | undefined>();
     const [branch, setBranch] = useState<{ id: number; branchName: string } | undefined>();
-    const [outboundStatus, setInboundStatus] = useState<string | undefined>();
+    const [outboundStatus, setOutboundStatus] = useState<string | undefined>();
     const [suppliers, setSuppliers] = useState([]);
     const [branches, setBranches] = useState([]);
     const [productOpts, setProductOpts] = useState<ProductInfor[]>([]);
     const { isOpen, onOpenChange } = useDisclosure();
-    const [outboundType, setOutboundType] = useState<"HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO">(
-        "CHUYEN_KHO_NOI_BO"
-    );
+    const [outboundType, setOutboundType] = useState<"HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO">();
     const [product, setProduct] = useState<ProductInfor>();
+    const [saveDraft, setSaveDraft] = useState(false);
+
+    const renderInboundStatus = useCallback((status: string | undefined) => {
+        if (!status) return;
+        switch (status) {
+            case "CHUA_LUU":
+                return (
+                    <p className={"inline-flex rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger"}>
+                        Khởi tạo
+                    </p>
+                );
+            case "BAN_NHAP":
+                return (
+                    <p className={"inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Bản nháp
+                    </p>
+                );
+            case "CHO_DUYET":
+                return (
+                    <p className={"inline-flex rounded bg-primary/10 px-3 py-1 text-sm font-medium text-primary"}>
+                        Chờ duyệt
+                    </p>
+                );
+            case "KIEM_HANG":
+                return (
+                    <p className={"inline-flex rounded bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary"}>
+                        Kiểm hàng
+                    </p>
+                );
+            case "DANG_THANH_TOAN":
+                return (
+                    <p className={"inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Đang thanh toán
+                    </p>
+                );
+            case "HOAN_THANH":
+                return (
+                    <p className={"inline-flex rounded bg-success/10 px-3 py-1 text-sm font-medium text-success"}>
+                        Hoàn thành
+                    </p>
+                );
+        }
+    }, []);
 
     const {
         register,
@@ -77,8 +120,8 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             createdDate: undefined,
             note: undefined,
             createdBy: undefined,
-            supplier: { id: "" },
-            fromBranch: { id: "" },
+            supplier: undefined,
+            fromBranch: undefined,
             toBranch: undefined,
             outboundProductDetails: [],
         },
@@ -86,6 +129,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     const products = watch("outboundProductDetails");
     const selectedSupId = watch("supplier.id");
+    const selectedToBranchId = watch("toBranch.id");
     const selectedFromBranchId = watch("fromBranch.id");
 
     // Debounced fetch options
@@ -107,7 +151,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     const addItem = (e?: React.MouseEvent) => {
         e!.preventDefault();
-        setValue("outboundProductDetails", [...products, { ...product, baseUnit: { id: 1, unitName: "viên" } }]);
+        setValue("outboundProductDetails", [...products, product]);
     };
 
     const initOutbound = async () => {
@@ -117,19 +161,24 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         }
         setLoading(true);
         try {
-            const response = await createInitOutbound(outboundType, sessionToken);
+            const response = await createInitOutbound(
+                outboundType as "HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO",
+                sessionToken
+            );
 
             if (response.status === "SUCCESS") {
                 setValue("outboundId", response.data.id);
                 setValue("outboundCode", response.data.outboundCode);
                 setValue("outboundType", response.data.outboundType);
                 setValue("createdDate", response.data.createdDate);
-                setValue("toBranch.id", response.data.toBranch.id);
+                setValue("fromBranch.id", response.data.fromBranch.id);
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy.id);
                 setUser(response.data.createdBy);
-                setBranch(response.data.toBranch);
-                setInboundStatus(response.data.status);
+                setBranch(response.data.fromBranch);
+                setOutboundStatus(response.data.status);
+
+                if (outboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.fromBranch.id);
             }
         } catch (error) {
             console.log(error);
@@ -138,7 +187,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         }
     };
 
-    const getInforInbound = async () => {
+    const getInforOutbound = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
@@ -152,17 +201,19 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                 setValue("outboundCode", response.data.outboundCode);
                 setValue("outboundType", response.data.outboundType);
                 setValue("createdDate", response.data.createdDate);
-                setValue("toBranch.id", response.data.toBranch.id);
+                setValue("toBranch.id", response.data.toBranch?.id);
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy?.id);
-                setValue("supplier.id", response.data.supplier.id);
-                setValue("outboundProductDetails", response.data.productBatchDetails);
+                setValue("supplier.id", response.data.supplier?.id);
+                setValue("outboundProductDetails", response.data.outboundProductDetails);
                 setUser(response.data.createdBy);
                 setBranch(response.data.toBranch);
-                setInboundStatus(response.data.status);
+                setOutboundStatus(response.data.status);
                 setOutboundType(response.data.outboundType);
                 setSelectedSupplier(response.data.supplier);
-                setSelectedFromBranch(response.data.fromBranch);
+                setSelectedToBranch(response.data.toBranch);
+
+                if (outboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.fromBranch.id);
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -183,12 +234,12 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         }
     };
 
-    const getBranchOpts = async () => {
+    const getBranchOpts = async (currentBranchId: string) => {
         try {
             const response = await getAllBranch(sessionToken);
 
             if (response.message === "200 OK") {
-                setBranches(response.data.filter((b: Branch) => b.id !== branch?.id));
+                setBranches(response.data.filter((b: Branch) => b.id !== currentBranchId));
             }
         } catch (error) {
             console.log(error);
@@ -199,10 +250,15 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         if (isFetchingProduct) return;
         setIsFetchingProduct(true);
         try {
-            let response;
-            if (outboundType === "TRA_HANG")
-                response = await getProductBySupplierId(selectedSupId.toString(), inputString, sessionToken);
-            else response = await getAllowedProducts(inputString, sessionToken);
+            // let response;
+            // if (outboundType === "TRA_HANG")
+            //     response = await getProductByBranchId(
+            //         branch!.id.toString(),
+            //         inputString,
+            //         sessionToken,
+            //         selectedSupId.toString()
+            //     );
+            const response = await getProductByBranchId(branch!.id.toString(), inputString, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
@@ -214,48 +270,47 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     };
 
     useEffect(() => {
+        getSupplierOpts();
         if (viewMode === "create") {
             onOpenChange();
         } else {
-            getInforInbound();
+            getInforOutbound();
         }
-        getSupplierOpts();
-        getBranchOpts();
     }, []);
 
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
-    const [selectedFromBranch, setSelectedFromBranch] = useState<Branch | undefined>();
+    const [selectedToBranch, setSelectedToBranch] = useState<Branch | undefined>();
 
     useEffect(() => {
         if (selectedSupId) {
-            const sup = suppliers.find((item: Supplier) => item.id.toString() === selectedSupId);
+            const sup = suppliers.find((item: Supplier) => Number(item.id) == selectedSupId);
             setSelectedSupplier(sup);
         }
     }, [selectedSupId]);
 
     useEffect(() => {
-        if (selectedFromBranchId) {
-            const branch = branches.find((item: Branch) => item.id.toString() === selectedFromBranchId);
-            setSelectedFromBranch(branch);
+        if (selectedToBranchId) {
+            const branch = branches.find((item: Branch) => Number(item.id) == selectedToBranchId);
+            setSelectedToBranch(branch);
         }
-    }, [selectedFromBranchId]);
+    }, [selectedToBranchId]);
 
-    const handleOnClick = async (e: React.MouseEvent, status: string) => {
+    const handleChangeStatus = async (e: React.MouseEvent, status: string) => {
         e.preventDefault();
-        const response = await changeInboundStatus(outboundId as string, status, sessionToken);
+        const response = await changeOutboundStatus(outboundId as string, status, sessionToken);
         if (response.status === "SUCCESS") {
             router.push("/outbound/list");
             router.refresh();
         }
     };
 
-    const handleSubmitInbound = async (e: React.MouseEvent) => {
+    const handleSubmitOutbound = async (e: React.MouseEvent) => {
         e.preventDefault();
-        const response = await submitInbound(outboundId as string, sessionToken);
+        const response = await submitOutbound(outboundId as string, sessionToken);
         if (response.status === "SUCCESS") {
             router.push("/outbound/list");
             router.refresh();
-            await changeInboundStatus(outboundId as string, "HOAN_THANH", sessionToken);
+            await changeOutboundStatus(outboundId as string, "HOAN_THANH", sessionToken);
         }
     };
 
@@ -267,14 +322,24 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         console.log(outbound);
         setLoading(true);
         try {
-            delete outbound.fromBranch;
-            const response = await submitDraft(outbound, sessionToken);
+            if (outboundType === "CHUYEN_KHO_NOI_BO") delete outbound.supplier;
+            else if (outboundType === "TRA_HANG") delete outbound.toBranch;
+            else {
+                delete outbound.supplier;
+                delete outbound.toBranch;
+            }
+
+            let response;
+            if (outboundType !== "BAN_HANG") response = await submitDraft(outbound, sessionToken);
+            else response = await submitDraftForSell(outbound, sessionToken);
 
             if (response && response.status === "SUCCESS") {
+                if (!saveDraft && outboundType !== "BAN_HANG")
+                    await changeOutboundStatus(watch("outboundId")!.toString(), "CHO_DUYET", sessionToken);
+                if (!saveDraft && outboundType === "BAN_HANG")
+                    await changeOutboundStatus(watch("outboundId")!.toString(), "HOAN_THANH", sessionToken);
                 router.push("/outbound/list");
                 router.refresh();
-                if (outboundStatus === "KIEM_HANG")
-                    await changeInboundStatus(outboundId as string, "KIEM_HANG", sessionToken);
             }
         } catch (error) {
             console.log(error);
@@ -301,7 +366,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 defaultValue={user ? `${user?.firstName} ${user?.lastName}` : ""}
                                 type="text"
                                 placeholder="Nhập người tạo"
-                                disabled={viewMode === "details"}
+                                disabled
                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                             />
                         </div>
@@ -323,7 +388,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 <SelectGroupTwo
                                     register={{ ...register("toBranch.id") }}
                                     watch={watch("toBranch.id")}
-                                    icon={<TfiSupport />}
+                                    icon={<AiOutlineShop />}
                                     placeholder="Chọn chi nhánh xuất"
                                     disabled={
                                         viewMode === "details" ||
@@ -346,7 +411,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     Địa chỉ xuất hàng <span className="text-meta-1">*</span>
                                 </label>
                                 <input
-                                    defaultValue={selectedFromBranch?.location ? selectedFromBranch?.location : ""}
+                                    defaultValue={selectedToBranch?.location ? selectedToBranch?.location : ""}
                                     type="text"
                                     placeholder="Nhập địa chỉ xuất hàng"
                                     disabled
@@ -396,7 +461,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             </div>
                         </div>
                     )}
-                    {outboundType === "BAN_HANG" && (
+                    {/* {outboundType === "BAN_HANG" && (
                         <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                             <div className="w-full xl:w-1/2">
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
@@ -422,18 +487,29 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 />
                             </div>
                         </div>
-                    )}
+                    )} */}
 
-                    <div className="mb-4.5">
-                        <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                            Lí do xuất hàng
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="Nhập lí do xuất hàng"
-                            disabled={viewMode === "details"}
-                            className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                        />
+                    <div className="mb-4.5 flex flex-row gap-6">
+                        <div className="w-1/2">
+                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                Lí do xuất hàng
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Nhập lí do xuất hàng"
+                                disabled={
+                                    viewMode === "details" ||
+                                    ["CHO_DUYET", "KIEM_HANG", "HOAN_THANH"].includes(outboundStatus as string)
+                                }
+                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                            />
+                        </div>
+                        <div className="w-1/2">
+                            <label className="mb-3 mr-3 inline-flex text-sm font-medium text-black dark:text-white">
+                                Trạng thái đơn:
+                            </label>
+                            {renderInboundStatus(outboundStatus)}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -455,7 +531,23 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     const option = productOpts.find(
                                         (opt) => opt.registrationCode === optionValue.value
                                     );
-                                    setProduct(option);
+                                    setProduct({
+                                        ...option,
+                                        baseUnit: option?.productBaseUnit,
+                                        product: {
+                                            id: option?.id,
+                                            productName: option?.productName,
+                                            productCode: option?.registrationCode,
+                                        },
+                                        batch: {
+                                            id: undefined,
+                                            batchCode: undefined,
+                                            expireDate: undefined,
+                                        },
+                                        targetUnit: {
+                                            id: undefined,
+                                        },
+                                    });
                                 }}
                                 onInputChange={handleTypeProduct}
                                 options={productOpts.map((option) => ({
@@ -479,36 +571,87 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)} />
                         </div>
                     )}
-                    <ProductsTableAfterCheck
-                        data={
-                            products.map((p) =>
-                                !p.batches || p.batches.length === 0
-                                    ? {
-                                          ...p,
-                                          batches: [
-                                              {
-                                                  batchCode: undefined,
-                                                  inboundBatchQuantity: 1,
-                                                  inboundPrice: 1,
-                                                  expireDate: undefined,
-                                              },
-                                          ],
-                                      }
-                                    : p
-                            ) || []
-                        }
-                        active={outboundStatus === "KIEM_HANG"}
+                    <ProductsTableOutbound
+                        data={products || []}
+                        active={viewMode !== "details" && ["BAN_NHAP", "CHUA_LUU"].includes(outboundStatus as string)}
                         errors={errors}
+                        outboundType={outboundType}
                         setProducts={setValue}
                     />
 
-                    {viewMode !== "details" && (
-                        <button
-                            className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                            type="submit"
-                        >
-                            {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
-                        </button>
+                    {viewMode === "details" &&
+                        ["BAN_NHAP"].includes(outboundStatus as string) &&
+                        userInfo?.roles[0].type === "STAFF" && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <button
+                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    type="submit"
+                                    onClick={(e) => handleChangeStatus(e, "CHO_DUYET")}
+                                >
+                                    Gửi đơn
+                                </button>
+                            </div>
+                        )}
+
+                    {viewMode === "details" &&
+                        ["CHO_DUYET", "BAN_NHAP"].includes(outboundStatus as string) &&
+                        (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <button
+                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    type="submit"
+                                    onClick={(e) => handleChangeStatus(e, "KIEM_HANG")}
+                                >
+                                    Duyệt Đơn
+                                </button>
+                            </div>
+                        )}
+
+                    {viewMode === "details" && ["KIEM_HANG"].includes(outboundStatus as string) && (
+                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                            <button
+                                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                type="submit"
+                                onClick={(e) => handleSubmitOutbound(e)}
+                            >
+                                Xuất hàng
+                            </button>
+                        </div>
+                    )}
+
+                    {viewMode === "create" && outboundType !== "BAN_HANG" && (
+                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                            <div className="w-1/2">
+                                <button
+                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    type="submit"
+                                    onClick={() => console.log(errors)}
+                                >
+                                    Tạo và gửi đơn
+                                </button>
+                            </div>
+                            <div className="w-1/2">
+                                <button
+                                    className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                    type="submit"
+                                    onClick={() => setSaveDraft(true)}
+                                >
+                                    Lưu đơn
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {viewMode === "create" && outboundType === "BAN_HANG" && (
+                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                            <button
+                                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                type="submit"
+                                onClick={() => console.log(errors)}
+                            >
+                                Tạo đơn
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

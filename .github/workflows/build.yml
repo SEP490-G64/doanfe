@@ -1,6 +1,9 @@
 name: GitHub Actions CI
 run-name: CI for NextJS
-on: [pull_request, workflow_dispatch]
+on:
+    pull_request:
+    workflow_dispatch:
+
 jobs:
     NextJS-Build:
         runs-on: ubuntu-latest
@@ -27,3 +30,4 @@ jobs:
 
             - name: Build Next.js app
               run: yarn build
+

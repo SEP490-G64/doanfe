@@ -240,11 +240,19 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                 fields.forEach((field) => setValue(field, response.data[field]));
 
-                const branchProduct = response.data.branchProducts.find(product => product.branch?.id === userInfo?.branch?.id);
+                const branchProduct = response.data.branchProducts.find(
+                    (product) => product.branch?.id === userInfo?.branch?.id
+                );
 
                 // Cập nhật các trường của sản phẩm đầu tiên (index 0)
-                setValue(`branchProducts.0.branch.branchName`, branchProduct ? branchProduct.branch?.branchName : userInfo?.branch?.branchName);
-                setValue(`branchProducts.0.storageLocation.shelfName`, branchProduct ? branchProduct.storageLocation?.shelfName : undefined);
+                setValue(
+                    `branchProducts.0.branch.branchName`,
+                    branchProduct ? branchProduct.branch?.branchName : userInfo?.branch?.branchName
+                );
+                setValue(
+                    `branchProducts.0.storageLocation.shelfName`,
+                    branchProduct ? branchProduct.storageLocation?.shelfName : undefined
+                );
                 setValue(`branchProducts.0.minQuantity`, branchProduct ? branchProduct.minQuantity : undefined);
                 setValue(`branchProducts.0.maxQuantity`, branchProduct ? branchProduct.maxQuantity : undefined);
                 setValue(`branchProducts.0.quantity`, branchProduct ? branchProduct.quantity : 0);
@@ -294,10 +302,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <>

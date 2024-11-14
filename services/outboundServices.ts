@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
-import { InboundBodyType } from "@/lib/schemaValidate/inboundSchema";
 import { OutboundBodyType } from "@/lib/schemaValidate/outboundSchema";
 
 export const getListOutbound = async (page: number, size: number, token: string) => {
@@ -64,27 +63,46 @@ export const createInitOutbound = async (
 
 export const submitDraft = async (outboundDraft: OutboundBodyType, token: string) => {
     try {
-        const res = await httpRequest.post("dsd/api/v1/staff/inbound/submit-draft", outboundDraft, {
+        const res = await httpRequest.post("dsd/api/v1/staff/outbound/submit-draft", outboundDraft, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data) {
-            toast.success("Lưu phiếu nhập thành công");
+            toast.success("Lưu phiếu xuất thành công");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Lưu phiếu nhập thất bại");
+            toast.error("Lưu phiếu xuất thất bại");
             console.log(error);
         }
     }
 };
 
-export const changeInboundStatus = async (id: string, status: string, token: string) => {
+export const submitDraftForSell = async (outboundDraft: OutboundBodyType, token: string) => {
+    try {
+        const res = await httpRequest.post("dsd/api/v1/staff/outbound/submit-draft-sell", outboundDraft, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.data) {
+            toast.success("Lưu phiếu xuất thành công");
+            return res;
+        }
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Lưu phiếu xuất thất bại");
+            console.log(error);
+        }
+    }
+};
+
+export const changeOutboundStatus = async (id: string, status: string, token: string) => {
     try {
         const res = await httpRequest.put(
-            `dsd/api/v1/staff/inbound/${id}/update-status`,
+            `dsd/api/v1/staff/outbound/${id}/update-status`,
             {},
             {
                 headers: { Authorization: `Bearer ${token}` },
@@ -93,41 +111,22 @@ export const changeInboundStatus = async (id: string, status: string, token: str
         );
 
         if (res.status === "SUCCESS") {
-            toast.success("Thay đổi trạng thái phiếu nhập thành công");
+            toast.success("Thay đổi trạng thái phiếu xuất thành công");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Thay đổi trạng thái phiếu nhập thất bại");
+            toast.error("Thay đổi trạng thái phiếu xuất thất bại");
             console.log(error);
         }
     }
 };
 
-export const updateInbound = async (inbound: InboundBodyType, id: string, token: string) => {
-    try {
-        const res = await httpRequest.put(`dsd/api/v1/staff/inbound/${id}`, inbound, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.data) {
-            toast.success("Cập nhật phiếu nhập thành công");
-            return res;
-        }
-    } catch (error: any) {
-        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
-        else {
-            toast.error("Cập nhật phiếu nhập thất bại");
-            console.log(error);
-        }
-    }
-};
-
-export const submitInbound = async (id: string, token: string) => {
+export const submitOutbound = async (id: string, token: string) => {
     try {
         const res = await httpRequest.put(
-            `dsd/api/v1/staff/inbound/${id}/submit`,
+            `dsd/api/v1/staff/outbound/${id}/submit`,
             {},
             {
                 headers: { Authorization: `Bearer ${token}` },
@@ -135,13 +134,13 @@ export const submitInbound = async (id: string, token: string) => {
         );
 
         if (res.status === "SUCCESS") {
-            toast.success("Nhập hàng thành công");
+            toast.success("Xuất hàng thành công");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Nhập hàng thất bại");
+            toast.error("Xuất hàng thất bại");
             console.log(error);
         }
     }

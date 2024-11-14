@@ -131,24 +131,14 @@ const ProductsTable = () => {
                 return <h5 className="text-black dark:text-white">{product.index}</h5>;
             case "urlImage":
                 return product.urlImage ? (
-                    <img
-                        src={product.urlImage}
-                        loading={"lazy"}
-                        alt="product-image"
-                        width={64}
-                        height={64}
-                    />
+                    <img src={product.urlImage} loading={"lazy"} alt="product-image" width={64} height={64} />
                 ) : (
                     <Image src={"/images/no-image.png"} loading={"lazy"} alt="product-image" width={64} height={64} />
                 );
             case "productName":
                 return <h5 className="font-normal text-black dark:text-white">{product.productName}</h5>;
             case "registrationCode":
-                return (
-                    <h5 className="font-normal text-black dark:text-white">
-                        {product.registrationCode}
-                    </h5>
-                );
+                return <h5 className="font-normal text-black dark:text-white">{product.registrationCode}</h5>;
             case "categoryName":
                 return <h5 className="font-normal text-black dark:text-white">{product.categoryName}</h5>;
             case "typeName":
@@ -157,26 +147,14 @@ const ProductsTable = () => {
                 return <h5 className="font-normal text-black dark:text-white">{product.manufacturerName}</h5>;
             case "inboundPrice":
                 return (
-                    <h5
-                        className={`font-normal ${
-                            product.inboundPrice ? "text-black dark:text-white" : "text-red"
-                        }`}
-                    >
-                        {product.inboundPrice
-                            ? `${product.inboundPrice.toLocaleString()} VND`
-                            : "Chưa tính"}
+                    <h5 className={`font-normal ${product.inboundPrice ? "text-black dark:text-white" : "text-red"}`}>
+                        {product.inboundPrice ? `${product.inboundPrice.toLocaleString()} VND` : "Chưa tính"}
                     </h5>
                 );
             case "sellPrice":
                 return (
-                    <h5
-                        className={`font-normal ${
-                            product.sellPrice ? "text-black dark:text-white" : "text-red"
-                        }`}
-                    >
-                        {product.sellPrice
-                            ? `${product.sellPrice.toLocaleString()} VND`
-                            : "Chưa quyết định"}
+                    <h5 className={`font-normal ${product.sellPrice ? "text-black dark:text-white" : "text-red"}`}>
+                        {product.sellPrice ? `${product.sellPrice.toLocaleString()} VND` : "Chưa quyết định"}
                     </h5>
                 );
             case "status":
@@ -215,7 +193,8 @@ const ProductsTable = () => {
                             <>
                                 {product.unitConversions.map((conversion) => (
                                     <h5 key={conversion.id} className="font-normal text-black dark:text-white">
-                                        = {conversion.factorConversion * product.quantity} {conversion.smallerUnit?.unitName}
+                                        = {conversion.factorConversion * product.quantity}{" "}
+                                        {conversion.smallerUnit?.unitName}
                                     </h5>
                                 ))}
                             </>
@@ -307,10 +286,8 @@ const ProductsTable = () => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <>
@@ -321,8 +298,7 @@ const ProductsTable = () => {
                     setDataSearch={setDataSearch}
                     handleSearch={handleSearch}
                 />
-                <div
-                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                     Tìm thấy <span className="font-bold text-blue-600">{total}</span> sản phẩm
                     <div className="max-w-full overflow-x-auto">
                         <Table
