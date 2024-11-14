@@ -165,3 +165,23 @@ export const deleteBranch = async (id: string, token: string) => {
         }
     }
 };
+
+export const exportOutbound = async (id: string, token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/outbound/generate-outbound/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            responseType: "blob",
+        });
+
+        if (res) {
+            return res;
+        }
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};

@@ -39,9 +39,16 @@ export const SupplierBody = z
             .trim()
             .max(20, "Giới hạn 20 kí tự")
             .optional()
-            .refine((value) => value === undefined || value.trim().length === 0 || faxNumberRegex.test(value), {
-                message: "Số fax không đúng định dạng",
-            }), // Kiểm tra số fax
+            .refine(
+                (value) =>
+                    value === undefined ||
+                    value.trim().length === 0 ||
+                    faxNumberRegex.test(value) ||
+                    phoneNumberRegex.test(value),
+                {
+                    message: "Số fax không đúng định dạng",
+                }
+            ), // Kiểm tra số fax
         status: z.boolean(),
     })
     .strict();

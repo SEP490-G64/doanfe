@@ -126,13 +126,11 @@ const TypesTable = () => {
                 return <h5 className="font-normal text-black dark:text-white">{type.typeName}</h5>;
             case "typeDescription":
                 return (
-                    <h5 className="font-normal text-black dark:text-white">
-                        {type.typeDescription
-                            ? type.typeDescription.length > 50
-                                ? type.typeDescription.substring(0, 50) + "..."
-                                : type.typeDescription
-                            : "Không mô tả"}
-                    </h5>
+                    <Tooltip content={type.typeDescription}>
+                        <h5 className="font-normal text-black dark:text-white line-clamp-1">
+                            {type.typeDescription || "Không mô tả"}
+                        </h5>
+                    </Tooltip>
                 );
             case "actions":
                 return (
@@ -280,7 +278,7 @@ const TypesTable = () => {
                                     <TableRow key={item?.id}>
                                         {(columnKey) => (
                                             <TableCell
-                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["typeName"].includes(columnKey as string) ? "text-left" : ""}`}
+                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark`}
                                             >
                                                 {renderCell(item, columnKey)}
                                             </TableCell>

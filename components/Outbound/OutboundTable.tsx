@@ -23,12 +23,15 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteBranch, getListOutbound } from "@/services/outboundServices";
+import { deleteBranch, exportOutbound, getListOutbound } from "@/services/outboundServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { outboundColumns } from "@/utils/data";
 import { Outbound } from "@/types/outbound";
 import { formatDateTime } from "@/utils/methods";
+import { exportInbound } from "@/services/inboundServices";
+import { CiExport } from "react-icons/ci";
+import { Inbound } from "@/types/inbound";
 
 const OutboundTable = () => {
     const router = useRouter();
@@ -40,6 +43,9 @@ const OutboundTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+    const [action, setAction] = useState<string>("");
+    const [code, setCode] = useState<string>("");
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -70,8 +76,9 @@ const OutboundTable = () => {
         }
     };
 
-    const handleOpenModal = (outboundId: string) => {
-        setSelectedId(outboundId);
+    const handleOpenModal = (inboundId: string, action: string) => {
+        setSelectedId(inboundId);
+        setAction(action);
         onOpen();
     };
 
@@ -97,6 +104,48 @@ const OutboundTable = () => {
     useEffect(() => {
         getListOutboundByPage();
     }, [page, rowsPerPage]);
+
+    const handleExport = async (id: string, code: string) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+
+        try {
+            const res = await exportOutbound(id, sessionToken);
+
+            if (res && res instanceof Blob) {
+                // Tạo URL tạm thời từ Blob để preview
+                const url = window.URL.createObjectURL(res);
+                setCode(code);
+
+                // Mở modal và hiển thị preview
+                setPreviewUrl(url);
+                handleOpenModal(id, "EXPORT");
+
+                toast.success("Xem trước xuất nhập hàng thành công");
+            } else {
+                toast.error("Dữ liệu không hợp lệ");
+            }
+        } catch (error) {
+            toast.error("Xem trước phiếu xuất hàng thất bại");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownload = () => {
+        if (previewUrl) {
+            const link = document.createElement('a');
+            link.href = previewUrl;
+            link.setAttribute('download', 'outbound-' + code + '.pdf');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success("Xuất phiếu xuất hàng thành công")
+        }
+    };
 
     const renderOutboundStatus = useCallback((status: string) => {
         switch (status) {
@@ -227,6 +276,11 @@ const OutboundTable = () => {
                                 <FaPencil />
                             </button>
                         </Tooltip>
+                        <Tooltip color="success" content="Xuất file" hidden={outbound.status !== "HOAN_THANH"}>
+                            <button className="hover:text-success" onClick={() => handleExport(outbound.id.toString(), outbound.inboundCode)}>
+                                <CiExport />
+                            </button>
+                        </Tooltip>
                     </div>
                 );
             default:
@@ -312,23 +366,46 @@ const OutboundTable = () => {
                     <ModalContent>
                         {(onClose) => (
                             <>
-                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                <ModalHeader className="flex flex-col gap-1">
+                                    {action === "Delete" ? "Xác nhận" : "Xem trước phiếu xuất hàng"}
+                                </ModalHeader>
                                 <ModalBody>
-                                    <p>Bạn có chắc muốn xóa đơn xuất này không</p>
+                                    {action === "Delete" ? (
+                                        <p>"Bạn có chắc muốn xóa phiếu xuất hàng này không"</p>
+                                    ) : (
+                                        <iframe
+                                            src={previewUrl}
+                                            width="100%"
+                                            height="500px"
+                                            title="Preview PDF"
+                                        ></iframe>
+                                    )}
                                 </ModalBody>
                                 <ModalFooter>
-                                    <Button color="default" variant="light" onPress={onClose}>
-                                        Hủy
-                                    </Button>
-                                    <Button
-                                        color="danger"
-                                        onPress={() => {
-                                            handleDelete(selectedId);
-                                            onClose();
-                                        }}
-                                    >
-                                        Xóa
-                                    </Button>
+                                    {action === "Delete" ? (
+                                        <>
+                                            <Button color="default" variant="light" onPress={onClose}>
+                                                Hủy
+                                            </Button>
+                                            <Button
+                                                color="danger"
+                                                onPress={() => {
+                                                    handleDelete(selectedId);
+                                                    onClose();
+                                                }}
+                                            >
+                                                Xóa
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button color="default" onPress={onClose}>
+                                                Đóng
+                                            </Button>
+                                            <Button color="success" onPress={handleDownload}>Tải xuống</Button>
+                                        </>
+                                    )}
+
                                 </ModalFooter>
                             </>
                         )}

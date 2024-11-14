@@ -37,7 +37,7 @@ function UpdateProfileForm() {
             userName: undefined,
             firstName: undefined,
             lastName: undefined,
-            phone: undefined,
+            phone: undefined
         },
     });
 
@@ -58,7 +58,7 @@ function UpdateProfileForm() {
                     "userName",
                     "firstName",
                     "lastName",
-                    "phone"
+                    "phone",
                 ];
                 fields.forEach((field) => {
                     setValue(field, response.data[field]);
@@ -78,12 +78,13 @@ function UpdateProfileForm() {
     }, []);
 
     const onSubmit = async (profile: ProfileBodyType) => {
-
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
+        profile.branch = user?.branch || undefined;
+        profile.roles = user?.roles || [];
         try {
             const response = await updateProfile(profile, sessionToken);
 
@@ -108,14 +109,13 @@ function UpdateProfileForm() {
         return (
             <>
                 <div className="text-center">
-                    <h3 className="mb-1.5 text-2xl font-semibold text-black dark:text-white">
-                        {user?.userName}
-                    </h3>
-                    <p className="font-medium">{user?.roles && user.roles.length > 0 ? user.roles[0].type : "No role assigned"}</p>
+                    <h3 className="mb-1.5 text-2xl font-semibold text-black dark:text-white">{user?.userName}</h3>
+                    <p className="font-medium">
+                        {user?.roles && user.roles.length > 0 ? user.roles[0].type : "No role assigned"}
+                    </p>
                 </div>
                 <div className="flex flex-col gap-9">
-                    <div
-                        className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                             <div className="p-6.5">
                                 <div className="mb-4.5">
@@ -130,8 +130,8 @@ function UpdateProfileForm() {
                                     />
                                     {errors.userName && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.userName.message}
-                                    </span>
+                                            {errors.userName.message}
+                                        </span>
                                     )}
                                 </div>
 
@@ -148,8 +148,8 @@ function UpdateProfileForm() {
                                         />
                                         {errors.firstName && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.firstName.message}
-                                        </span>
+                                                {errors.firstName.message}
+                                            </span>
                                         )}
                                     </div>
 
@@ -165,8 +165,8 @@ function UpdateProfileForm() {
                                         />
                                         {errors.lastName && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.lastName.message}
-                                        </span>
+                                                {errors.lastName.message}
+                                            </span>
                                         )}
                                     </div>
                                 </div>
@@ -184,8 +184,8 @@ function UpdateProfileForm() {
                                         />
                                         {errors.email && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.email.message}
-                                        </span>
+                                                {errors.email.message}
+                                            </span>
                                         )}
                                     </div>
 
@@ -201,15 +201,15 @@ function UpdateProfileForm() {
                                         />
                                         {errors.phone && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.phone.message}
-                                        </span>
+                                                {errors.phone.message}
+                                            </span>
                                         )}
                                     </div>
                                 </div>
                                 <div className="mb-4.5">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Nhân viên
-                                        tại {user?.branch?.branchType == "MAIN" ? "Trụ sở chính" : "Chi nhánh"} {" "}
+                                        Nhân viên tại{" "}
+                                        {user?.branch?.branchType == "MAIN" ? "Trụ sở chính" : "Chi nhánh"}{" "}
                                     </label>
                                     <input
                                         type="text"

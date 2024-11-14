@@ -1,10 +1,12 @@
 ﻿import React from "react";
-import { FaPlus } from "react-icons/fa6";
+import { FaFileImport, FaPlus } from "react-icons/fa6";
 
 import Button from "@/components/UI/Button";
 import { DataSearch } from "@/types/product";
 import { useRouter } from "next/navigation";
 import DatePickerThree from "@/components/FormElements/DatePicker/DatePickerThree";
+import InputDateOne from "@/components/FormElements/InputDate/InputDateOne";
+import SelectGroupOne from "@/components/SelectGroup/SelectGroupOne";
 
 function HeaderTaskbar({
                                productId,
@@ -24,13 +26,11 @@ function HeaderTaskbar({
     const router = useRouter();
 
     return (
-        <div className="mb-6 flex flex-col gap-3">
-            {/* Nhóm ô tìm kiếm và nút Thêm mới */}
-            <div className="flex flex-1 gap-2 items-center">
-                {/* Ô tìm kiếm */}
-                <div className="relative flex-1">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex-1">
+                <div className="relative">
                     <button
-                        className="absolute left-0 top-0 flex h-full items-center justify-center rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
+                        className="absolute left-0 top-0 h-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700 flex items-center justify-center"
                         onClick={handleSearch}
                     >
                         <svg
@@ -61,60 +61,57 @@ function HeaderTaskbar({
                         value={dataSearch?.keyword}
                         placeholder="Nhập để tìm kiếm..."
                         onChange={(e) => setDataSearch({ ...dataSearch, keyword: e.target.value })}
-                        className="w-full bg-white py-2 pl-12 pr-4 font-medium focus:outline-none"
+                        className="w-full bg-white pl-12 pr-4 py-2 font-medium focus:outline-none xl:w-125"
                     />
                 </div>
 
-                {/* Nút Thêm mới */}
-                <div className="flex gap-2">
-                    <Button
-                        label="Thêm mới"
-                        size="small"
-                        icon={<FaPlus />}
-                        onClick={() => router.push(`/products/batches/${productId}/create`)}
-                    />
+                <div className="mt-2 flex gap-4 items-center justify-between w-full">
+                    {/* Nhóm Produce */}
+                    <div className="flex flex-col w-1/2">
+                        <span className="font-semibold text-gray-700">Ngày sản xuất:</span>
+                        <div className="flex gap-2 mt-1 items-center">
+                            <span className="text-gray-600">Từ:</span>
+                            <InputDateOne
+                                dataSearch={dataSearch}
+                                setDataSearch={setDataSearch}
+                                dataKey="produceStartDate"
+                            />
+                            <span className="text-gray-600">Đến:</span>
+                            <InputDateOne
+                                dataSearch={dataSearch}
+                                setDataSearch={setDataSearch}
+                                dataKey="produceEndDate"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Nhóm Expire */}
+                    <div className="flex flex-col w-1/2">
+                        <span className="font-semibold text-gray-700">Ngày hết hạn:</span>
+                        <div className="flex gap-2 mt-1 items-center">
+                            <span className="text-gray-600">Từ:</span>
+                            <InputDateOne
+                                dataSearch={dataSearch}
+                                setDataSearch={setDataSearch}
+                                dataKey="expireStartDate"
+                            />
+                            <span className="text-gray-600">Đến:</span>
+                            <InputDateOne
+                                dataSearch={dataSearch}
+                                setDataSearch={setDataSearch}
+                                dataKey="expireEndDate"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            {/* Nhóm Produce và Expire trong cùng một hàng */}
-            <div className="flex gap-8 mt-2">
-                {/* Nhóm Produce */}
-                <div className="flex flex-col">
-                    <span className="font-semibold text-gray-700">Ngày sản xuất:</span>
-                    <div className="flex gap-2 mt-1 items-center">
-                        <span className="text-gray-600">Từ:</span>
-                        <DatePickerThree
-                            setDataSearch={setDataSearch}
-                            dataSearch={dataSearch}
-                            dataKey="produceStartDate"
-                        />
-                        <span className="text-gray-600">Đến:</span>
-                        <DatePickerThree
-                            setDataSearch={setDataSearch}
-                            dataSearch={dataSearch}
-                            dataKey="produceEndDate"
-                        />
-                    </div>
-                </div>
-
-                {/* Nhóm Expire */}
-                <div className="flex flex-col">
-                    <span className="font-semibold text-gray-700">Ngày hết hạn:</span>
-                    <div className="flex gap-2 mt-1 items-center">
-                        <span className="text-gray-600">Từ:</span>
-                        <DatePickerThree
-                            setDataSearch={setDataSearch}
-                            dataSearch={dataSearch}
-                            dataKey="expireStartDate"
-                        />
-                        <span className="text-gray-600">Đến:</span>
-                        <DatePickerThree
-                            setDataSearch={setDataSearch}
-                            dataSearch={dataSearch}
-                            dataKey="expireEndDate"
-                        />
-                    </div>
-                </div>
+            <div className="flex gap-2">
+                <Button
+                    label="Thêm mới"
+                    size="small"
+                    icon={<FaPlus />}
+                    onClick={() => router.push(`/products/batches/${productId}/create`)}
+                />
             </div>
         </div>
     );

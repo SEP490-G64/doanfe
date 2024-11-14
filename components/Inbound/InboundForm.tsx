@@ -15,6 +15,7 @@ import {
     Select,
     SelectItem,
 } from "@nextui-org/react";
+
 import ReactSelect from "react-select";
 import { debounce } from "lodash";
 import { jwtDecode } from "jwt-decode";
@@ -39,11 +40,12 @@ import { Supplier } from "@/types/supplier";
 import Loader from "@/components/common/Loader";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import ProductsTableAfterCheck from "@/components/Tables/ProductsTableAfterCheck";
-import { getAllowedProducts, getProductBySupplierId } from "@/services/productServices";
+import { getAllowedProducts, getListProduct } from "@/services/productServices";
 import { ProductInfor } from "@/types/inbound";
 import { getAllBranch } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
 import Unauthorized from "@/components/common/Unauthorized";
+import { DataSearch } from "@/types/product";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -58,11 +60,18 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const [suppliers, setSuppliers] = useState([]);
     const [branches, setBranches] = useState([]);
     const [productOpts, setProductOpts] = useState<ProductInfor[]>([]);
-    const { isOpen, onOpenChange } = useDisclosure();
+    const { isOpen, onOpen, onClose } = useDisclosure();
     const [inboundType, setInboundType] = useState<"NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO">(
         "NHAP_TU_NHA_CUNG_CAP"
     );
     const [product, setProduct] = useState<ProductInfor>();
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        typeId: "",
+        categoryId: "",
+        manufacturerId: "",
+        status: "",
+    });
 
     const {
         register,
@@ -169,6 +178,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 setSelectedFromBranch(response.data.fromBranch);
 
                 if (inboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.toBranch.id);
+
+                console.log(response.data)
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -206,8 +217,13 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         setIsFetchingProduct(true);
         try {
             let response;
-            if (inboundType === "NHAP_TU_NHA_CUNG_CAP")
-                response = await getProductBySupplierId(selectedSupId.toString(), inputString, sessionToken);
+            if (inboundType === "NHAP_TU_NHA_CUNG_CAP") {
+                setDataSearch((prevDataSearch) => ({
+                    ...prevDataSearch,
+                    keyword: inputString,
+                }));
+                response = await getListProduct("0", Number.MAX_SAFE_INTEGER.toString(), dataSearch, sessionToken);
+            }
             else response = await getAllowedProducts(inputString, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
@@ -222,7 +238,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     useEffect(() => {
         getSupplierOpts();
         if (viewMode === "create") {
-            onOpenChange();
+            onOpen();
         } else {
             getInforInbound();
         }
@@ -345,7 +361,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                             placeholder="Chọn nhà cung cấp"
                                             disabled={
                                                 viewMode === "details" ||
-                                                !["CHUA_LUU", "BAN_NHAP"].includes(inboundStatus as string)
+                                                !["BAN_NHAP", "CHUA_LUU"].includes(inboundStatus as string)
                                             }
                                             data={suppliers.map((supplier: Supplier) => ({
                                                 label: supplier.supplierName,
@@ -488,15 +504,15 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 />
                             </div>
                             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                                <div className={`w-full ${viewMode !== "create" ? "xl:w-1/2" : ""}`}>
+                                <div className={`w-full ${viewMode !== "create" ? "xl:w-5/12" : ""}`}>
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                        Ngày nhập
+                                        Ngày tạo đơn
                                     </label>
                                     <DatePickerOne dateValue={watch("createdDate")} disabled={true} />
                                 </div>
 
                                 {viewMode !== "create" && (
-                                    <div className="w-full xl:w-1/2">
+                                    <div className="w-full xl:w-7/12">
                                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                             Mã đơn
                                         </label>
@@ -564,7 +580,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     }}
                                     className={"w-full"}
                                 />
-                                <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)} />
+                                <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)}/>
                             </div>
                         )}
 
@@ -579,8 +595,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                                       batches: [
                                                           {
                                                               batchCode: undefined,
-                                                              inboundBatchQuantity: 1,
-                                                              inboundPrice: 1,
+                                                              inboundBatchQuantity: 0,
+                                                              inboundPrice: 0,
                                                               expireDate: undefined,
                                                           },
                                                       ],
@@ -602,8 +618,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                                       batches: [
                                                           {
                                                               batchCode: undefined,
-                                                              inboundBatchQuantity: 1,
-                                                              inboundPrice: 1,
+                                                              inboundBatchQuantity: 0,
+                                                              inboundPrice: 0,
                                                               expireDate: undefined,
                                                           },
                                                       ],
@@ -675,51 +691,54 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                         )}
                     </div>
                 </div>
-                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                <ModalBody>
-                                    <p>Vui lòng chọn kiểu nhập hàng</p>
-                                    <Select
-                                        value={inboundType}
-                                        onChange={(e) =>
-                                            setInboundType(
-                                                e.target.value as "NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO"
-                                            )
-                                        }
-                                        label="Chọn kiểu nhập hàng"
-                                        className="max-w-full"
-                                    >
-                                        <SelectItem key={"NHAP_TU_NHA_CUNG_CAP"}>Nhập từ nhà cung cấp</SelectItem>
-                                        <SelectItem key={"CHUYEN_KHO_NOI_BO"}>Chuyển kho nội bộ</SelectItem>
-                                    </Select>
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button
-                                        color="default"
-                                        variant="light"
-                                        onPress={() => {
-                                            onClose();
-                                            toast.error("Khởi tạo đơn nhập hàng thất bại");
-                                        }}
-                                    >
-                                        Không
-                                    </Button>
-                                    <Button
-                                        color="primary"
-                                        onPress={async () => {
-                                            await initInbound();
-                                            onClose();
-                                        }}
-                                    >
-                                        Chắc chắn
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
+                <Modal isOpen={isOpen} onOpenChange={onClose} isDismissable={false}>
+                    <div>
+                        <ModalContent>
+                            {(onClose) => (
+                                <>
+                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                    <ModalBody>
+                                        <p>Vui lòng chọn kiểu nhập hàng</p>
+                                        <Select
+                                            value={inboundType}
+                                            onChange={(e) =>
+                                                setInboundType(e.target.value as "NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO")
+                                            }
+                                            label="Chọn kiểu nhập hàng"
+                                            className="max-w-full"
+                                        >
+                                            <SelectItem key={"NHAP_TU_NHA_CUNG_CAP"}>Nhập từ nhà cung cấp</SelectItem>
+                                            <SelectItem key={"CHUYEN_KHO_NOI_BO"}>Chuyển kho nội bộ</SelectItem>
+                                        </Select>
+                                    </ModalBody>
+                                    <ModalFooter>
+                                        {/* Nút Không sẽ chỉ đóng modal */}
+                                        <Button
+                                            color="default"
+                                            variant="light"
+                                            onPress={() => {
+                                                onClose();
+                                                toast.error("Khởi tạo đơn nhập hàng thất bại");
+                                                router.push(`/inbound/list`)
+                                            }}
+                                        >
+                                            Không
+                                        </Button>
+                                        {/* Nút Chắc chắn sẽ thực hiện thao tác và đóng modal */}
+                                        <Button
+                                            color="primary"
+                                            onPress={async () => {
+                                                await initInbound();
+                                                onClose();
+                                            }}
+                                        >
+                                            Chắc chắn
+                                        </Button>
+                                    </ModalFooter>
+                                </>
+                            )}
+                        </ModalContent>
+                    </div>
                 </Modal>
             </form>
         );

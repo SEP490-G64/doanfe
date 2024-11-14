@@ -126,7 +126,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
             activeIngredient: undefined,
             excipient: undefined,
             formulation: undefined,
-            status: "",
+            status: "CON_HANG",
             category: undefined,
             type: undefined,
             manufacturer: undefined,
@@ -532,7 +532,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                         <div key={field.id} className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                                             <div className="w-3/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                    Kiểu điều kiện
+                                                    Kiểu điều kiện <span className="text-meta-1">*</span>
                                                 </label>
                                                 <SelectGroupTwo
                                                     register={{
@@ -553,7 +553,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                             <div className="w-8/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                    Hướng dẫn xử lý (Nếu cần)
+                                                    Hướng dẫn xử lý <span className="text-meta-1">*</span>
                                                 </label>
                                                 <input
                                                     {...register(`specialConditions.${index}.handlingInstruction`)}
@@ -592,7 +592,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                 <div className="flex items-center justify-between border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Đơn vị quy đổi</h3>
                                     {!watch("baseUnit.id") && (
-                                        <span className="mt-2 text-sm text-rose-500">
+                                        <span className="text-sm text-rose-500">
                                             Vui lòng chọn đơn vị cơ sở trước khi thêm chuyển đổi đơn vị
                                         </span>
                                     )}
@@ -640,7 +640,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                         {errors.unitConversions?.[index]?.smallerUnit?.id.message}
                                                     </span>
                                                 )}
-                                                {watch("baseUnit.id") === watch(`unitConversions.${index}.smallerUnit.id`) && (
+                                                {watch("baseUnit.id") ===
+                                                    watch(`unitConversions.${index}.smallerUnit.id`) && (
                                                     <span className="mt-1 block w-full text-sm text-rose-500">
                                                         Đơn vị quy đổi không thể trùng với đơn vị cơ sở
                                                     </span>
@@ -649,7 +650,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                                             <div className="w-6/12">
                                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                    Số lượng (1 đơn vị cơ sở = ? đơn vị) <span className="text-meta-1">*</span>
+                                                    Số lượng (1 đơn vị cơ sở = ? đơn vị){" "}
+                                                    <span className="text-meta-1">*</span>
                                                 </label>
                                                 <input
                                                     {...register(`unitConversions.${index}.factorConversion`)}
@@ -761,7 +763,10 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                             </div>
 
                             {/* <!-- Checkbox and radio --> */}
-                            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                            <div
+                                className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
+                                hidden={viewMode === "create"}
+                            >
                                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                                     <h3 className="font-medium text-black dark:text-white">Tình trạng thuốc</h3>
                                 </div>

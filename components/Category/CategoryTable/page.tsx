@@ -1,4 +1,5 @@
-﻿"use client";
+﻿"use client"
+
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Table,
@@ -39,7 +40,7 @@ const CategoriesTable = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [CategoryData, setCategoryData] = useState<Category[]>([]);
+    const [categoryData, setcategoryData] = useState<Category[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -69,11 +70,11 @@ const CategoriesTable = () => {
                 sessionToken);
 
             if (response.message === "200 OK") {
-                setCategoryData(
+                setcategoryData(
                     response.data.map((item: Category, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
-                    })),
+                    }))
                 );
                 setTotal(response.total);
             }
@@ -84,8 +85,8 @@ const CategoriesTable = () => {
         }
     };
 
-    const handleOpenModal = (CategoryId: string) => {
-        setSelectedId(CategoryId);
+    const handleOpenModal = (categoryId: string) => {
+        setSelectedId(categoryId);
         onOpen();
     };
 
@@ -93,14 +94,14 @@ const CategoriesTable = () => {
         await getListCategoryByPage();
     };
 
-    const handleDelete = async (CategoryId: string) => {
+    const handleDelete = async (categoryId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteCategory(CategoryId, sessionToken);
+            const response = await deleteCategory(categoryId, sessionToken);
 
             if (response === "200 OK") {
                 await getListCategoryByPage();
@@ -117,7 +118,7 @@ const CategoriesTable = () => {
     }, [page, rowsPerPage]);
 
     const renderCell = useCallback((category: Category, columnKey: React.Key) => {
-        const cellValue = category[columnKey as "id" | "categoryName" | "categoryDescription" | "taxRate"];
+        const cellValue = category[columnKey as "id" | "categoryName"];
 
         switch (columnKey) {
             case "no.":
@@ -125,11 +126,13 @@ const CategoriesTable = () => {
             case "categoryName":
                 return <h5 className="font-normal text-black dark:text-white">{category.categoryName}</h5>;
             case "categoryDescription":
-                return <h5 className="font-normal text-black dark:text-white">{category.categoryDescription ?
-                    (category.categoryDescription.length > 50 ?
-                        category.categoryDescription.substring(0, 50) + "..." : category.categoryDescription)
-                    : "Không mô tả"}
-                </h5>;
+                return (
+                    <Tooltip content={category.categoryDescription}>
+                        <h5 className="font-normal text-black dark:text-white line-clamp-1">
+                            {category.categoryDescription || "Không mô tả"}
+                        </h5>
+                    </Tooltip>
+                );
             case "taxRate":
                 return <h5> {category.taxRate == 0 ? "Không mất thuế" : category.taxRate + "%"} </h5>;
             case "actions":
@@ -218,7 +221,8 @@ const CategoriesTable = () => {
                     setDataSearch={setDataSearch}
                     handleSearch={handleSearch}
                 />
-                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                <div
+                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                     Tìm thấy <span className="font-bold text-blue-600">{total}</span> nhóm sản phẩm
                     <div className="max-w-full overflow-x-auto">
                         <Table
@@ -257,7 +261,7 @@ const CategoriesTable = () => {
                                     </div>
                                 ) : null
                             }
-                            aria-label="Category Table"
+                            aria-label="category Table"
                         >
                             <TableHeader>
                                 <TableHeader columns={categoryColumns}>
@@ -272,10 +276,16 @@ const CategoriesTable = () => {
                                     )}
                                 </TableHeader>
                             </TableHeader>
-                            <TableBody items={CategoryData ?? []} emptyContent={"Không có dữ liệu"}>
+                            <TableBody items={categoryData ?? []} emptyContent={"Không có dữ liệu"}>
                                 {(item) => (
                                     <TableRow key={item?.id}>
-                                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                                        {(columnKey) => (
+                                            <TableCell
+                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark`}
+                                            >
+                                                {renderCell(item, columnKey)}
+                                            </TableCell>
+                                        )}
                                     </TableRow>
                                 )}
                             </TableBody>
@@ -314,3 +324,4 @@ const CategoriesTable = () => {
 };
 
 export default CategoriesTable;
+

@@ -370,7 +370,7 @@ const ProductsTable = () => {
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
-                                        className="py-4 text-sm font-medium text-black"
+                                        className="py-4 text-sm font-medium text-black break-words whitespace-normal"
                                         align="center"
                                     >
                                         {column.name}
@@ -382,7 +382,7 @@ const ProductsTable = () => {
                                     <TableRow key={item.id}>
                                         {(columnKey) => (
                                             <TableCell
-                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["productName", "registrationCode"].includes(columnKey) ? "text-left" : ""}`}
+                                                className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["productName", "registrationCode", "unitConversions"].includes(columnKey as string) ? "text-left" : ""}`}
                                             >
                                                 {renderCell(item, columnKey)}
                                             </TableCell>

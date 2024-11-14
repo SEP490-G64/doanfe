@@ -13,6 +13,11 @@ import { Category } from "@/types/category";
 import { Type } from "@/types/type";
 import { Manufacturer } from "@/types/manufacturer";
 import SelectGroupOne from "@/components/SelectGroup/SelectGroupOne";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
+import { toast } from "react-toastify";
+import { FaFileExport } from "react-icons/fa";
+import { Button as NextUIButton } from "@nextui-org/button";
+import { exportProduct, importProduct } from "@/services/productServices";
 
 function HeaderTaskbar({
     sessionToken,
@@ -27,6 +32,9 @@ function HeaderTaskbar({
     setDataSearch?: any;
     handleSearch?: any;
 }) {
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     const [cateOpts, setCateOpts] = useState([]);
     const [typeOpts, setTypeOpts] = useState([]);
@@ -36,6 +44,85 @@ function HeaderTaskbar({
         { value: "HET_HANG", label: "Hết hàng" },
         { value: "NGUNG_KINH_DOANH", label: "Ngừng kinh doanh" },
     ];
+
+    const handleOpenModal = () => {
+        onOpen();
+    };
+
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+        }
+    };
+
+    const handleFileUpload = async () => {
+        if (selectedFile) {
+            toast.warning("Hệ thống đang xử lý nhập dữ liệu, vui lòng đợi trong giây lát");
+            if (loading) {
+                toast.warning("Hệ thống đang xử lý dữ liệu");
+                return;
+            }
+            setLoading(true);
+
+            // Tạo FormData chứa file
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await importProduct(formData, sessionToken);
+
+                // Xử lý phản hồi từ server
+                if (response) {
+                    toast.success("Nhập thành công");
+                }
+
+                handleSearch();
+            } catch (error) {
+                toast.error("Nhập thất bại");
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            toast.error("Vui lòng chọn file");
+        }
+    };
+
+    const handleExport = async () => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+
+        try {
+            const res = await exportProduct(sessionToken);
+
+            // Kiểm tra xem res.data có phải là Blob không
+            if (res && res instanceof Blob) {
+                // Tạo URL tạm thời từ Blob trả về
+                const url = window.URL.createObjectURL(res); // res là Blob
+
+                // Tạo một thẻ <a> để tải tệp
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'product.xlsx'); // Đặt tên tệp tải về
+                document.body.appendChild(link);
+                link.click(); // Bắt đầu tải xuống
+
+                // Giải phóng URL tạm thời
+                window.URL.revokeObjectURL(url);
+
+                toast.success("Xuất danh sách sản phẩm thành công");
+            } else {
+                toast.error("Dữ liệu không hợp lệ");
+            }
+        } catch (error) {
+            toast.error("Xuất file thất bại");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const getDataOptions = async () => {
         try {
@@ -135,10 +222,24 @@ function HeaderTaskbar({
                 </div>
             </div>
             <div className="flex gap-2">
-                {buttons === "import" && (
-                    <Button label="Nhập file" size="small" icon={<FaFileImport />} type="success" onClick={() => {
-                    }} />
-                )}
+                <Button
+                    label="Nhập file"
+                    size="small"
+                    icon={<FaFileImport />}
+                    type="success"
+                    onClick={() => {
+                        handleOpenModal();
+                    }}
+                />
+                <Button
+                    label="Xuất file"
+                    size="small"
+                    icon={<FaFileExport />}
+                    type="outline"
+                    onClick={() => {
+                        handleExport();
+                    }}
+                />
                 <Button
                     label="Thêm mới"
                     size="small"
@@ -146,6 +247,90 @@ function HeaderTaskbar({
                     onClick={() => router.push("/products/create")}
                 />
             </div>
+
+            <Modal isOpen={isOpen} onOpenChange={(isOpen) => { onOpenChange(isOpen); if (!isOpen) setSelectedFile(null); }}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">Nhập Danh sách Sản phẩm</ModalHeader>
+                            <ModalBody>
+                                {/* Hướng dẫn tải mẫu và upload */}
+                                <div className="mb-4 border-b pb-2">
+                                    <h3 className="text-gray-600 mb-2 text-lg font-semibold">Hướng dẫn</h3>
+                                    <p className="text-gray-700">
+                                        Vui lòng tải file mẫu, đọc kĩ hướng dẫn trong sheet 2, điền đầy đủ thông tin,
+                                        và tải lên lại file để nhập dữ liệu.
+                                    </p>
+                                    <a
+                                        href="" // sửa sau
+                                        download
+                                        className="mt-3 inline-flex items-center font-medium text-blue-500 hover:text-blue-700"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="mr-1 h-5 w-5"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path d="M12 17V3m0 0l8 8-8-8-8 8m13 7v4h-10v-4"></path>
+                                        </svg>
+                                        Tải file mẫu
+                                    </a>
+                                </div>
+
+                                {/* Chọn file từ máy */}
+                                <div>
+                                    <label className="text-gray-700 mb-2 block font-medium">
+                                        Tải lên file sản phẩm
+                                    </label>
+                                    <div className="flex items-center">
+                                        <input
+                                            type="file"
+                                            id="file-upload"
+                                            className="hidden"
+                                            onChange={handleFileSelect}
+                                        />
+                                        <label
+                                            htmlFor="file-upload"
+                                            className="border-gray-300 hover:bg-gray-50 flex cursor-pointer items-center rounded-md border bg-white px-4 py-2 shadow-sm"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="mr-2 h-5 w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M7 16V4m0 0l8 8-8 8m13-8a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                            Chọn file
+                                        </label>
+                                    </div>
+                                    {selectedFile && (
+                                        <p className="mt-2 text-sm text-gray-500">Đã chọn: {selectedFile.name}</p>
+                                    )}
+                                </div>
+                            </ModalBody>
+                            <ModalFooter>
+                                <NextUIButton color="default" onPress={onClose}>
+                                    Hủy
+                                </NextUIButton>
+                                <NextUIButton color="primary" onPress={() => {
+                                    handleFileUpload();
+                                    onClose();
+                                }}>
+                                    Nhập file
+                                </NextUIButton>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 }

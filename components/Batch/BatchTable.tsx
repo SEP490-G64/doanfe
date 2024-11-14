@@ -168,7 +168,7 @@ const BatchTable = ({ productId }: { productId?: string }) => {
             case "expireDate":
                 return <h5 className="font-normal text-black dark:text-white">{formatDateTime(batch.expireDate)}</h5>;
             case "inboundPrice":
-                return <h5 className="font-normal text-black dark:text-white"><h5
+                return <h5
                     className={`font-normal ${
                         batch.inboundPrice ? "text-black dark:text-white" : "text-red"
                     }`}
@@ -176,7 +176,24 @@ const BatchTable = ({ productId }: { productId?: string }) => {
                     {batch.inboundPrice
                         ? `${batch.inboundPrice.toLocaleString()} VND`
                         : "Chưa tính giá nhập hàng"}
-                </h5></h5>;
+                </h5>;
+            case "quantity":
+                return (
+                    <div>
+                        <h5 className="font-normal text-black dark:text-white">
+                            {batch.quantity} {batch.baseUnit}
+                        </h5>
+                        {batch.unitConversions && batch.unitConversions.length > 0 && (
+                            <>
+                                {batch.unitConversions.map((conversion) => (
+                                    <h5 key={conversion.id} className="font-normal text-black dark:text-white">
+                                        = {conversion.factorConversion * batch.quantity} {conversion.smallerUnit?.unitName}
+                                    </h5>
+                                ))}
+                            </>
+                        )}
+                    </div>
+                );
             case "actions":
                 return (
                     <div className="flex items-center justify-center space-x-3.5">
@@ -407,7 +424,7 @@ const BatchTable = ({ productId }: { productId?: string }) => {
                                         <TableRow key={item?.id}>
                                             {(columnKey) => (
                                                 <TableCell
-                                                    className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["branchName", "location"].includes(columnKey as string) ? "text-left" : ""}`}
+                                                    className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${[].includes(columnKey as string) ? "text-left" : ""}`}
                                                 >
                                                     {renderCell(item, columnKey)}
                                                 </TableCell>
