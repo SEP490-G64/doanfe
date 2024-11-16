@@ -108,3 +108,12 @@ export const batchColumns = [
     { name: "Giá nhập", uid: "inboundPrice" },
     { name: "Tác vụ", uid: "actions" },
 ];
+
+export const inventoryCheckColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Mã phiếu kiểm", uid: "inventoryCheckCode" },
+    { name: "Người tạo", uid: "createdBy" },
+    { name: "Trạng thái", uid: "status" },
+    { name: "Ngày tạo", uid: "createdDate" },
+    { name: "Tác vụ", uid: "actions" },
+];
