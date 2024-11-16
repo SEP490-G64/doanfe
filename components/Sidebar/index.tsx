@@ -7,7 +7,7 @@ import Image from "next/image";
 import { AiOutlineShop } from "react-icons/ai";
 import { GiMedicines } from "react-icons/gi";
 import { BiCategory, BiExport, BiImport } from "react-icons/bi";
-import { MdOutlineBloodtype, MdOutlinePrecisionManufacturing } from "react-icons/md";
+import { MdOutlineBloodtype, MdOutlinePrecisionManufacturing, MdOutlineInventory } from "react-icons/md";
 import { TbRulerMeasure } from "react-icons/tb";
 import { TfiSupport } from "react-icons/tfi";
 import { FaUsers } from "react-icons/fa";
@@ -91,6 +91,15 @@ const menuGroups = [
                 children: [
                     { label: "Danh sách sản phẩm", route: "/products/list" },
                     { label: "Thêm mới sản phẩm", route: "/products/create" },
+                ],
+            },
+            {
+                icon: <MdOutlineInventory />,
+                label: "Kiểm kho",
+                route: "#",
+                children: [
+                    { label: "Danh sách phiếu kiểm", route: "/inventory-check-note/list" },
+                    { label: "Thêm mới phiếu kiểm", route: "/inventory-check-note/create" },
                 ],
             },
             {
