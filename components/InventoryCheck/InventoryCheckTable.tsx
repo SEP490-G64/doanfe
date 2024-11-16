@@ -23,18 +23,20 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import { deleteBranch, getListBranch } from "@/services/branchServices";
-import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
-import { branchColumns } from "@/utils/data";
-import { Branch } from "@/types/branch";
+import { deleteBranch } from "@/services/branchServices";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import { inventoryCheckColumns } from "@/utils/data";
+import { getListInventoryCheck } from "@/services/inventoryCheckServices";
+import { InventoryCheck } from "@/types/inventoryCheck";
+import { formatDateTime } from "@/utils/methods";
 
 const InventoryCheckTable = () => {
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
-    const [branchData, setBranchData] = useState<Branch[]>([]);
+    const [inventoryCheckData, setInventoryCheckData] = useState<InventoryCheck[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -44,18 +46,18 @@ const InventoryCheckTable = () => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
 
-    const getListBranchByPage = async () => {
+    const getListInventoryCheckByPage = async () => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await getListBranch(page - 1, rowsPerPage, sessionToken);
+            const response = await getListInventoryCheck(page - 1, rowsPerPage, sessionToken);
 
             if (response.message === "200 OK") {
-                setBranchData(
-                    response.data.map((item: Branch, index: number) => ({
+                setInventoryCheckData(
+                    response.data.map((item: InventoryCheck, index: number) => ({
                         ...item,
                         index: index + 1 + (page - 1) * rowsPerPage,
                     }))
@@ -84,7 +86,7 @@ const InventoryCheckTable = () => {
             const response = await deleteBranch(branchId, sessionToken);
 
             if (response === "200 OK") {
-                await getListBranchByPage();
+                await getListInventoryCheckByPage();
             }
         } catch (error) {
             console.log(error);
@@ -94,37 +96,72 @@ const InventoryCheckTable = () => {
     };
 
     useEffect(() => {
-        getListBranchByPage();
+        getListInventoryCheckByPage();
     }, [page, rowsPerPage]);
 
-    const renderCell = useCallback((branch: Branch, columnKey: React.Key) => {
-        const cellValue =
-            branch[
-                columnKey as
-                    | "id"
-                    | "branchName"
-                    | "location"
-                    | "contactPerson"
-                    | "phoneNumber"
-                    | "branchType"
-                    | "capacity"
-                    | "activeStatus"
-                    | "actions"
-            ];
+    const renderOutboundStatus = useCallback((status: string) => {
+        switch (status) {
+            case "CHUA_LUU":
+                return (
+                    <p className={"inline-flex rounded-full bg-danger/10 px-3 py-1 text-sm font-medium text-danger"}>
+                        Khởi tạo
+                    </p>
+                );
+            case "BAN_NHAP":
+                return (
+                    <p className={"inline-flex rounded-full bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Bản nháp
+                    </p>
+                );
+            case "CHO_DUYET":
+                return (
+                    <p className={"inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"}>
+                        Chờ duyệt
+                    </p>
+                );
+            case "KIEM_HANG":
+                return (
+                    <p
+                        className={
+                            "inline-flex rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary"
+                        }
+                    >
+                        Kiểm hàng
+                    </p>
+                );
+            case "DANG_THANH_TOAN":
+                return (
+                    <p className={"inline-flex rounded-full bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
+                        Đang thanh toán
+                    </p>
+                );
+            case "HOAN_THANH":
+                return (
+                    <p className={"inline-flex rounded-full bg-success/10 px-3 py-1 text-sm font-medium text-success"}>
+                        Hoàn thành
+                    </p>
+                );
+        }
+    }, []);
+
+    const renderCell = useCallback((inventoryCheck: InventoryCheck, columnKey: React.Key) => {
+        const cellValue = inventoryCheck[columnKey as "id" | "code" | "createdDate" | "status"];
 
         switch (columnKey) {
             case "no.":
-                return <h5 className="text-black dark:text-white">{branch.index}</h5>;
-            case "branchName":
-                return <h5 className="font-normal text-black dark:text-white">{branch.branchName}</h5>;
-            case "activeStatus":
+                return <h5 className="text-black dark:text-white">{inventoryCheck.index}</h5>;
+            case "inventoryCheckCode":
+                return <h5 className="font-normal text-black dark:text-white">{inventoryCheck.code}</h5>;
+            case "createdBy":
                 return (
-                    <p
-                        className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                            branch.activeStatus ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                        }`}
-                    >
-                        {branch.activeStatus ? "Đang hoạt động" : "Không hoạt động"}
+                    <p className="font-normal text-black dark:text-white">{`${inventoryCheck.createdBy.firstName} ${inventoryCheck.createdBy.lastName}`}</p>
+                );
+            case "status":
+                return renderOutboundStatus(inventoryCheck.status);
+            case "createdDate":
+                return (
+                    <p className="font-normal text-black dark:text-white">
+                        {formatDateTime(inventoryCheck.createdDate)}
                     </p>
                 );
             case "actions":
@@ -133,7 +170,7 @@ const InventoryCheckTable = () => {
                         <Tooltip content="Chi tiết">
                             <button
                                 className="hover:text-primary"
-                                onClick={() => router.push(`/branches/details/${branch.id}`)}
+                                onClick={() => router.push(`/inventory-check-note/details/${inventoryCheck.id}`)}
                             >
                                 <svg
                                     className="fill-current"
@@ -157,13 +194,13 @@ const InventoryCheckTable = () => {
                         <Tooltip color="secondary" content="Cập nhật">
                             <button
                                 className="hover:text-secondary"
-                                onClick={() => router.push(`/branches/update/${branch.id}`)}
+                                onClick={() => router.push(`/inventory-check-note/update/${inventoryCheck.id}`)}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
-                        <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(branch.id)}>
+                        {/* <Tooltip color="danger" content="Xóa">
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(inventoryCheck.id)}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -190,7 +227,7 @@ const InventoryCheckTable = () => {
                                     />
                                 </svg>
                             </button>
-                        </Tooltip>
+                        </Tooltip> */}
                     </div>
                 );
             default:
@@ -245,7 +282,7 @@ const InventoryCheckTable = () => {
                         aria-label="Branch Table"
                     >
                         <TableHeader>
-                            <TableHeader columns={branchColumns}>
+                            <TableHeader columns={inventoryCheckColumns}>
                                 {(column) => (
                                     <TableColumn
                                         key={column.uid}
@@ -257,12 +294,12 @@ const InventoryCheckTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={branchData ?? []}>
+                        <TableBody items={inventoryCheckData ?? []}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
                                         <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["branchName", "location"].includes(columnKey as string) ? "text-left" : ""}`}
+                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["inventoryCheckCode", "createdBy"].includes(columnKey as string) ? "text-left" : ""}`}
                                         >
                                             {renderCell(item, columnKey)}
                                         </TableCell>

@@ -63,7 +63,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     const [product, setProduct] = useState<ProductInfor>();
     const [saveDraft, setSaveDraft] = useState(false);
 
-    const renderInboundStatus = useCallback((status: string | undefined) => {
+    const renderOutboundStatus = useCallback((status: string | undefined) => {
         if (!status) return;
         switch (status) {
             case "CHUA_LUU":
@@ -508,7 +508,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             <label className="mb-3 mr-3 inline-flex text-sm font-medium text-black dark:text-white">
                                 Trạng thái đơn:
                             </label>
-                            {renderInboundStatus(outboundStatus)}
+                            {renderOutboundStatus(outboundStatus)}
                         </div>
                     </div>
                 </div>
