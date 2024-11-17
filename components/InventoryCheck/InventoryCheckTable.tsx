@@ -157,7 +157,7 @@ const InventoryCheckTable = () => {
     }, []);
 
     const renderCell = useCallback((inventoryCheck: InventoryCheck, columnKey: React.Key) => {
-        const cellValue = inventoryCheck[columnKey as "id" | "code" | "createdDate" | "status"];
+        const cellValue = inventoryCheck[columnKey as "id" | "code" | "status"];
 
         switch (columnKey) {
             case "no.":
