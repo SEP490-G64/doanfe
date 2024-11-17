@@ -41,7 +41,12 @@ import { Supplier } from "@/types/supplier";
 import Loader from "@/components/common/Loader";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import ProductsTableAfterCheck from "@/components/Tables/ProductsTableAfterCheck";
-import { getAllowedProducts, getListProduct } from "@/services/productServices";
+import {
+    getAllowedProducts,
+    getListProduct,
+    getProductByBranchId,
+    searchAllProductsByKeyword,
+} from "@/services/productServices";
 import { ProductInfor } from "@/types/inbound";
 import { getAllBranch } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
@@ -66,13 +71,6 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         "NHAP_TU_NHA_CUNG_CAP"
     );
     const [product, setProduct] = useState<ProductInfor>();
-    const [dataSearch, setDataSearch] = useState<DataSearch>({
-        keyword: "",
-        typeId: "",
-        categoryId: "",
-        manufacturerId: "",
-        status: "",
-    });
     const [saveDraft, setSaveDraft] = useState(false);
 
     const renderInboundStatus = useCallback((status: string | undefined) => {
@@ -269,13 +267,9 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         try {
             let response;
             if (inboundType === "NHAP_TU_NHA_CUNG_CAP") {
-                setDataSearch((prevDataSearch) => ({
-                    ...prevDataSearch,
-                    keyword: inputString,
-                }));
-                response = await getListProduct("0", Number.MAX_SAFE_INTEGER.toString(), dataSearch, sessionToken);
+                response = await searchAllProductsByKeyword(inputString, sessionToken);
             }
-            else response = await getAllowedProducts(inputString, sessionToken);
+            else response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
@@ -324,7 +318,6 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
     const handleSubmitInbound = async (e?: React.MouseEvent) => {
         e?.preventDefault();
-        console.log("Con c gi dang dien ra vay ?");
         const response = await submitInbound(inboundId as string, sessionToken);
         if (response.status === "SUCCESS") {
             router.push("/inbound/list");

@@ -34,7 +34,6 @@ import { jwtDecode } from "jwt-decode";
 import Unauthorized from "@/components/common/Unauthorized";
 import HeaderTaskbar from "@/components/HeaderTaskbar/InboundHeaderTaskbar/page";
 import { DataSearch } from "@/types/inbound";
-import { exportProduct } from "@/services/productServices";
 
 const InboundTable = () => {
     const router = useRouter();
@@ -425,10 +424,10 @@ const InboundTable = () => {
                             {(onClose) => (
                                 <>
                                     <ModalHeader className="flex flex-col gap-1">
-                                        {action === "Delete" ? "Xác nhận" : "Xem trước phiếu nhập hàng"}
+                                        {action === "DELETE" ? "Xác nhận" : "Xem trước phiếu nhập hàng"}
                                     </ModalHeader>
                                     <ModalBody>
-                                        {action === "Delete" ? (
+                                        {action === "DELETE" ? (
                                             <p>"Bạn có chắc muốn xóa phiếu nhập hàng này không"</p>
                                         ) : (
                                             <iframe
@@ -440,7 +439,7 @@ const InboundTable = () => {
                                         )}
                                     </ModalBody>
                                     <ModalFooter>
-                                        {action === "Delete" ? (
+                                        {action === "DELETE" ? (
                                             <>
                                                 <Button color="default" variant="light" onPress={onClose}>
                                                     Hủy

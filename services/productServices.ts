@@ -68,11 +68,17 @@ export const getProductBySupplierId = async (supplierId: string, keyword: string
     }
 };
 
-export const getProductByBranchId = async (branchId: string, keyword: string, token: string, supplierId?: string) => {
+export const getProductByBranchId = async (
+    branchId: string,
+    keyword: string,
+    checkValid: boolean,
+    token: string,
+    supplierId?: string
+) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/product/products-in-branch/${branchId}`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { keyword, checkValid: true, supplierId },
+            params: { keyword, checkValid, supplierId },
         });
 
         return res;
@@ -230,6 +236,22 @@ export const exportProduct = async (token: string) => {
         if (res) {
             return res;
         }
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
+export const searchAllProductsByKeyword = async (keyword: string, token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/get-by-keyword`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { keyword },
+        });
+
+        return res;
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {

@@ -2,12 +2,29 @@
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 import { OutboundBodyType } from "@/lib/schemaValidate/outboundSchema";
+import { DataSearch } from "@/types/inbound";
 
-export const getListOutbound = async (page: number, size: number, token: string) => {
+interface Params extends DataSearch {
+    page?: string;
+    size?: string;
+}
+
+export const getListOutbound = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    for (const searchKey in dataSearch) {
+        if (dataSearch[searchKey as keyof typeof dataSearch]) {
+            params[searchKey as keyof typeof params] = dataSearch[searchKey as keyof typeof dataSearch];
+        }
+    }
+
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/outbound`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { page, size },
+            params: { page, size, ...dataSearch },
         });
 
         return res;
@@ -146,20 +163,20 @@ export const submitOutbound = async (id: string, token: string) => {
     }
 };
 
-export const deleteBranch = async (id: string, token: string) => {
+export const deleteOutbound = async (id: string, token: string) => {
     try {
-        const res = await httpRequest.deleteAsync(`dsd/api/v1/admin/branch/${id}`, {
+        const res = await httpRequest.deleteAsync(`dsd/api/v1/staff/outbound/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.data === "200 OK") {
-            toast.success("Xóa chi nhánh thành công");
+            toast.success("Xóa phiếu xuất hàng thành công");
             return res.data;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Xóa chi nhánh thất bại");
+            toast.error("Xóa phiếu xuất hàng thất bại");
             console.log(error);
         }
     }

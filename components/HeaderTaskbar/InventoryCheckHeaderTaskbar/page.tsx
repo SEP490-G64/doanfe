@@ -25,17 +25,17 @@ function HeaderTaskbar({
 }) {
     const router = useRouter();
     const typeOpts = [
-        { value: "NHAP_TU_NHA_CUNG_CAP", label: "Nhập từ nhà cung cấp" },
         { value: "CHUYEN_KHO_NOI_BO", label: "Chuyển kho nội bộ" },
+        { value: "HUY_HANG", label: "Hủy hàng" },
+        { value: "TRA_HANG", label: "Trả hàng" },
+        { value: "BAN_HANG", label: "Bán hàng" },
     ];
     const statusOpts = [
         { value: "CHUA_LUU", label: "Khởi tạo" },
         { value: "BAN_NHAP", label: "Bản nháp" },
+        { value: "DANG_KIEM", label: "Đang kiểm" },
         { value: "CHO_DUYET", label: "Chờ duyệt" },
-        { value: "CHO_HANG", label: "Chờ hàng" },
-        { value: "KIEM_HANG", label: "Kiểm hàng" },
-        { value: "DANG_THANH_TOAN", label: "Đang thanh toán" },
-        { value: "HOAN_THANH", label: "Hoàn thành" },
+        { value: "DA_CAN_BANG", label: "Đã cân bằng" },
     ];
     const [branchOpts, setBranchOpts] = useState([]);
 
@@ -115,7 +115,7 @@ function HeaderTaskbar({
                     label="Thêm mới"
                     size="small"
                     icon={<FaPlus />}
-                    onClick={() => router.push("/inbound/create")}
+                    onClick={() => router.push("/inventory-check-note/create")}
                 />
             </div>
 
@@ -125,13 +125,13 @@ function HeaderTaskbar({
                 <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="startDate" />
                 <span className="flex items-center">đến</span>
                 <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="endDate" />
-                <SelectGroupOne
-                    placeHolder="Chọn kiểu nhập hàng"
+                {/*<SelectGroupOne
+                    placeHolder="Chọn kiểu xuất hàng"
                     optsData={typeOpts}
                     dataSearch={dataSearch}
                     setDataSearch={setDataSearch}
                     dataKey="type"
-                />
+                />*/}
                 <SelectGroupOne
                     placeHolder="Chọn trạng thái đơn"
                     optsData={statusOpts}

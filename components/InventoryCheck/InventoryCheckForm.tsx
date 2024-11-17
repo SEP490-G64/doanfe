@@ -497,13 +497,13 @@ const InventoryCheckForm = ({
                     )}
                 </div>
             </div>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={false}>
                 <ModalContent>
                     {(onClose) => (
                         <>
                             <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                             <ModalBody>
-                                <p>Bạn có muốn khởi tạo đơn kiểm hàng không</p>
+                                <p>Bạn có muốn khởi tạo đơn kiểm hàng không?</p>
                             </ModalBody>
                             <ModalFooter>
                                 <Button
@@ -511,7 +511,7 @@ const InventoryCheckForm = ({
                                     variant="light"
                                     onPress={() => {
                                         onClose();
-                                        toast.error("Khởi tạo đơn xuât hàng thất bại");
+                                        toast.error("Khởi tạo đơn kiểm hàng thất bại");
                                     }}
                                 >
                                     Không
