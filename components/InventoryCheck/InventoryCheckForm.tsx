@@ -191,15 +191,7 @@ const InventoryCheckForm = ({
         if (isFetchingProduct) return;
         setIsFetchingProduct(true);
         try {
-            // let response;
-            // if (inventory-checkType === "TRA_HANG")
-            //     response = await getProductByBranchId(
-            //         branch!.id.toString(),
-            //         inputString,
-            //         sessionToken,
-            //         selectedSupId.toString()
-            //     );
-            const response = await getProductByBranchId(branch!.id.toString(), inputString, sessionToken);
+            const response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
