@@ -6,13 +6,37 @@ import { jwtDecode } from "jwt-decode";
 import ClickOutside from "@/components/ClickOutside";
 import { useAppContext } from "../AppProvider/AppProvider";
 import { TokenDecoded } from "@/types/tokenDecoded";
+import { logout } from "@/services/authServices";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const DropdownUser = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const { sessionToken } = useAppContext();
+    const router = useRouter();
 
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
+
+    const handleLogOut = async () => {
+        try {
+            // await logout(sessionToken);
+
+            const resultFromNextServer = await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }).then(async (res) => {
+                if (!res.ok) throw new Error();
+                toast.success("Đăng xuất thành công");
+                router.push("/login");
+                router.refresh();
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     return (
         <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
@@ -130,7 +154,10 @@ const DropdownUser = () => {
                             </Link>
                         </li>
                     </ul>
-                    <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+                    <button
+                        onClick={handleLogOut}
+                        className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                    >
                         <svg
                             className="fill-current"
                             width="22"
@@ -148,7 +175,7 @@ const DropdownUser = () => {
                                 fill=""
                             />
                         </svg>
-                        Log Out
+                        Đăng xuất
                     </button>
                 </div>
             )}
