@@ -70,9 +70,9 @@ export const createBatch = async (branch: BatchBodyType, token: string) => {
     }
 };
 
-export const updateBatch = async (branch: BatchBodyType, id: string, token: string) => {
+export const updateBatch = async (batch: BatchBodyType, id: string, token: string) => {
     try {
-        const res = await httpRequest.put(`dsd/api/v1/staff/batch/${id}`, branch, {
+        const res = await httpRequest.put(`dsd/api/v1/staff/batch/${id}`, batch, {
             headers: { Authorization: `Bearer ${token}` },
         });
 

@@ -24,12 +24,16 @@ import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
 import Loader from "@/components/common/Loader";
-import { deleteBranch } from "@/services/branchServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { inventoryCheckColumns } from "@/utils/data";
-import { getListInventoryCheck } from "@/services/inventoryCheckServices";
+import { deleteInventoryCheck, getListInventoryCheck } from "@/services/inventoryCheckServices";
 import { InventoryCheck } from "@/types/inventoryCheck";
 import { formatDateTime } from "@/utils/methods";
+import HeaderTaskbar from "@/components/HeaderTaskbar/InventoryCheckHeaderTaskbar/page";
+import Unauthorized from "@/components/common/Unauthorized";
+import { DataSearch } from "@/types/inbound";
+import { TokenDecoded } from "@/types/tokenDecoded";
+import { jwtDecode } from "jwt-decode";
 
 const InventoryCheckTable = () => {
     const router = useRouter();
@@ -41,6 +45,16 @@ const InventoryCheckTable = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const { sessionToken } = useAppContext();
+    const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
+    const userInfo = tokenDecoded.information;
+    const [dataSearch, setDataSearch] = useState<DataSearch>({
+        keyword: "",
+        branchId: userInfo?.branch.id,
+        startDate: "",
+        endDate: "",
+        status: "",
+        type: "",
+    });
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -53,7 +67,7 @@ const InventoryCheckTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListInventoryCheck(page - 1, rowsPerPage, sessionToken);
+            const response = await getListInventoryCheck((page - 1).toString(), rowsPerPage.toString(), dataSearch, sessionToken);
 
             if (response.message === "200 OK") {
                 setInventoryCheckData(
@@ -71,19 +85,23 @@ const InventoryCheckTable = () => {
         }
     };
 
-    const handleOpenModal = (branchId: string) => {
-        setSelectedId(branchId);
+    const handleOpenModal = (inboundId: string) => {
+        setSelectedId(inboundId);
         onOpen();
     };
 
-    const handleDelete = async (branchId: string) => {
+    const handleSearch = async () => {
+        await getListInventoryCheckByPage();
+    };
+
+    const handleDelete = async (inboundId: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
         setLoading(true);
         try {
-            const response = await deleteBranch(branchId, sessionToken);
+            const response = await deleteInventoryCheck(inboundId, sessionToken);
 
             if (response === "200 OK") {
                 await getListInventoryCheckByPage();
@@ -119,33 +137,27 @@ const InventoryCheckTable = () => {
                         Chờ duyệt
                     </p>
                 );
-            case "KIEM_HANG":
+            case "DANG_KIEM":
                 return (
                     <p
                         className={
                             "inline-flex rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary"
                         }
                     >
-                        Kiểm hàng
+                        Đang kiểm
                     </p>
                 );
-            case "DANG_THANH_TOAN":
+            case "DA_CAN_BANG":
                 return (
                     <p className={"inline-flex rounded-full bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
-                        Đang thanh toán
-                    </p>
-                );
-            case "HOAN_THANH":
-                return (
-                    <p className={"inline-flex rounded-full bg-success/10 px-3 py-1 text-sm font-medium text-success"}>
-                        Hoàn thành
+                        Đã cân bằng
                     </p>
                 );
         }
     }, []);
 
     const renderCell = useCallback((inventoryCheck: InventoryCheck, columnKey: React.Key) => {
-        const cellValue = inventoryCheck[columnKey as "id" | "code" | "createdDate" | "status"];
+        const cellValue = inventoryCheck[columnKey as "id" | "code" | "status"];
 
         switch (columnKey) {
             case "no.":
@@ -236,107 +248,126 @@ const InventoryCheckTable = () => {
     }, []);
 
     if (loading) return <Loader />;
-    else
-        return (
-            <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
-                <div className="max-w-full overflow-x-auto">
-                    <Table
-                        bottomContent={
-                            totalPages > 0 ? (
-                                <div className="flex w-full justify-between">
-                                    <Select
-                                        label="Số bản ghi / trang"
-                                        selectedKeys={[rowsPerPage.toString()]}
-                                        onChange={(e) => {
-                                            setRowsPerPage(parseInt(e.target.value));
-                                            setPage(1);
-                                        }}
-                                        size="sm"
-                                        className="max-w-xs"
-                                    >
-                                        <SelectItem key={5} value={5}>
-                                            5
-                                        </SelectItem>
-                                        <SelectItem key={10} value={10}>
-                                            10
-                                        </SelectItem>
-                                        <SelectItem key={15} value={15}>
-                                            15
-                                        </SelectItem>
-                                        <SelectItem key={20} value={20}>
-                                            20
-                                        </SelectItem>
-                                    </Select>
-                                    <Pagination
-                                        isCompact
-                                        showControls
-                                        showShadow
-                                        color="primary"
-                                        page={page}
-                                        total={totalPages}
-                                        onChange={(page) => setPage(page)}
-                                    />
-                                </div>
-                            ) : null
-                        }
-                        aria-label="Branch Table"
-                    >
-                        <TableHeader>
-                            <TableHeader columns={inventoryCheckColumns}>
-                                {(column) => (
-                                    <TableColumn
-                                        key={column.uid}
-                                        className="py-4 text-sm font-medium text-black"
-                                        align="center"
-                                    >
-                                        {column.name}
-                                    </TableColumn>
-                                )}
-                            </TableHeader>
-                        </TableHeader>
-                        <TableBody items={inventoryCheckData ?? []}>
-                            {(item) => (
-                                <TableRow key={item?.id}>
-                                    {(columnKey) => (
-                                        <TableCell
-                                            className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["inventoryCheckCode", "createdBy"].includes(columnKey as string) ? "text-left" : ""}`}
-                                        >
-                                            {renderCell(item, columnKey)}
-                                        </TableCell>
+    else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        } else {
+            return (
+                <>
+                    <HeaderTaskbar
+                        sessionToken={sessionToken}
+                        dataSearch={dataSearch}
+                        setDataSearch={setDataSearch}
+                        handleSearch={handleSearch}
+                    />
+                    <div
+                        className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                        <div className="max-w-full overflow-x-auto">
+                            <Table
+                                bottomContent={
+                                    totalPages > 0 ? (
+                                        <div className="flex w-full justify-between">
+                                            <Select
+                                                label="Số bản ghi / trang"
+                                                selectedKeys={[rowsPerPage.toString()]}
+                                                onChange={(e) => {
+                                                    setRowsPerPage(parseInt(e.target.value));
+                                                    setPage(1);
+                                                }}
+                                                size="sm"
+                                                className="max-w-xs"
+                                            >
+                                                <SelectItem key={5} value={5}>
+                                                    5
+                                                </SelectItem>
+                                                <SelectItem key={10} value={10}>
+                                                    10
+                                                </SelectItem>
+                                                <SelectItem key={15} value={15}>
+                                                    15
+                                                </SelectItem>
+                                                <SelectItem key={20} value={20}>
+                                                    20
+                                                </SelectItem>
+                                            </Select>
+                                            <Pagination
+                                                isCompact
+                                                showControls
+                                                showShadow
+                                                color="primary"
+                                                page={page}
+                                                total={totalPages}
+                                                onChange={(page) => setPage(page)}
+                                            />
+                                        </div>
+                                    ) : null
+                                }
+                                aria-label="Branch Table"
+                            >
+                                <TableHeader>
+                                    <TableHeader columns={inventoryCheckColumns}>
+                                        {(column) => (
+                                            <TableColumn
+                                                key={column.uid}
+                                                className="py-4 text-sm font-medium text-black"
+                                                align="center"
+                                            >
+                                                {column.name}
+                                            </TableColumn>
+                                        )}
+                                    </TableHeader>
+                                </TableHeader>
+                                <TableBody items={inventoryCheckData ?? []} emptyContent={"Không có dữ liệu"}>
+                                    {(item) => (
+                                        <TableRow key={item?.id}>
+                                            {(columnKey) => (
+                                                <TableCell
+                                                    className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["inventoryCheckCode", "createdBy"].includes(columnKey as string) ? "text-left" : ""}`}
+                                                >
+                                                    {renderCell(item, columnKey)}
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
                                     )}
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                <ModalBody>
-                                    <p>Bạn có chắc muốn xóa chi nhánh này không</p>
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button color="default" variant="light" onPress={onClose}>
-                                        Hủy
-                                    </Button>
-                                    <Button
-                                        color="danger"
-                                        onPress={() => {
-                                            handleDelete(selectedId);
-                                            onClose();
-                                        }}
-                                    >
-                                        Xóa
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
-            </div>
-        );
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                            <ModalContent>
+                                {(onClose) => (
+                                    <>
+                                        <ModalHeader className="flex flex-col gap-1">
+                                            Xác nhận
+                                        </ModalHeader>
+                                        <ModalBody>
+                                            Bạn có chắc muốn xóa phiếu xuất hàng này không?
+                                        </ModalBody>
+                                        <ModalFooter>
+                                            <Button color="default" variant="light" onPress={onClose}>
+                                                Hủy
+                                            </Button>
+                                            <Button
+                                                color="danger"
+                                                onPress={() => {
+                                                    handleDelete(selectedId);
+                                                    onClose();
+                                                }}
+                                            >
+                                                Xóa
+                                            </Button>
+                                        </ModalFooter>
+                                    </>
+                                )}
+                            </ModalContent>
+                        </Modal>
+                    </div>
+                </>
+            );
+        }
+    }
 };
 
 export default InventoryCheckTable;

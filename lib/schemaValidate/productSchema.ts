@@ -73,13 +73,11 @@ export const ProductBody = z
             .number()
             .min(0, "Giá không thể nhỏ hơn 0")
             .max(1000000000, "Giá không thể lớn hơn 1,000,000,000")
-            .optional()
             .optional(),
         sellPrice: z.coerce
             .number()
             .min(0, "Giá không thể nhỏ hơn 0")
             .max(1000000000, "Giá không thể lớn hơn 1,000,000,000")
-            .optional()
             .optional(),
     })
     .strict();

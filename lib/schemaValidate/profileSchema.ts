@@ -1,8 +1,15 @@
 import z from "zod";
-import { BranchBody } from "@/lib/schemaValidate/branchSchema";
 
 // Biểu thức chính quy cho số điện thoại Việt Nam
 const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8[0-9]|9[0-9])\d{7,8}|(0[2-9]\d{7,8}))$/;
+
+export const BranchBody = z
+    .object({
+        id: z.string().trim(),
+        branchName: z.string().trim(),
+        location: z.string().trim(),
+    })
+    .strict();
 
 export const ProfileBody = z
     .object({
@@ -25,6 +32,7 @@ export const ProfileBody = z
         roles: z
             .array(
                 z.object({
+                    id: z.string(),
                     name: z.string(),
                     type: z.string(),
                 })

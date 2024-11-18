@@ -16,6 +16,7 @@ import SelectGroupTwo from "@/components/SelectGroup/SelectGroupTwo";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import Unauthorized from "@/components/common/Unauthorized";
+import translate from 'translate';
 
 const ManufacturerForm = ({
     viewMode,
@@ -81,19 +82,40 @@ const ManufacturerForm = ({
         }
     };
 
-    // Hàm fetch danh sách quốc gia từ API
+    // Dịch ngôn ngữ quốc gia
+    const translateText = async (text: string, targetLanguage: string) => {
+        try {
+            translate.engine = 'google';  // Sử dụng Google Translate engine
+            translate.key = process.env.GOOGLE_API_KEY;  // Nếu có key Google API
+
+            const translatedText = await translate(text, { to: targetLanguage });
+            return translatedText;
+        } catch (error) {
+            console.error('Error translating text:', error);
+        }
+    };
+
+    // Fetch danh sách quốc gia từ API
     const fetchCountries = async () => {
         setLoading(true);
         try {
-            const response = await fetch("http://api.geonames.org/countryInfoJSON?username=juncookie&lang=vi");
+            const response = await fetch("https://restcountries.com/v3.1/all");
             const data = await response.json();
+            const countryNames = [];
 
-            // Lấy danh sách tên quốc gia từ dữ liệu
-            const countryNames = data.geonames.map((country: any) => country.countryName);
+            for (const country of data) {
+                const englishName = country.name.common; // Tên quốc gia bằng Tiếng Anh
+                const vietnameseName = await translateText(englishName, 'vi');
+                // Kiểm tra nếu vietnameseName là hợp lệ trước khi thêm vào mảng
+                if (vietnameseName) {
+                    countryNames.push(vietnameseName);
+                }
+            }
 
-            setCountries(countryNames); // Lưu danh sách quốc gia vào state
+            setCountries(countryNames.sort());
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu quốc gia:", error);
+            toast.error("Lỗi khi tải danh sách quốc gia.");
         } finally {
             setLoading(false);
         }

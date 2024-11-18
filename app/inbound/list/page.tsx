@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import HeaderTaskbar from "@/components/HeaderTaskbar/InboundHeaderTaskbar/page";
 
 export const metadata: Metadata = {
     title: "Danh sách phiếu nhập hàng",
@@ -17,11 +16,7 @@ const InboundList = () => {
         <DefaultLayout>
             <Breadcrumb pageName="Danh sách phiếu nhập hàng" />
 
-            <HeaderTaskbar />
-
-            <div className="flex flex-col gap-18">
-                <InboundTable />
-            </div>
+            <InboundTable />
         </DefaultLayout>
     );
 };

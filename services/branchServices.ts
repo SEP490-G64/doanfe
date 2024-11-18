@@ -9,6 +9,19 @@ interface Params extends DataSearch {
     size?: string;
 }
 
+export const getStaffBranches = async (token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/branch`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else console.log(error);
+    }
+};
+
 export const getAllBranch = async (token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {

@@ -234,7 +234,7 @@ const UsersTable = () => {
                                     )
                                 }
                             >
-                                {user.status === "ACTIVATE" ? (
+                                {user.status === "DEACTIVATE" ? (
                                     <svg
                                         className="fill-current"
                                         width="18"
@@ -432,10 +432,10 @@ const UsersTable = () => {
                                                     (() => {
                                                         switch (action) {
                                                             case "DELETE":
-                                                                handleDelete(selectedId);
+                                                                return handleDelete(selectedId);
                                                             case "ACTIVATE":
                                                             case "DEACTIVATE":
-                                                                handleActivate(selectedId);
+                                                                return handleActivate(selectedId);
                                                         }
                                                     })()
                                                 }

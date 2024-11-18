@@ -53,3 +53,12 @@ export interface Inbound {
     inboundDetails: [];
     inboundBatchDetails: [];
 }
+
+export type DataSearch = {
+    keyword?: string;
+    branchId?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    type?: string;
+};
