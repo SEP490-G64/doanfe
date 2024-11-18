@@ -32,7 +32,7 @@ import { OutboundBody, OutboundBodyType } from "@/lib/schemaValidate/outboundSch
 import { getAllSupplier } from "@/services/supplierServices";
 import { getAllBranch } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
-import { getProductByBranchId } from "@/services/productServices";
+import { getAllowedProducts, getProductByBranchId } from "@/services/productServices";
 import { Supplier } from "@/types/supplier";
 import {
     changeOutboundStatus,
@@ -250,15 +250,11 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         if (isFetchingProduct) return;
         setIsFetchingProduct(true);
         try {
-            // let response;
-            // if (outboundType === "TRA_HANG")
-            //     response = await getProductByBranchId(
-            //         branch!.id.toString(),
-            //         inputString,
-            //         sessionToken,
-            //         selectedSupId.toString()
-            //     );
-            const response = await getProductByBranchId(branch!.id.toString(), inputString, sessionToken);
+            let response;
+            if (outboundType === "TRA_HANG" || outboundType === "HUY_HANG") {
+                response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
+            }
+            else response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
@@ -655,13 +651,13 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                     )}
                 </div>
             </div>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={false}>
                 <ModalContent>
                     {(onClose) => (
                         <>
                             <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                             <ModalBody>
-                                <p>Vui lòng chọn kiểu xuât hàng</p>
+                                <p>Vui lòng chọn kiểu xuất hàng</p>
                                 <Select
                                     value={outboundType}
                                     onChange={(e) =>
@@ -669,7 +665,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                             e.target.value as "HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO"
                                         )
                                     }
-                                    label="Chọn kiểu xuât hàng"
+                                    label="Chọn kiểu xuất hàng"
                                     className="max-w-full"
                                 >
                                     <SelectItem key={"CHUYEN_KHO_NOI_BO"}>Chuyển kho nội bộ</SelectItem>
@@ -684,7 +680,8 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     variant="light"
                                     onPress={() => {
                                         onClose();
-                                        toast.error("Khởi tạo đơn xuât hàng thất bại");
+                                        toast.error("Khởi tạo đơn xuất hàng thất bại");
+                                        router.push(`/inbound/list`)
                                     }}
                                 >
                                     Không

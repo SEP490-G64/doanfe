@@ -42,6 +42,12 @@ export const sendResetRequest = async (request: ForgotPasswordType) => {
                 },
             }
         );
+
+        if (res.errors) {
+            toast.error(res.errors[0]);
+            return;
+        }
+
         return res;
     } catch (error) {
         console.log(error);

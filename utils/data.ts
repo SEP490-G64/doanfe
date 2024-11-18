@@ -65,7 +65,7 @@ export const productColumns = [
     { name: "Nhà sản xuất", uid: "manufacturerName" },
     { name: "Giá nhập", uid: "inboundPrice" },
     { name: "Giá bán", uid: "sellPrice" },
-    { name: "Số lượng", uid: "unitConversions" },
+    { name: "Số lượng toàn hệ thống", uid: "unitConversions" },
     { name: "Trạng thái", uid: "status" },
     { name: "Tác vụ", uid: "actions" },
 ];
@@ -106,6 +106,7 @@ export const batchColumns = [
     { name: "Ngày sản xuất", uid: "produceDate" },
     { name: "Ngày hết hạn", uid: "expireDate" },
     { name: "Giá nhập", uid: "inboundPrice" },
+    { name: "Số lượng toàn hệ thống", uid: "quantity" },
     { name: "Tác vụ", uid: "actions" },
 ];
 

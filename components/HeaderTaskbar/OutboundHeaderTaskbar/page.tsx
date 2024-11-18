@@ -25,8 +25,10 @@ function HeaderTaskbar({
 }) {
     const router = useRouter();
     const typeOpts = [
-        { value: "NHAP_TU_NHA_CUNG_CAP", label: "Nhập từ nhà cung cấp" },
         { value: "CHUYEN_KHO_NOI_BO", label: "Chuyển kho nội bộ" },
+        { value: "HUY_HANG", label: "Hủy hàng" },
+        { value: "TRA_HANG", label: "Trả hàng" },
+        { value: "BAN_HANG", label: "Bán hàng" },
     ];
     const statusOpts = [
         { value: "CHUA_LUU", label: "Khởi tạo" },
@@ -115,7 +117,7 @@ function HeaderTaskbar({
                     label="Thêm mới"
                     size="small"
                     icon={<FaPlus />}
-                    onClick={() => router.push("/inbound/create")}
+                    onClick={() => router.push("/outbound/create")}
                 />
             </div>
 
@@ -126,7 +128,7 @@ function HeaderTaskbar({
                 <span className="flex items-center">đến</span>
                 <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="endDate" />
                 <SelectGroupOne
-                    placeHolder="Chọn kiểu nhập hàng"
+                    placeHolder="Chọn kiểu xuất hàng"
                     optsData={typeOpts}
                     dataSearch={dataSearch}
                     setDataSearch={setDataSearch}

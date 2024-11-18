@@ -16,9 +16,7 @@ const InventoryCheckList = () => {
         <DefaultLayout>
             <Breadcrumb pageName="Danh sách phiếu kiểm kho" />
 
-            <div className="flex flex-col gap-18">
-                <InventoryCheckTable />
-            </div>
+            <InventoryCheckTable />
         </DefaultLayout>
     );
 };

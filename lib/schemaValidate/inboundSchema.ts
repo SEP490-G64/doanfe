@@ -7,7 +7,7 @@ const BatchProduct = z
         produceDate: z.coerce.string().trim().optional(),
         expireDate: z.coerce.string().trim().optional(),
         inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0"),
-        inboundBatchQuantity: z.number().min(1, "Số lượng không thể nhỏ hơn 1"),
+        inboundBatchQuantity: z.number().min(0, "Số lượng không thể nhỏ hơn 0"),
         outboundDetails: z.array(z.object({})).optional(),
         branchBatches: z.array(z.object({})).optional(),
         inboundBatchDetails: z.array(z.object({})).optional(),
@@ -50,7 +50,25 @@ export const InboundBody = z
         toBranch: z.object({ id: z.number() }).optional(),
         productInbounds: z.array(ProductInbound),
     })
-    .strict();
+    .strict()
+    .superRefine((data, ctx) => {
+        // Nếu inboundType là NHAP_TU_NHA_CUNG_CAP thì supplier.id là bắt buộc
+        if (data.inboundType === "NHAP_TU_NHA_CUNG_CAP" && !data.supplier?.id) {
+            ctx.addIssue({
+                path: ["supplier", "id"],
+                code: z.ZodIssueCode.custom,
+                message: "Vui lòng chọn nhà cung cấp",
+            });
+        }
+        // Nếu inboundType là CHUYEN_KHO_NOI_BO thì fromBranch.id là bắt buộc
+        if (data.inboundType === "CHUYEN_KHO_NOI_BO" && !data.fromBranch?.id) {
+            ctx.addIssue({
+                path: ["fromBranch", "id"],
+                code: z.ZodIssueCode.custom,
+                message: "Vui lòng chọn chi nhánh xuất",
+            });
+        }
+    });
 
 export type InboundBodyType = z.TypeOf<typeof InboundBody>;
 export type ProductInboundType = z.TypeOf<typeof ProductInbound>;

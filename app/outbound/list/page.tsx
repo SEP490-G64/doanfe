@@ -16,9 +16,7 @@ const OutboundList = () => {
         <DefaultLayout>
             <Breadcrumb pageName="Danh sách phiếu xuất hàng" />
 
-            <div className="flex flex-col gap-18">
-                <OutboundTable />
-            </div>
+            <OutboundTable />
         </DefaultLayout>
     );
 };

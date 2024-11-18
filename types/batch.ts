@@ -1,3 +1,5 @@
+import { UnitConversion } from "@/types/product";
+
 export type Batch = {
     index: number;
     id: string;
@@ -5,6 +7,9 @@ export type Batch = {
     produceDate: string;
     expireDate: string;
     inboundPrice: string;
+    quantity: number;
+    baseUnit: string;
+    unitConversions?: Array<UnitConversion>;
     actions: string;
 };
 

@@ -61,7 +61,7 @@ const UserForm = ({
             phone: undefined,
             firstName: undefined,
             lastName: undefined,
-            status: undefined,
+            status: "ACTIVATE",
             branch: undefined,
             roles: undefined,
         },
@@ -102,7 +102,7 @@ const UserForm = ({
 
     const getBranches = async () => {
         try {
-            const response = await getListBranch(0, 10, dataSearch, sessionToken);
+            const response = await getListBranch("0", "10", dataSearch, sessionToken);
 
             setBranches(response.data);
         } catch (error) {
@@ -114,6 +114,9 @@ const UserForm = ({
         getBranches();
         if (viewMode != "create") {
             getUserInfo();
+        }
+        if (viewMode === "create") {
+            setValue("status", "ACTIVATE"); // Đảm bảo status có giá trị mặc định
         }
     }, []);
 
@@ -305,7 +308,7 @@ const UserForm = ({
                                                             value="ACTIVATE"
                                                             className="mr-2"
                                                             defaultChecked={viewMode === "create"}
-                                                            disabled={viewMode !== "create" && viewMode !== "update"}
+                                                            disabled={viewMode !== "update"}
                                                         />
                                                         Kích hoạt
                                                     </label>
@@ -316,7 +319,7 @@ const UserForm = ({
                                                             {...register("status")}
                                                             value="DEACTIVATE"
                                                             className="mr-2"
-                                                            disabled={viewMode !== "create" && viewMode !== "update"}
+                                                            disabled={viewMode !== "update"}
                                                         />
                                                         Vô hiệu hóa
                                                     </label>
