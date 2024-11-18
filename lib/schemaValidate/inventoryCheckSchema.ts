@@ -35,7 +35,7 @@ const ProductCheck = z
         productUnits: z.array(z.object({ id: z.number(), unitName: z.string() })).optional(),
         systemQuantity: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
         countedQuantity: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
-        difference: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
+        difference: z.number().int().optional(),
         reason: z.string().trim().max(256, "Giới hạn 255 kí tự").optional(),
         inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         sellPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
