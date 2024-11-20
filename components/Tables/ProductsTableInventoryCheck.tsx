@@ -97,7 +97,7 @@ const ProductsTableInventoryCheck = ({
                             {/*</td>*/}
 
                             <td className="border-b border-[#eee] px-4 py-5 text-left">
-                                <p className="text-black dark:text-white">{product?.product?.productName}</p>
+                                <p className="text-black dark:text-white">{product?.productName}</p>
                             </td>
 
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
@@ -114,7 +114,7 @@ const ProductsTableInventoryCheck = ({
                             {product?.batches && (
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <select
-                                        value={product?.batch.batchCode}
+                                        value={product?.batch?.batchCode}
                                         onChange={(e) => handleChangeBatchCode(e, key)}
                                         className={`w-full min-w-[40px] appearance-none rounded border border-strokedark bg-transparent px-3 py-2 outline-none transition`}
                                     >
@@ -141,7 +141,7 @@ const ProductsTableInventoryCheck = ({
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <input
                                         type="text"
-                                        value={product?.batch.batchCode}
+                                        value={product?.batch?.batchCode}
                                         disabled
                                         className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                     />
@@ -152,7 +152,7 @@ const ProductsTableInventoryCheck = ({
                                 <input
                                     type="number"
                                     value={product?.systemQuantity}
-                                    disabled={!active}
+                                    disabled
                                     onChange={(e) => handleChangeSystemQuantity(e, key)}
                                     className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
@@ -201,7 +201,7 @@ const ProductsTableInventoryCheck = ({
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="date"
-                                    value={formatDateTimeYYYYMMDD(product?.batch.expireDate)}
+                                    value={formatDateTimeYYYYMMDD(product?.batch?.expireDate)}
                                     disabled
                                     className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
