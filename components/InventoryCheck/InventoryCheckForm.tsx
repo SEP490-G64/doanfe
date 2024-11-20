@@ -169,6 +169,7 @@ const InventoryCheckForm = ({
                 setUser(response.data.createdBy);
                 setBranch(response.data.branch);
                 setInventoryCheckStatus(response.data.status);
+                setProductOpts(response.data.inventoryCheckProductDetails);
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
