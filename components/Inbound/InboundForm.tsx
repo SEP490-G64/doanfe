@@ -166,7 +166,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
     const addItem = (e?: React.MouseEvent) => {
         e!.preventDefault();
-        setValue("productInbounds", [...products, { ...product, baseUnit: { id: 1, unitName: "viên" } }]);
+        setValue("productInbounds", [...products, { ...product }]);
     };
 
     const initInbound = async () => {

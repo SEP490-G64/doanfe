@@ -1,17 +1,23 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { debounce } from "lodash";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
+import {
+    Button,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Select,
+    SelectItem,
+    useDisclosure,
+} from "@nextui-org/react";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
-import { FaPlus } from "react-icons/fa6";
-import ReactSelect from "react-select";
 
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
-import IconButton from "@/components/UI/IconButton";
 import { ProductInfor } from "@/types/inventoryCheck";
 import Loader from "@/components/common/Loader";
 import {
@@ -22,10 +28,10 @@ import {
     submitInventoryCheck,
 } from "@/services/inventoryCheckServices";
 import { CheckBody, CheckBodyType } from "@/lib/schemaValidate/inventoryCheckSchema";
-import { getProductByBranchId } from "@/services/productServices";
+import { getProductInventoryCheck } from "@/services/productServices";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
-import ProductsTableInventoryCheck from "../Tables/ProductsTableInventoryCheck";
+import ProductsTableInventoryCheckTwo from "../Tables/ProductsTableInventoryCheckTwo";
 
 const InventoryCheckForm = ({
     viewMode,
@@ -47,6 +53,9 @@ const InventoryCheckForm = ({
     const { isOpen, onOpenChange } = useDisclosure();
     const [product, setProduct] = useState<ProductInfor>();
     const [saveDraft, setSaveDraft] = useState(false);
+    const [inventoryCheckType, setInventoryCheckType] = useState<
+        "KIEM_KHO_DINH_KY" | "KIEM_KHO_DOT_XUAT" | "KIEM_KHO_VAT_LY_TOAN_PHAN" | "KIEM_KHO_TRONG_TAM"
+    >();
 
     const renderInventoryCheckStatus = useCallback((status: string | undefined) => {
         if (!status) return;
@@ -109,30 +118,8 @@ const InventoryCheckForm = ({
         },
     });
 
-    const products = watch("inventoryCheckProductDetails");
-    const branchId = watch("branch.id");
-
-    // Debounced fetch options
-    const debouncedFetchOptions = useCallback(
-        debounce((inputValue: string) => {
-            if (inputValue) {
-                getProductOpts(inputValue);
-            } else {
-                setProductOpts([]);
-            }
-        }, 500),
-        [branchId]
-    );
-
-    const handleTypeProduct = (inputString: string) => {
-        debouncedFetchOptions(inputString);
-        return inputString;
-    };
-
-    const addItem = (e?: React.MouseEvent) => {
-        e!.preventDefault();
-        setValue("inventoryCheckProductDetails", [...products, product]);
-    };
+    // const products = watch("inventoryCheckProductDetails");
+    // const branchId = watch("branch.id");
 
     const initInventoryCheck = async () => {
         if (loading) {
@@ -153,6 +140,8 @@ const InventoryCheckForm = ({
                 setUser(response.data.createdBy);
                 setBranch(response.data.branch);
                 setInventoryCheckStatus(response.data.status);
+
+                await getProductOpts(response.data.branch.id);
             }
         } catch (error) {
             console.log(error);
@@ -172,6 +161,7 @@ const InventoryCheckForm = ({
 
             if (response.message === "200 OK") {
                 setValue("inventoryCheckId", response.data.id);
+                setValue("code", response.data.code);
                 setValue("createdDate", response.data.createdDate);
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy?.id);
@@ -179,6 +169,7 @@ const InventoryCheckForm = ({
                 setUser(response.data.createdBy);
                 setBranch(response.data.branch);
                 setInventoryCheckStatus(response.data.status);
+                setProductOpts(response.data.inventoryCheckProductDetails);
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -187,11 +178,20 @@ const InventoryCheckForm = ({
         }
     };
 
-    const getProductOpts = async (inputString: string) => {
+    const getProductOpts = async (branchId: string) => {
         if (isFetchingProduct) return;
         setIsFetchingProduct(true);
         try {
-            const response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
+            // let response;
+            // if (inventory-checkType === "TRA_HANG")
+            //     response = await getProductByBranchId(
+            //         branch!.id.toString(),
+            //         inputString,
+            //         sessionToken,
+            //         selectedSupId.toString()
+            //     );
+            // const response = await getProductByBranchId(branch!.id.toString(), inputString, sessionToken);
+            const response = await getProductInventoryCheck(branchId, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
@@ -362,7 +362,7 @@ const InventoryCheckForm = ({
                     <h3 className="font-medium text-black dark:text-white">Danh sách sản phẩm</h3>
                 </div>
                 <div className="p-6.5">
-                    {viewMode !== "details" && (
+                    {/* {viewMode !== "details" && (
                         <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                             <label className="mb-3 block self-center whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                 Tên sản phẩm <span className="text-meta-1">*</span>
@@ -414,14 +414,15 @@ const InventoryCheckForm = ({
                             />
                             <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)} />
                         </div>
-                    )}
+                    )} */}
 
-                    <ProductsTableInventoryCheck
-                        data={products || []}
+                    <ProductsTableInventoryCheckTwo
+                        data={productOpts || []}
                         active={
                             viewMode !== "details" && ["BAN_NHAP", "CHUA_LUU"].includes(inventoryCheckStatus as string)
                         }
-                        errors={errors}
+                        startedDate={watch("createdDate")}
+                        sessionToken={sessionToken}
                         setProducts={setValue}
                     />
 
@@ -495,7 +496,26 @@ const InventoryCheckForm = ({
                         <>
                             <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                             <ModalBody>
-                                <p>Bạn có muốn khởi tạo đơn kiểm hàng không?</p>
+                                <p>Vui lòng chọn kiểu kiểm hàng</p>
+                                <Select
+                                    value={inventoryCheckType}
+                                    onChange={(e) =>
+                                        setInventoryCheckType(
+                                            e.target.value as
+                                                | "KIEM_KHO_DINH_KY"
+                                                | "KIEM_KHO_DOT_XUAT"
+                                                | "KIEM_KHO_VAT_LY_TOAN_PHAN"
+                                                | "KIEM_KHO_TRONG_TAM"
+                                        )
+                                    }
+                                    label="Chọn kiểu kiểm hàng"
+                                    className="max-w-full"
+                                >
+                                    <SelectItem key={"KIEM_KHO_DINH_KY"}>Kiểm kho định kỳ</SelectItem>
+                                    <SelectItem key={"KIEM_KHO_DOT_XUAT"}>Kiểm kho đột xuất</SelectItem>
+                                    <SelectItem key={"KIEM_KHO_VAT_LY_TOAN_PHAN"}>Kiểm kho vật lý toàn phần</SelectItem>
+                                    <SelectItem key={"KIEM_KHO_TRONG_TAM"}>Kiểm kho trọng tâm</SelectItem>
+                                </Select>
                             </ModalBody>
                             <ModalFooter>
                                 <Button

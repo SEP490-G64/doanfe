@@ -90,12 +90,50 @@ export const getProductByBranchId = async (
     }
 };
 
+export const getProductInventoryCheck = async (branchId: string, token: string, typeId?: string) => {
+    try {
+        const res = await httpRequest.get(`/dsd/api/v1/staff/product/products-inventory-check/${branchId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { typeId },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
 export const getAllowedProducts = async (keyword: string, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/product/allow-products`, {
             headers: { Authorization: `Bearer ${token}` },
             params: { keyword },
         });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
+export const getProductsChangedHistory = async (startDate: string | Date, token: string) => {
+    try {
+        const endDate = new Date();
+
+        const res = await httpRequest.get(
+            // `dsd/api/v1/staff/product/1/audit-history?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59`,
+            // `dsd/api/v1/staff/product/1/audit-history?startDate=${startDate}&endDate=2024-12-31T23:59:59`,
+            `dsd/api/v1/staff/product/1/audit-history?startDate=${startDate}&endDate=${endDate.toISOString().slice(0, -1)}`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        );
 
         return res;
     } catch (error: any) {
