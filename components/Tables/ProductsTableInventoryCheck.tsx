@@ -36,13 +36,13 @@ const ProductsTableInventoryCheck = ({
 
     const handleChangeBatchCode = (e: React.ChangeEvent<HTMLSelectElement>, index: number) => {
         const batch = data[index].batches?.find((b) => b.batchCode === e.target.value);
-        data[index].batch.id = batch?.id;
-        data[index].batch.batchCode = batch?.batchCode;
-        data[index].batch.expireDate = batch?.expireDate;
+        data![index]!.batch!.id = batch?.id;
+        data![index]!.batch!.batchCode = batch?.batchCode;
+        data![index]!.batch!.expireDate = batch?.expireDate;
         if (data) {
             let duplicate = false;
             data.forEach((d, dindex) => {
-                if (d.batch.batchCode === e.target.value && dindex !== index) {
+                if (d.batch?.batchCode === e.target.value && dindex !== index) {
                     duplicate = true;
                 }
             });

@@ -52,6 +52,38 @@ export const getProductById = async (id: string, token: string) => {
     }
 };
 
+export const getListProductByCheckQuantity = async (
+    page: string,
+    size: string,
+    dataSearch: DataSearch,
+    token: string
+) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    for (const searchKey in dataSearch) {
+        if (dataSearch[searchKey as keyof typeof dataSearch]) {
+            params[searchKey as keyof typeof params] = dataSearch[searchKey as keyof typeof dataSearch];
+        }
+    }
+
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/filter`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params,
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
 export const getProductBySupplierId = async (supplierId: string, keyword: string, token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/product/products-by-supplier/${supplierId}`, {
@@ -90,12 +122,47 @@ export const getProductByBranchId = async (
     }
 };
 
-export const getProductInventoryCheck = async (branchId: string, token: string, typeId?: string) => {
+export const getProductInventoryCheck = async (branchId: string, token: string) => {
     try {
         const res = await httpRequest.get(`/dsd/api/v1/staff/product/products-inventory-check/${branchId}`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { typeId },
         });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
+export const getProductInventoryCheckByType = async (branchId: string, token: string, typeId: string) => {
+    try {
+        const res = await httpRequest.get(
+            `/dsd/api/v1/staff/product/products-inventory-check/${branchId}/type/${typeId}`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        );
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
+export const getProductInventoryCheckByCate = async (branchId: string, token: string, categoryId?: string) => {
+    try {
+        const res = await httpRequest.get(
+            `/dsd/api/v1/staff/product/products-inventory-check/${branchId}/category/${categoryId}`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        );
 
         return res;
     } catch (error: any) {
@@ -122,14 +189,14 @@ export const getAllowedProducts = async (keyword: string, token: string) => {
     }
 };
 
-export const getProductsChangedHistory = async (startDate: string | Date, token: string) => {
+export const getProductsChangedHistory = async (startDate: string | Date, productId: number, token: string) => {
     try {
         const endDate = new Date();
 
         const res = await httpRequest.get(
-            // `dsd/api/v1/staff/product/1/audit-history?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59`,
+            `dsd/api/v1/staff/product/${productId}/audit-history?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59`,
             // `dsd/api/v1/staff/product/1/audit-history?startDate=${startDate}&endDate=2024-12-31T23:59:59`,
-            `dsd/api/v1/staff/product/1/audit-history?startDate=${startDate}&endDate=${endDate.toISOString().slice(0, -1)}`,
+            // `dsd/api/v1/staff/product/1/audit-history?startDate=${startDate}&endDate=${endDate.toISOString().slice(0, -1)}`,
             {
                 headers: { Authorization: `Bearer ${token}` },
             }

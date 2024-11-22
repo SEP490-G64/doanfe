@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import Link from "next/link";
 import SidebarDropdown from "@/components/Sidebar/SidebarDropdown";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface ItemChildren {
     route: string;
@@ -20,8 +20,12 @@ interface SidebarItemProps {
 }
 
 const SidebarItem = ({ item, pageName, setPageName }: SidebarItemProps) => {
+    const router = useRouter();
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault();
+        if (!item.children) {
+            router.push(item.route);
+        }
         const updatedPageName = pageName !== item.label.toLowerCase() ? item.label.toLowerCase() : "";
         return setPageName(updatedPageName);
     };

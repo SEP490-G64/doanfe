@@ -11,6 +11,7 @@ import { MdOutlineBloodtype, MdOutlinePrecisionManufacturing, MdOutlineInventory
 import { TbRulerMeasure } from "react-icons/tb";
 import { TfiSupport } from "react-icons/tfi";
 import { FaUsers } from "react-icons/fa";
+import { PiListNumbers } from "react-icons/pi";
 
 import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
@@ -56,6 +57,11 @@ const menuGroups = [
                 label: "Dashboard",
                 route: "#",
                 children: [{ label: "eCommerce", route: "/" }],
+            },
+            {
+                icon: <PiListNumbers />,
+                label: "Kiểm kê hàng hóa",
+                route: "/inventory-check",
             },
             {
                 icon: <BiImport />,

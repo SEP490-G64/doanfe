@@ -96,16 +96,6 @@ function HeaderTaskbar({
                     />
                 </div>
 
-                <div className="max-w-xs">
-                    <SelectGroupOne
-                        placeHolder="Chọn chi nhánh"
-                        optsData={branchOpts}
-                        dataSearch={dataSearch}
-                        setDataSearch={setDataSearch}
-                        dataKey="branchId"
-                    />
-                </div>
-
                 {buttons === "import" && (
                     <Button label="Nhập file" size="small" icon={<FaFileImport />} type="success" onClick={() => {}} />
                 )}
@@ -119,8 +109,17 @@ function HeaderTaskbar({
 
             {/* Dòng thứ hai */}
             <div className="mt-2 flex items-center gap-2">
+                <div className="max-w-xs">
+                    <SelectGroupOne
+                        placeHolder="Chọn chi nhánh"
+                        optsData={branchOpts}
+                        dataSearch={dataSearch}
+                        setDataSearch={setDataSearch}
+                        dataKey="branchId"
+                    />
+                </div>
                 <span className="flex items-center">Từ</span>
-                {/* <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="startDate" /> */}
+                <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="startDate" />
                 <span className="flex items-center">đến</span>
                 <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="endDate" />
                 {/*<SelectGroupOne
