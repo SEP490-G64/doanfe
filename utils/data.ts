@@ -118,3 +118,15 @@ export const inventoryCheckColumns = [
     { name: "Ngày tạo", uid: "createdDate" },
     { name: "Tác vụ", uid: "actions" },
 ];
+
+export const inventoryCheckColumnsTwo = [
+    { name: "STT", uid: "no." },
+    { name: "Thuộc nhóm", uid: "categoryName" },
+    { name: "Tên sản phẩm", uid: "productName" },
+    { name: "Số lượng", uid: "quantity" },
+    { name: "Đơn vị", uid: "baseUnit" },
+    { name: "Giá gốc", uid: "inboundPrice" },
+    { name: "Giá bán", uid: "sellPrice" },
+    { name: "Nhà sản xuất", uid: "manufacturerName" },
+    { name: "Tác vụ", uid: "actions" },
+];

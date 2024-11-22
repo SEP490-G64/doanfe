@@ -5,12 +5,12 @@ import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 
 const SelectGroupOne = ({
-                            placeHolder,
-                            optsData,
-                            setDataSearch,
-                            dataSearch,
-                            dataKey
-                        }: {
+    placeHolder,
+    optsData,
+    setDataSearch,
+    dataSearch,
+    dataKey,
+}: {
     placeHolder: string;
     optsData: { value: string; label: string }[];
     setDataSearch: (data: any) => void;
@@ -38,10 +38,7 @@ const SelectGroupOne = ({
                     value={dataSearch[dataKey] || ""}
                     onChange={handleChange}
                     className={`size-full min-w-[40px] appearance-none rounded border border-strokedark bg-transparent px-3 py-2 outline-none transition ${isOptionSelected ? "text-black dark:text-white" : "text-gray-500"} focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary`}
-                    className={`w-full h-full appearance-none rounded border border-strokedark bg-transparent px-3 py-2 outline-none transition 
-                        ${isOptionSelected ? "text-black dark:text-white" : "text-gray-500"} 
-                        focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary`}
-                    style={{ minHeight: "40px" }}  // đảm bảo kích thước tối thiểu phù hợp với nút
+                    style={{ minHeight: "40px" }} // đảm bảo kích thước tối thiểu phù hợp với nút
                     disabled={userInfo?.roles[0].type === "STAFF" && dataKey == "branchId"}
                 >
                     <option value="" className="text-gray-500">
