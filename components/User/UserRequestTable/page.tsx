@@ -248,7 +248,7 @@ const UserRequestTable = () => {
                                 )}
                             </TableHeader>
                         </TableHeader>
-                        <TableBody items={UserData ?? []}>
+                        <TableBody items={UserData ?? []} emptyContent={"Không có dữ liệu"}>
                             {(item) => (
                                 <TableRow key={item?.id}>
                                     {(columnKey) => (
