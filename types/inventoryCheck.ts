@@ -37,6 +37,16 @@ export interface ProductInfor {
     reason?: string;
 }
 
+export interface ProductChangedHistory {
+    transactionId: number;
+    transactionType: string;
+    productId: number;
+    productName: string;
+    quantity: number;
+    batch: string;
+    createdAt: string;
+}
+
 export interface InventoryCheck {
     index: number;
     id: number;

@@ -16,6 +16,7 @@ import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDi
 import { formatDateTimeDDMMYYYYHHMM } from "@/utils/methods";
 import { ProductCheckType } from "@/lib/schemaValidate/inventoryCheckSchema";
 import { getProductsChangedHistory } from "@/services/productServices";
+import { ProductChangedHistory } from "@/types/inventoryCheck";
 
 const ProductsTableInventoryCheck = ({
     data,
@@ -30,17 +31,7 @@ const ProductsTableInventoryCheck = ({
     sessionToken: string;
     setProducts: any;
 }) => {
-    const [productsChanged, setProductsChanged] = useState<
-        {
-            transactionId: number;
-            transactionType: string;
-            productId: number;
-            productName: string;
-            quantity: number;
-            batch: string;
-            createdAt: string;
-        }[]
-    >([]);
+    const [productsChanged, setProductsChanged] = useState<ProductChangedHistory[]>([]);
     const [changedQuantity, setChangedQuantity] = useState<number>(0);
     const [indexProduct, setIndexProduct] = useState<number>(-1);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -56,19 +47,32 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
 
-    const getProductsChanged = async () => {
+    const getProductsChanged = async (productId: number, batchCode: string | undefined) => {
         try {
-            const response = await getProductsChangedHistory(startedDate, sessionToken);
+            const response = await getProductsChangedHistory(startedDate, productId, sessionToken);
 
             if (response.status === "SUCCESS") {
-                setProductsChanged(response.data);
+                let products = response.data;
+                if (batchCode)
+                    products = products.filter((product: ProductChangedHistory) => product.batch === batchCode);
+                else products = products.filter((product: ProductChangedHistory) => !product.batch);
+                if (batchCode) {
+                    setChangedQuantity(countQuantityChanged(true, batchCode, products));
+                } else {
+                    setChangedQuantity(countQuantityChanged(false, productId, products));
+                }
+                setProductsChanged(products);
             }
         } catch (error) {
             console.log(error);
         }
     };
 
-    const countQuantityChanged = (havaBatch: boolean, code: string | number) => {
+    const countQuantityChanged = (
+        havaBatch: boolean,
+        code: string | number,
+        productsChanged: ProductChangedHistory[]
+    ) => {
         let quantity = 0;
         productsChanged.forEach((product) => {
             if (havaBatch) {
@@ -97,8 +101,8 @@ const ProductsTableInventoryCheck = ({
                     );
                 case "productName":
                     return (
-                        <div className="flex flex-col items-center justify-center">
-                            <p className="text-bold text-sm capitalize text-default-400">
+                        <div className="flex items-center justify-start">
+                            <p className="text-bold text-left text-sm capitalize text-secondary">
                                 {product?.product?.productName}
                             </p>
                         </div>
@@ -161,15 +165,10 @@ const ProductsTableInventoryCheck = ({
                             <Tooltip content="Chi tiết">
                                 <button
                                     className="hover:text-primary"
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                         e.preventDefault();
                                         setIndexProduct(index);
-                                        getProductsChanged();
-                                        if (product?.batch?.batchCode) {
-                                            setChangedQuantity(countQuantityChanged(true, product?.batch?.batchCode));
-                                        } else {
-                                            setChangedQuantity(countQuantityChanged(false, product?.product?.id));
-                                        }
+                                        await getProductsChanged(product?.product?.id, product?.batch?.batchCode);
                                         onOpen();
                                     }}
                                 >
@@ -293,7 +292,9 @@ const ProductsTableInventoryCheck = ({
                 <TableBody>
                     {items.map((item, index) => (
                         <TableRow key={item.id}>
-                            {(columnKey) => <TableCell>{renderCell(item, columnKey, index)}</TableCell>}
+                            {(columnKey) => (
+                                <TableCell>{renderCell(item, columnKey, index + (page - 1) * rowsPerPage)}</TableCell>
+                            )}
                         </TableRow>
                     ))}
                 </TableBody>
@@ -358,7 +359,7 @@ const ProductsTableInventoryCheck = ({
                                     color="primary"
                                     onPress={() => {
                                         if (changedQuantity && data![indexProduct].countedQuantity) {
-                                            data![indexProduct].countedQuantity += changedQuantity;
+                                            data![indexProduct].countedQuantity -= changedQuantity;
                                             if (data![indexProduct].systemQuantity) {
                                                 data![indexProduct].difference =
                                                     data![indexProduct].countedQuantity -

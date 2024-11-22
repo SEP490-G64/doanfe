@@ -23,6 +23,7 @@ export const config = {
         "/categories/:path*",
         "/inbound/:path*",
         "/inventory-check-note/:path*",
+        "/inventory-check/:path*",
         "/manufacturers/:path*",
         "/outbound/:path*",
         "/products/:path*",
