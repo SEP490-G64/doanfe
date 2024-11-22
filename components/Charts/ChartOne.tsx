@@ -1,8 +1,14 @@
 "use client";
 
 import { ApexOptions } from "apexcharts";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { useAppContext } from "@/components/AppProvider/AppProvider";
+import { jwtDecode } from "jwt-decode";
+import { getDashboardChart } from "@/services/reportServices";
+import { toast } from "react-toastify";
+import { DashboardChartBodyType } from "@/lib/schemaValidate/reportSchema";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
     ssr: false,
@@ -27,7 +33,6 @@ const options: ApexOptions = {
             left: 0,
             opacity: 0.1,
         },
-
         toolbar: {
             show: false,
         },
@@ -54,10 +59,6 @@ const options: ApexOptions = {
         width: [2, 2],
         curve: "straight",
     },
-    // labels: {
-    //   show: false,
-    //   position: "top",
-    // },
     grid: {
         xaxis: {
             lines: {
@@ -81,15 +82,13 @@ const options: ApexOptions = {
         strokeOpacity: 0.9,
         strokeDashArray: 0,
         fillOpacity: 1,
-        discrete: [],
         hover: {
-            size: undefined,
             sizeOffset: 5,
         },
     },
     xaxis: {
         type: "category",
-        categories: ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"],
+        categories: [],
         axisBorder: {
             show: false,
         },
@@ -108,23 +107,70 @@ const options: ApexOptions = {
     },
 };
 
-interface ChartOneState {
-    series: {
-        name: string;
-        data: number[];
-    }[];
+interface ChartOneProps {
+    branchId: string | null;
 }
 
-const ChartOne: React.FC = () => {
+const ChartOne: React.FC<ChartOneProps> = ({ branchId }) => {
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const [chart, setChart] = useState<DashboardChartBodyType[]>([]);
+    const [timeRange, setTimeRange] = useState<string>("Ngày");
+    const { sessionToken } = useAppContext();
+
+    const getDashboardChartItems = async (branchId: string, timeRange: string) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await getDashboardChart(branchId, timeRange, sessionToken);
+
+            if (response.message === "200 OK") {
+                setChart(response.data); // Dữ liệu đã được kiểm tra và đúng kiểu
+            } else {
+                router.push("/not-found");
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (branchId) {
+            getDashboardChartItems(branchId, timeRange);
+        } else {
+            getDashboardChartItems("", timeRange);
+        }
+    }, [branchId, timeRange]);
+
+    const handleTimeRangeChange = (range: string) => {
+        setTimeRange(range);
+    };
+
+    const categories = chart.map(item => item.time);
+    const startDate = categories.length > 0 ? categories[0] : "";
+    const endDate = categories.length > 0 ? categories[categories.length - 1] : "";
+    const inboundData = chart.map(item => item.inbound);
+    const outboundData = chart.map(item => item.outbound);
+
+    // Calculate the maximum value from inbound or outbound data
+    const maxValue = Math.max(
+        Math.max(...inboundData), // max of inbound
+        Math.max(...outboundData)  // max of outbound
+    );
+
     const series = [
         {
-            name: "Product One",
-            data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30, 45],
+            name: "Inbound",
+            data: inboundData,
         },
-
         {
-            name: "Product Two",
-            data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 51],
+            name: "Outbound",
+            data: outboundData,
         },
     ];
 
@@ -133,42 +179,57 @@ const ChartOne: React.FC = () => {
             <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
                 <div className="flex w-full flex-wrap gap-3 sm:gap-5">
                     <div className="flex min-w-47.5">
-                        <span className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-primary">
+                        <span
+                            className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-primary">
                             <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-primary"></span>
                         </span>
                         <div className="w-full">
-                            <p className="font-semibold text-primary">Total Revenue</p>
-                            <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+                            <p className="font-semibold text-primary">Tổng giá trị nhập</p>
+                            <p className="text-sm font-medium">{startDate} - {endDate}</p>
                         </div>
                     </div>
                     <div className="flex min-w-47.5">
-                        <span className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-secondary">
+                        <span
+                            className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-secondary">
                             <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-secondary"></span>
                         </span>
                         <div className="w-full">
-                            <p className="font-semibold text-secondary">Total Sales</p>
-                            <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+                            <p className="font-semibold text-secondary">Tổng giá trị xuất</p>
+                            <p className="text-sm font-medium">{startDate} - {endDate}</p>
                         </div>
                     </div>
                 </div>
                 <div className="flex w-full max-w-45 justify-end">
                     <div className="inline-flex items-center rounded-md bg-whiter p-1.5 dark:bg-meta-4">
-                        <button className="rounded bg-white px-3 py-1 text-xs font-medium text-black shadow-card hover:bg-white hover:shadow-card dark:bg-boxdark dark:text-white dark:hover:bg-boxdark">
-                            Day
-                        </button>
-                        <button className="rounded px-3 py-1 text-xs font-medium text-black hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark">
-                            Week
-                        </button>
-                        <button className="rounded px-3 py-1 text-xs font-medium text-black hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark">
-                            Month
-                        </button>
+                        {["Ngày", "Tuần", "Quý", "Tháng", "Năm"].map((range) => (
+                            <button
+                                key={range}
+                                className={`rounded px-3 py-1 text-xs font-medium text-black hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark ${timeRange === range ? "bg-primary text-white" : ""}`}
+                                onClick={() => handleTimeRangeChange(range)}
+                            >
+                                {range}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
 
             <div>
                 <div id="chartOne" className="-ml-5">
-                    <ReactApexChart options={options} series={series} type="area" height={350} width={"100%"} />
+                    <ReactApexChart
+                        options={{
+                            ...options,
+                            xaxis: { ...options.xaxis, categories }, // Cập nhật categories cho trục x
+                            yaxis: {
+                                ...options.yaxis,
+                                max: maxValue * 1.1, // Set max value to 110% of the highest data value
+                            },
+                        }}
+                        series={series}
+                        type="area"
+                        height={350}
+                        width={"100%"}
+                    />
                 </div>
             </div>
         </div>
