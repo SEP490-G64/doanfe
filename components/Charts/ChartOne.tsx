@@ -185,7 +185,7 @@ const ChartOne: React.FC<ChartOneProps> = ({ branchId }) => {
                         </span>
                         <div className="w-full">
                             <p className="font-semibold text-primary">Tổng giá trị nhập</p>
-                            <p className="text-sm font-medium">{startDate} - {endDate}</p>
+                            <p className="text-sm font-medium">{startDate} đến {endDate}</p>
                         </div>
                     </div>
                     <div className="flex min-w-47.5">
@@ -195,13 +195,13 @@ const ChartOne: React.FC<ChartOneProps> = ({ branchId }) => {
                         </span>
                         <div className="w-full">
                             <p className="font-semibold text-secondary">Tổng giá trị xuất</p>
-                            <p className="text-sm font-medium">{startDate} - {endDate}</p>
+                            <p className="text-sm font-medium">{startDate} đến {endDate}</p>
                         </div>
                     </div>
                 </div>
                 <div className="flex w-full max-w-45 justify-end">
                     <div className="inline-flex items-center rounded-md bg-whiter p-1.5 dark:bg-meta-4">
-                        {["Ngày", "Tuần", "Quý", "Tháng", "Năm"].map((range) => (
+                        {["Ngày", "Tuần", "Tháng", "Quý", "Năm"].map((range) => (
                             <button
                                 key={range}
                                 className={`rounded px-3 py-1 text-xs font-medium text-black hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark ${timeRange === range ? "bg-primary text-white" : ""}`}

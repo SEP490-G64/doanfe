@@ -1,6 +1,6 @@
-import { FaArrowDownLong, FaArrowUpLong } from "react-icons/fa6";
-import Image from "next/image";
 import React from "react";
+import { CiExport, CiImport } from "react-icons/ci";
+import { bold } from "next/dist/lib/picocolors";
 
 interface Product {
     id: string;
@@ -87,14 +87,14 @@ const TableOne: React.FC<TableOneProps> = ({ data }) => {
                             <div className="col-span-3 flex items-center justify-center flex-wrap p-5 xl:p-5">
                                 <div className="w-full flex items-center justify-center">
                                     <p className="flex items-center text-black dark:text-white">
-                                        {product.inboundQuantity} {product.unitName}{" "}
-                                        <FaArrowDownLong className="ml-2 text-success" />
+                                        {product.inboundQuantity.toLocaleString()} {product.unitName}{" "}
+                                        <CiImport className="ml-2 text-success"/>
                                     </p>
                                 </div>
                                 <div className="w-full flex items-center justify-center">
                                     <p className="flex items-center text-black dark:text-white">
-                                        {product.outboundQuantity} {product.unitName}{" "}
-                                        <FaArrowUpLong className="ml-2 text-danger" />
+                                        {product.outboundQuantity.toLocaleString()} {product.unitName}{" "}
+                                        <CiExport className="ml-2 text-danger"/>
                                     </p>
                                 </div>
                             </div>
@@ -102,7 +102,7 @@ const TableOne: React.FC<TableOneProps> = ({ data }) => {
                             {/* Total Quantity Column */}
                             <div className="col-span-2 flex items-center justify-center p-2.5 xl:p-5">
                                 <p className="text-meta-5">
-                                    {product.totalQuantity} {product.unitName}
+                                    {product.totalQuantity.toLocaleString()} {product.unitName}
                                 </p>
                             </div>
 
@@ -110,14 +110,14 @@ const TableOne: React.FC<TableOneProps> = ({ data }) => {
                             <div className="col-span-3 flex items-center justify-center flex-wrap p-5 xl:p-5">
                                 <div className="w-full flex items-center justify-center">
                                     <p className="flex items-center text-black dark:text-white">
-                                        {product.inboundPrice.toLocaleString()} VND{" "}
-                                        <FaArrowDownLong className="ml-2 text-success" />
+                                        {product.inboundPrice.toLocaleString()}đ{" "}
+                                        <CiImport className="ml-2 text-success"/>
                                     </p>
                                 </div>
                                 <div className="w-full flex items-center justify-center">
                                     <p className="flex items-center text-black dark:text-white">
-                                        {product.outboundPrice.toLocaleString()} VND{" "}
-                                        <FaArrowUpLong className="ml-2 text-danger" />
+                                        {product.outboundPrice.toLocaleString()}đ{" "}
+                                        <CiExport className="ml-2 text-danger"/>
                                     </p>
                                 </div>
                             </div>
@@ -125,7 +125,7 @@ const TableOne: React.FC<TableOneProps> = ({ data }) => {
                             {/* Total Price Column */}
                             <div className="col-span-1 flex items-center justify-center p-2.5 xl:p-5">
                                 <p className="text-meta-3">
-                                    {product.totalPrice.toLocaleString()} VND
+                                    {product.totalPrice.toLocaleString()}đ
                                 </p>
                             </div>
                         </div>
