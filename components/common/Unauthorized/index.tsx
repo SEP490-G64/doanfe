@@ -10,7 +10,7 @@ const Unauthorized = () => {
             textAlign: 'center'
         }}>
             <img
-                src="/images/unauthorized.png"
+                src="/images/unauthorized.jpg"
                 alt="Unauthorized Access"
                 style={{ width: '150px', marginBottom: '20px' }}
             />

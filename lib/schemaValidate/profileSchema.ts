@@ -6,6 +6,7 @@ const phoneNumberRegex = /^(0(1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|6[0-9]|7[0-9]|8
 export const BranchBody = z
     .object({
         id: z.string().trim(),
+        branchType: z.string().trim(),
         branchName: z.string().trim(),
         location: z.string().trim(),
     })

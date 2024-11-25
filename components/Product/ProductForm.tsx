@@ -221,6 +221,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                     "unitConversions",
                     "branchProducts",
                     "specialConditions",
+                    "inboundPrice",
+                    "sellPrice",
                 ] = [
                     "productName",
                     "registrationCode",
@@ -236,6 +238,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                     "unitConversions",
                     "branchProducts",
                     "specialConditions",
+                    "inboundPrice",
+                    "sellPrice",
                 ];
 
                 fields.forEach((field) => setValue(field, response.data[field]));
@@ -800,7 +804,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                     <div className="flex flex-col gap-6 xl:flex-row">
                                         <div className="w-full xl:w-1/2">
                                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                Tồn kho
+                                                Tồn toàn hệ thống
                                             </label>
                                             <input
                                                 type="text"

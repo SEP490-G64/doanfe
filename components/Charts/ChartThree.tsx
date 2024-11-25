@@ -65,8 +65,8 @@ const options: ApexOptions = {
 
 const ChartThree: React.FC<ChartThreeProps> = ({ data, title }) => {
     // Chuyển đổi dữ liệu vào dạng series và labels
-    const series = data.map((item) => item.value1);  // Dữ liệu của phần series (có thể là value1 hoặc value2 tùy theo yêu cầu)
-    const labels = data.map((item) => item.name);  // Các nhãn từ name
+    const series = (data || []).map((item) => item.value1);
+    const labels = (data || []).map((item) => item.name);
 
     return (
         <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default sm:px-7.5 xl:col-span-5 dark:border-strokedark dark:bg-boxdark">
@@ -83,10 +83,10 @@ const ChartThree: React.FC<ChartThreeProps> = ({ data, title }) => {
             </div>
 
             <div className="-mx-8 flex flex-wrap items-center justify-center gap-y-3">
-                {data.map((item, index) => (
+                {(data || []).map((item, index) => (
                     <div key={index} className="w-full px-8 sm:w-1/2">
                         <div className="flex w-full items-center">
-                            <span className="mr-2 block h-3 w-full max-w-3 rounded-full" style={{ backgroundColor: options.colors[index % options.colors.length] }}></span>
+                            <span className="mr-2 block h-3 w-full max-w-3 rounded-full" style={{ backgroundColor: options?.colors[index % options?.colors.length] }}></span>
                             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
                                 <span> {item.name} </span>
                                 <span> {item.value2}% </span>
