@@ -431,7 +431,7 @@ const ProductsTableAfterCheck = ({
                                         <input
                                             type="number"
                                             value={
-                                                bIndex === 0 ? batch.inboundPrice || product.price : batch.inboundPrice
+                                                bIndex === 0 ? batch.inboundPrice.toLocaleString() || product.price : batch.inboundPrice.toLocaleString()
                                             }
                                             disabled={!active}
                                             onChange={(e) => handleChangeInboundPrice(e, key, bIndex)}

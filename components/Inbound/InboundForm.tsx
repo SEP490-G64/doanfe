@@ -213,7 +213,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 case "BỎ_DUYỆT":
                     await changeInboundStatus(watch("inboundId")!.toString(), "BAN_NHAP", sessionToken);
                     router.push(`/inbound/update/` + watch("inboundId"));
-                    return;
+                    break;
                 case "DUYỆT":
                     await handleApprove(true);
                     router.push(`/inbound/list`);
@@ -225,15 +225,16 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 case "KIỂM":
                     await changeInboundStatus(watch("inboundId")!.toString(), "KIEM_HANG", sessionToken);
                     router.push(`/inbound/update/` + watch("inboundId"));
-                    return;
+                    break;
                 case "HOAN_THANH":
                     await changeInboundStatus(watch("inboundId")!.toString(), "HOAN_THANH", sessionToken);
                     router.push(`/inbound/list`);
-                    return;
+                    break;
                 default:
                     await initInbound();
                     break;
             }
+            setAction("");
         } catch (error) {
             console.error("Error handling action:", error);
             toast.error("Có lỗi xảy ra khi xử lý yêu cầu");
@@ -1056,8 +1057,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={async () => {
-                                        onClose(); // Đóng modal
                                         setAction("");
+                                        onClose(); // Đóng modal
                                     }}>
                                         Không
                                     </Button>
@@ -1065,7 +1066,6 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         color="primary"
                                         onPress={async () => {
                                             await handleAction(action); // Xử lý logic chính
-                                            setAction("");
                                             onClose(); // Đóng modal
                                         }}
                                     >
