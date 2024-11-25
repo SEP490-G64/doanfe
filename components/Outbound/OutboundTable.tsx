@@ -233,7 +233,7 @@ const OutboundTable = () => {
                     | "outboundDetails"
                     | "status"
                     | "totalPrice"
-            ];
+                ];
 
         switch (columnKey) {
             case "no.":
@@ -258,7 +258,7 @@ const OutboundTable = () => {
                 return (
                     <p className={"font-normal text-black dark:text-white"}>
                         {outbound.totalPrice
-                            ? `${outbound.totalPrice.toLocaleString()} VND`
+                            ? `${outbound.totalPrice.toLocaleString()}đ`
                             : "Chưa kiểm hàng nhập"}
                     </p>
                 );
@@ -295,17 +295,18 @@ const OutboundTable = () => {
                             <button
                                 className="hover:text-secondary"
                                 onClick={() => router.push(`/outbound/update/${outbound.id}`)}
+                                hidden={outbound.status === "CHO_DUYET" || outbound.status === "KIEM_HANG"}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
-                        <Tooltip color="success" content="Xuất file" hidden={outbound.status !== "HOAN_THANH"}>
-                            <button className="hover:text-success" onClick={() => handleExport(outbound.id.toString(), outbound.outboundCode)}>
+                        <Tooltip color="success" content="Xuất file" hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(outbound.status)}>
+                            <button hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(outbound.status)} className="hover:text-success" onClick={() => handleExport(outbound.id.toString(), outbound.outboundCode)}>
                                 <CiExport />
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(outbound.id.toString(), "DELETE")}>
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(outbound.id.toString(), "DELETE")} hidden={!["CHUA_LUU", "BAN_NHAP", "CHO_DUYET"].includes(outbound.status)}>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -438,7 +439,7 @@ const OutboundTable = () => {
                                     </ModalHeader>
                                     <ModalBody>
                                         {action === "DELETE" ? (
-                                            <p>"Bạn có chắc muốn xóa phiếu xuất hàng này không"</p>
+                                            <p>Bạn có chắc muốn xóa phiếu xuất hàng này không</p>
                                         ) : (
                                             <iframe
                                                 src={previewUrl}

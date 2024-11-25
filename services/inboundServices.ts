@@ -118,34 +118,36 @@ export const changeInboundStatus = async (id: string, status: string, token: str
     }
 };
 
-export const updateInbound = async (inbound: InboundBodyType, id: string, token: string) => {
+export const approveInbound = async (id: string, accept: boolean, token: string) => {
     try {
-        const res = await httpRequest.put(`dsd/api/v1/staff/inbound/${id}`, inbound, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await httpRequest.put(
+            `dsd/api/v1/staff/inbound/approve/${id}`,
+            {},
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { accept: accept },
+            }
+        );
 
-        if (res.data) {
-            toast.success("Cập nhật phiếu nhập thành công");
+        if (res.status === "SUCCESS") {
+            if (accept) toast.success("Duyệt phiếu nhập thành công");
+            else toast.success("Từ chối phiếu nhập thành công");
             return res;
         }
     } catch (error: any) {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
-            toast.error("Cập nhật phiếu nhập thất bại");
+            toast.error("Duyệt / Từ chối phiếu nhập thất bại");
             console.log(error);
         }
     }
 };
 
-export const submitInbound = async (id: string, token: string) => {
+export const submitInbound = async (inboundDraft: InboundBodyType, token: string) => {
     try {
-        const res = await httpRequest.put(
-            `dsd/api/v1/staff/inbound/${id}/submit`,
-            {},
-            {
-                headers: { Authorization: `Bearer ${token}` },
-            }
-        );
+        const res = await httpRequest.put(`dsd/api/v1/staff/inbound/submit`, inboundDraft, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (res.status === "SUCCESS") {
             toast.success("Nhập hàng thành công");

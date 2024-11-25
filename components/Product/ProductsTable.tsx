@@ -148,13 +148,13 @@ const ProductsTable = () => {
             case "inboundPrice":
                 return (
                     <h5 className={`font-normal ${product.inboundPrice ? "text-black dark:text-white" : "text-red"}`}>
-                        {product.inboundPrice ? `${product.inboundPrice.toLocaleString()} VND` : "Chưa tính"}
+                        {product.inboundPrice ? `${product.inboundPrice.toLocaleString()}đ` : "Chưa tính"}
                     </h5>
                 );
             case "sellPrice":
                 return (
                     <h5 className={`font-normal ${product.sellPrice ? "text-black dark:text-white" : "text-red"}`}>
-                        {product.sellPrice ? `${product.sellPrice.toLocaleString()} VND` : "Chưa quyết định"}
+                        {product.sellPrice ? `${product.sellPrice.toLocaleString()}đ` : "Chưa quyết định"}
                     </h5>
                 );
             case "status":
