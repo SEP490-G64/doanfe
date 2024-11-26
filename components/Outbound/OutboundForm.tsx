@@ -30,11 +30,12 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { OutboundBody, OutboundBodyType } from "@/lib/schemaValidate/outboundSchema";
 import { getAllSupplier } from "@/services/supplierServices";
-import { getAllBranch } from "@/services/branchServices";
+import { getStaffBranches } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
-import { getAllowedProducts, getProductByBranchId } from "@/services/productServices";
+import { getProductByBranchId } from "@/services/productServices";
 import { Supplier } from "@/types/supplier";
 import {
+    approveOutbound,
     changeOutboundStatus,
     createInitOutbound,
     getOutboundById,
@@ -44,6 +45,7 @@ import {
 } from "@/services/outboundServices";
 import SelectGroupTwo from "../SelectGroup/SelectGroupTwo";
 import ProductsTableOutbound from "../Tables/ProductTableOutbound";
+import SwitcherApprove from "@/components/Switchers/SwitcherApprove";
 
 const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update" | "create"; outboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -58,10 +60,11 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     const [suppliers, setSuppliers] = useState([]);
     const [branches, setBranches] = useState([]);
     const [productOpts, setProductOpts] = useState<ProductInfor[]>([]);
-    const { isOpen, onOpenChange } = useDisclosure();
+    const { isOpen, onOpenChange, onOpen } = useDisclosure();
     const [outboundType, setOutboundType] = useState<"HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO">();
     const [product, setProduct] = useState<ProductInfor>();
-    const [saveDraft, setSaveDraft] = useState(false);
+    const [action, setAction] = useState<string>("");
+    const [approver, setApprover] = useState<{ firstName: string; lastName: string } | undefined>();
 
     const renderOutboundStatus = useCallback((status: string | undefined) => {
         if (!status) return;
@@ -121,8 +124,13 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             note: undefined,
             createdBy: undefined,
             supplier: undefined,
-            fromBranch: undefined,
+            fromBranch: {
+                id: userInfo?.branch?.id ? Number(userInfo?.branch?.id) : undefined
+            },
             toBranch: undefined,
+            approvedBy: undefined,
+            isApproved: false,
+            taxable: false,
             outboundProductDetails: [],
         },
     });
@@ -131,6 +139,11 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     const selectedSupId = watch("supplier.id");
     const selectedToBranchId = watch("toBranch.id");
     const selectedFromBranchId = watch("fromBranch.id");
+
+    const handleOpenModal = (action: string) => {
+        setAction(action);
+        onOpen();
+    };
 
     // Debounced fetch options
     const debouncedFetchOptions = useCallback(
@@ -141,7 +154,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                 setProductOpts([]);
             }
         }, 500),
-        [selectedSupId, selectedFromBranchId]
+        [selectedSupId, selectedToBranchId]
     );
 
     const handleTypeProduct = (inputString: string) => {
@@ -202,16 +215,21 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                 setValue("outboundType", response.data.outboundType);
                 setValue("createdDate", response.data.createdDate);
                 setValue("toBranch.id", response.data.toBranch?.id);
+                setValue("fromBranch.id", response.data.fromBranch?.id);
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy?.id);
                 setValue("supplier.id", response.data.supplier?.id);
                 setValue("outboundProductDetails", response.data.outboundProductDetails);
+                setValue("approvedBy.id", response.data.approvedBy?.id);
+                setValue("isApproved", response.data.isApproved);
+                setValue("taxable", response.data.taxable);
                 setUser(response.data.createdBy);
-                setBranch(response.data.toBranch);
+                setBranch(response.data.fromBranch);
                 setOutboundStatus(response.data.status);
                 setOutboundType(response.data.outboundType);
                 setSelectedSupplier(response.data.supplier);
                 setSelectedToBranch(response.data.toBranch);
+                setApprover(response.data.approvedBy);
 
                 if (outboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.fromBranch.id);
             } else router.push("/not-found");
@@ -236,7 +254,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     const getBranchOpts = async (currentBranchId: string) => {
         try {
-            const response = await getAllBranch(sessionToken);
+            const response = await getStaffBranches(sessionToken);
 
             if (response.message === "200 OK") {
                 setBranches(response.data.filter((b: Branch) => b.id !== currentBranchId));
@@ -267,9 +285,11 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     useEffect(() => {
         getSupplierOpts();
+        getBranchOpts("");
         if (viewMode === "create") {
             onOpenChange();
-        } else {
+        }
+        else {
             getInforOutbound();
         }
     }, []);
@@ -279,14 +299,14 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     useEffect(() => {
         if (selectedSupId) {
-            const sup = suppliers.find((item: Supplier) => Number(item.id) == selectedSupId);
+            const sup = suppliers.find((item: Supplier) => item.id == selectedSupId);
             setSelectedSupplier(sup);
         }
     }, [selectedSupId]);
 
     useEffect(() => {
         if (selectedToBranchId) {
-            const branch = branches.find((item: Branch) => Number(item.id) == selectedToBranchId);
+            const branch = branches.find((item: Branch) => item.id == selectedToBranchId);
             setSelectedToBranch(branch);
         }
     }, [selectedToBranchId]);
@@ -297,16 +317,6 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         if (response.status === "SUCCESS") {
             router.push("/outbound/list");
             router.refresh();
-        }
-    };
-
-    const handleSubmitOutbound = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        const response = await submitOutbound(outboundId as string, sessionToken);
-        if (response.status === "SUCCESS") {
-            router.push("/outbound/list");
-            router.refresh();
-            await changeOutboundStatus(outboundId as string, "HOAN_THANH", sessionToken);
         }
     };
 
@@ -324,16 +334,34 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                 delete outbound.supplier;
                 delete outbound.toBranch;
             }
+            // Nếu là KIEM_HANG, thực hiện ngay API submitOutbound và dừng
+            if (outboundStatus === "KIEM_HANG") {
+                const response = await submitOutbound(outbound, sessionToken);
+                if (response?.status === "SUCCESS") {
+                    if (action === "HOAN_THANH") {
+                        handleOpenModal(action);
+                        return;
+                    }
 
+                    router.push("/outbound/list");
+                    router.refresh();
+                } else {
+                    toast.error(response?.message || "Đã xảy ra lỗi khi xử lý kiểm hàng!");
+                }
+                return; // Ngừng thực thi đoạn mã tiếp theo
+            }
+
+            // Tiếp tục nếu không phải KIEM_HANG
             let response;
             if (outboundType !== "BAN_HANG") response = await submitDraft(outbound, sessionToken);
             else response = await submitDraftForSell(outbound, sessionToken);
 
-            if (response && response.status === "SUCCESS") {
-                if (!saveDraft && outboundType !== "BAN_HANG")
-                    await changeOutboundStatus(watch("outboundId")!.toString(), "CHO_DUYET", sessionToken);
-                if (!saveDraft && outboundType === "BAN_HANG")
-                    await changeOutboundStatus(watch("outboundId")!.toString(), "HOAN_THANH", sessionToken);
+            if (response?.status === "SUCCESS") {
+                if (action === "CHO_DUYET") {
+                    handleOpenModal(action);
+                    return;
+                }
+
                 router.push("/outbound/list");
                 router.refresh();
             }
@@ -344,9 +372,92 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         }
     };
 
+    const handleApprove = async (accept: boolean) => {
+        const response = await approveOutbound(outboundId as string, accept, sessionToken);
+        if (response.status === "SUCCESS") {
+            router.push("/outbound/list");
+            router.refresh();
+        }
+    };
+
+    const handleAction = async (action: string) => {
+        try {
+            switch (action) {
+                case "CHO_DUYET":
+                    if (products.length === 0) {
+                        toast.error("Vui lòng thêm sản phẩm vào danh sách trước khi yêu cầu duyệt đơn");
+                        return;
+                    }
+                    await changeOutboundStatus(watch("outboundId")!.toString(), "CHO_DUYET", sessionToken);
+                    router.push(`/outbound/list`);
+                    break;
+                case "BỎ_DUYỆT":
+                    await changeOutboundStatus(watch("outboundId")!.toString(), "BAN_NHAP", sessionToken);
+                    router.push(`/outbound/update/` + watch("outboundId"));
+                    return;
+                case "DUYỆT":
+                    await handleApprove(true);
+                    router.push(`/outbound/list`);
+                    break;
+                case "TỪ_CHỐI":
+                    await handleApprove(false);
+                    router.push(`/outbound/list`);
+                    break;
+                case "KIỂM":
+                    await changeOutboundStatus(watch("outboundId")!.toString(), "KIEM_HANG", sessionToken);
+                    router.push(`/outbound/update/` + watch("outboundId"));
+                    return;
+                case "HOAN_THANH":
+                    await changeOutboundStatus(watch("outboundId")!.toString(), "HOAN_THANH", sessionToken);
+                    router.push(`/outbound/list`);
+                    return;
+                default:
+                    await initOutbound();
+                    break;
+            }
+        } catch (error) {
+            console.error("Error handling action:", error);
+            toast.error("Có lỗi xảy ra khi xử lý yêu cầu");
+        }
+    };
+
     if (loading) return <Loader />;
     return (
         <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate>
+            {/* <!--  Thông tin người duyệt --> */}
+            {viewMode !== "create" && (
+                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div className="p-6.5">
+                        <div className="flex flex-col gap-6 xl:flex-row">
+                            <div className="flex w-full items-center gap-2 xl:w-3/5">
+                                <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                    Người duyệt:
+                                </label>
+                                <input
+                                    defaultValue={approver ? `${approver?.firstName} ${approver?.lastName}` : ""}
+                                    type="text"
+                                    placeholder="Chưa được duyệt"
+                                    disabled
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                />
+                            </div>
+
+                            <div className="flex w-full items-center gap-2 xl:w-2/5">
+                                <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                    Trạng thái duyệt:
+                                </label>
+                                <SwitcherApprove
+                                    register={{ ...register("isApproved") }}
+                                    watch={watch}
+                                    setValue={setValue}
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* <!-- Thông tin xuất hàng --> */}
             <div className="w-full rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                 <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
@@ -385,7 +496,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     register={{ ...register("toBranch.id") }}
                                     watch={watch("toBranch.id")}
                                     icon={<AiOutlineShop />}
-                                    placeholder="Chọn chi nhánh xuất"
+                                    placeholder="Chọn chi nhánh nhận hàng"
                                     disabled={
                                         viewMode === "details" ||
                                         !["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string)
@@ -404,12 +515,12 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
                             <div className="w-full xl:w-1/2">
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Địa chỉ xuất hàng <span className="text-meta-1">*</span>
+                                    Địa chỉ xuất hàng đến <span className="text-meta-1">*</span>
                                 </label>
                                 <input
                                     defaultValue={selectedToBranch?.location ? selectedToBranch?.location : ""}
                                     type="text"
-                                    placeholder="Nhập địa chỉ xuất hàng"
+                                    placeholder="Nhập địa chỉ xuất hàng đến"
                                     disabled
                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                 />
@@ -564,13 +675,24 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 }}
                                 className={"w-full"}
                             />
-                            <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)} />
+                            <IconButton
+                                icon={<FaPlus />}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (!product) {
+                                        // Nếu không có sản phẩm, thông báo lỗi
+                                        toast.error("Vui lòng chọn sản phẩm trước khi thêm.");
+                                        return;
+                                    }
+                                    addItem(e);
+                                }}
+                            />
                         </div>
                     )}
                     <ProductsTableOutbound
                         data={products || []}
                         active={viewMode !== "details" && ["BAN_NHAP", "CHUA_LUU"].includes(outboundStatus as string)}
-                        errors={errors}
+                        errors={errors.outboundProductDetails || []} // Truyền lỗi vào đây
                         outboundType={outboundType}
                         setProducts={setValue}
                     />
@@ -608,7 +730,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             <button
                                 className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                 type="submit"
-                                onClick={(e) => handleSubmitOutbound(e)}
+                                //onClick={(e) => handleSubmitOutbound(e)}
                             >
                                 Xuất hàng
                             </button>
@@ -621,18 +743,44 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 <button
                                     className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                     type="submit"
-                                    onClick={() => console.log(errors)}
+                                    onClick={() => {
+                                        setAction("CHO_DUYET");
+                                    }}
                                 >
-                                    Tạo và gửi đơn
+                                    Tạo và gửi yêu cầu duyệt
                                 </button>
                             </div>
                             <div className="w-1/2">
                                 <button
                                     className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                     type="submit"
-                                    onClick={() => setSaveDraft(true)}
                                 >
                                     Lưu đơn
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {viewMode === "update" && ["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string) && (
+                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                            <div className="w-1/2">
+                                <button
+                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    type="submit"
+                                    onClick={() => {
+                                        setAction("CHO_DUYET");
+                                        console.log(errors);
+                                    }}
+                                >
+                                    Cập nhật và gửi yêu cầu duyệt
+                                </button>
+                            </div>
+                            <div className="w-1/2">
+                                <button
+                                    className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                    type="submit"
+                                >
+                                    Cập nhật
                                 </button>
                             </div>
                         </div>
@@ -657,31 +805,67 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                         <>
                             <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                             <ModalBody>
-                                <p>Vui lòng chọn kiểu xuất hàng</p>
-                                <Select
-                                    value={outboundType}
-                                    onChange={(e) =>
-                                        setOutboundType(
-                                            e.target.value as "HUY_HANG" | "TRA_HANG" | "BAN_HANG" | "CHUYEN_KHO_NOI_BO"
-                                        )
+                                {(() => {
+                                    switch (action) {
+                                        case "CHO_DUYET":
+                                            return <p>Bạn có chắc muốn gửi yêu cầu duyệt?</p>;
+                                        case "BỎ_DUYỆT":
+                                            return <p>Bạn có chắc muốn hủy yêu cầu duyệt đơn?</p>;
+                                        case "DUYỆT":
+                                            return <p>Bạn có chắc muốn duyệt đơn này?</p>;
+                                        case "TỪ_CHỐI":
+                                            return <p>Bạn có chắc muốn từ chối đơn này?</p>;
+                                        case "KIỂM":
+                                            return <p>Bạn có chắc hàng đã về để kiểm đơn này?</p>;
+                                        case "HOAN_THANH":
+                                            return (
+                                                <>
+                                                    <p>Bạn có muốn đánh dấu đơn này hoàn thành không?</p>
+                                                    <p>
+                                                        <i style={{ color: "red" }}>
+                                                            Lưu ý: Nếu xác nhận hoàn thành đơn hàng, bạn không thể quay
+                                                            lại chỉnh sửa được nữa.
+                                                        </i>
+                                                    </p>
+                                                </>
+                                            );
+                                        default:
+                                            return (
+                                                <>
+                                                    <p>Vui lòng chọn kiểu xuất hàng</p>
+                                                    <Select
+                                                        value={outboundType}
+                                                        onChange={(e) =>
+                                                            setOutboundType(
+                                                                e.target.value as
+                                                                    | "HUY_HANG"
+                                                                    | "TRA_HANG"
+                                                                    | "BAN_HANG"
+                                                                    | "CHUYEN_KHO_NOI_BO"
+                                                            )
+                                                        }
+                                                        label="Chọn kiểu xuất hàng"
+                                                        className="max-w-full"
+                                                    >
+                                                        <SelectItem key={"CHUYEN_KHO_NOI_BO"}>
+                                                            Chuyển kho nội bộ
+                                                        </SelectItem>
+                                                        <SelectItem key={"HUY_HANG"}>Hủy hàng</SelectItem>
+                                                        <SelectItem key={"TRA_HANG"}>Trả hàng</SelectItem>
+                                                        <SelectItem key={"BAN_HANG"}>Bán hàng</SelectItem>
+                                                    </Select>
+                                                </>
+                                            );
                                     }
-                                    label="Chọn kiểu xuất hàng"
-                                    className="max-w-full"
-                                >
-                                    <SelectItem key={"CHUYEN_KHO_NOI_BO"}>Chuyển kho nội bộ</SelectItem>
-                                    <SelectItem key={"HUY_HANG"}>Hủy hàng</SelectItem>
-                                    <SelectItem key={"TRA_HANG"}>Trả hàng</SelectItem>
-                                    <SelectItem key={"BAN_HANG"}>Bán hàng</SelectItem>
-                                </Select>
+                                })()}
                             </ModalBody>
                             <ModalFooter>
                                 <Button
                                     color="default"
                                     variant="light"
-                                    onPress={() => {
-                                        onClose();
-                                        toast.error("Khởi tạo đơn xuất hàng thất bại");
-                                        router.push(`/inbound/list`)
+                                    onPress={async () => {
+                                        onClose(); // Đóng modal
+                                        setAction("");
                                     }}
                                 >
                                     Không
@@ -689,8 +873,9 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 <Button
                                     color="primary"
                                     onPress={async () => {
-                                        await initOutbound();
-                                        onClose();
+                                        await handleAction(action); // Xử lý logic chính
+                                        setAction("");
+                                        onClose(); // Đóng modal
                                     }}
                                 >
                                     Chắc chắn

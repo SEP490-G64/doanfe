@@ -28,12 +28,12 @@ import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
 import ProductsTableBeforeCheck from "@/components/Tables/ProductsTableBeforeCheck";
 import IconButton from "@/components/UI/IconButton";
 import {
+    approveInbound,
     changeInboundStatus,
     createInitInbound,
     deleteInbound,
     getInboundById,
-    submitDraft,
-    submitInbound,
+    submitDraft, submitInbound,
 } from "@/services/inboundServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { InboundBody, InboundBodyType } from "@/lib/schemaValidate/inboundSchema";
@@ -43,36 +43,37 @@ import Loader from "@/components/common/Loader";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import ProductsTableAfterCheck from "@/components/Tables/ProductsTableAfterCheck";
 import {
-    getAllowedProducts,
-    getListProduct,
     getProductByBranchId,
     searchAllProductsByKeyword,
 } from "@/services/productServices";
 import { ProductInfor } from "@/types/inbound";
-import { getAllBranch } from "@/services/branchServices";
+import { getStaffBranches } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
 import Unauthorized from "@/components/common/Unauthorized";
-import { DataSearch } from "@/types/product";
+import SwitcherApprove from "@/components/Switchers/SwitcherApprove";
+import SwitcherTaxable from "@/components/Switchers/SwitcherTaxable";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
     const [loading, setLoading] = useState(false);
     const [isFetchingProduct, setIsFetchingProduct] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
+    const [action, setAction] = useState<string>("");
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
     const [user, setUser] = useState<{ firstName: string; lastName: string } | undefined>();
+    const [approver, setApprover] = useState<{ firstName: string; lastName: string } | undefined>();
     const [branch, setBranch] = useState<{ id: number; branchName: string } | undefined>();
     const [inboundStatus, setInboundStatus] = useState<string | undefined>();
     const [suppliers, setSuppliers] = useState([]);
     const [branches, setBranches] = useState([]);
     const [productOpts, setProductOpts] = useState<ProductInfor[]>([]);
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const [inboundType, setInboundType] = useState<"NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO">(
-        "NHAP_TU_NHA_CUNG_CAP"
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const [inboundType, setInboundType] = useState<"CHUYEN_KHO_NOI_BO" | "NHAP_TU_NHA_CUNG_CAP">(
+        "CHUYEN_KHO_NOI_BO"
     );
     const [product, setProduct] = useState<ProductInfor>();
-    const [saveDraft, setSaveDraft] = useState(false);
+    const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const renderInboundStatus = useCallback((status: string | undefined) => {
         if (!status) return;
@@ -139,8 +140,14 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             createdBy: undefined,
             supplier: { id: "" },
             fromBranch: { id: "" },
-            toBranch: undefined,
+            toBranch: {
+                id: userInfo?.branch?.id ? Number(userInfo?.branch?.id) : undefined
+            },
+            approvedBy: undefined,
+            isApproved: false,
+            taxable: false,
             productInbounds: [],
+            totalPrice: undefined,
         },
     });
 
@@ -160,14 +167,79 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         [selectedSupId, selectedFromBranchId]
     );
 
+    const handleOpenModal = (action: string) => {
+        setAction(action);
+        onOpen();
+    };
+
     const handleTypeProduct = (inputString: string) => {
         debouncedFetchOptions(inputString);
         return inputString;
     };
 
+    // Hàm để nhận giá trị totalPrice từ ProductsTableAfterCheck
+    const handleTotalPriceChange = (newTotalPrice: number) => {
+        setTotalPrice(newTotalPrice);  // Cập nhật giá trị totalPrice
+    };
+
     const addItem = (e?: React.MouseEvent) => {
-        e!.preventDefault();
-        setValue("productInbounds", [...products, { ...product, baseUnit: { id: 1, unitName: "Viên" } }]);
+        e?.preventDefault(); // Đảm bảo sự kiện có thể không được truyền vào
+        const cleanedProduct = {
+            ...product,
+            // Loại bỏ hoàn toàn trường "batches"
+            batches: undefined,
+        };
+        setValue("productInbounds", [...products, cleanedProduct]); // Cập nhật giá trị với product đã loại bỏ "batches"
+    };
+
+    const handleApprove = async (accept: boolean) => {
+        const response = await approveInbound(inboundId as string, accept, sessionToken);
+        if (response.status === "SUCCESS") {
+            router.push("/inbound/list");
+            router.refresh();
+        }
+    };
+
+    const handleAction = async (action: string) => {
+        try {
+            switch (action) {
+                case "CHO_DUYET":
+                    if (products.length === 0) {
+                        toast.error("Vui lòng thêm sản phẩm vào danh sách trước khi yêu cầu duyệt đơn");
+                        return;
+                    }
+                    await changeInboundStatus(watch("inboundId")!.toString(), "CHO_DUYET", sessionToken);
+                    router.push(`/inbound/list`);
+                    break;
+                case "BỎ_DUYỆT":
+                    await changeInboundStatus(watch("inboundId")!.toString(), "BAN_NHAP", sessionToken);
+                    router.push(`/inbound/update/` + watch("inboundId"));
+                    break;
+                case "DUYỆT":
+                    await handleApprove(true);
+                    router.push(`/inbound/list`);
+                    break;
+                case "TỪ_CHỐI":
+                    await handleApprove(false);
+                    router.push(`/inbound/list`);
+                    break;
+                case "KIỂM":
+                    await changeInboundStatus(watch("inboundId")!.toString(), "KIEM_HANG", sessionToken);
+                    router.push(`/inbound/update/` + watch("inboundId"));
+                    break;
+                case "HOAN_THANH":
+                    await changeInboundStatus(watch("inboundId")!.toString(), "HOAN_THANH", sessionToken);
+                    router.push(`/inbound/list`);
+                    break;
+                default:
+                    await initInbound();
+                    break;
+            }
+            setAction("");
+        } catch (error) {
+            console.error("Error handling action:", error);
+            toast.error("Có lỗi xảy ra khi xử lý yêu cầu");
+        }
     };
 
     const initInbound = async () => {
@@ -214,12 +286,17 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 setValue("inboundCode", response.data.inboundCode);
                 setValue("inboundType", response.data.inboundType);
                 setValue("createdDate", response.data.createdDate);
-                setValue("toBranch.id", response.data.toBranch.id);
+                setValue("toBranch.id", response.data.toBranch?.id);
+                setValue("fromBranch.id", response.data.fromBranch?.id);
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy?.id);
-                setValue("supplier.id", response.data.supplier.id);
+                setValue("supplier.id", response.data.supplier?.id);
+                setValue("approvedBy.id", response.data.approvedBy?.id);
+                setValue("isApproved", response.data.isApproved);
+                setValue("taxable", response.data.taxable);
                 setValue("productInbounds", response.data.productBatchDetails);
                 setUser(response.data.createdBy);
+                setApprover(response.data.approvedBy);
                 setBranch(response.data.toBranch);
                 setInboundStatus(response.data.status);
                 setInboundType(response.data.inboundType);
@@ -251,8 +328,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
     const getBranchOpts = async (currentBranchId: string) => {
         try {
-            const response = await getAllBranch(sessionToken);
-            console.log(currentBranchId);
+            const response = await getStaffBranches(sessionToken);
 
             if (response.message === "200 OK") {
                 setBranches(response.data.filter((b: Branch) => b.id !== currentBranchId));
@@ -282,9 +358,11 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
     useEffect(() => {
         getSupplierOpts();
+        getBranchOpts("");
         if (viewMode === "create") {
             onOpen();
-        } else {
+        }
+        else {
             getInforInbound();
         }
     }, []);
@@ -306,44 +384,43 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         }
     }, [selectedFromBranchId]);
 
-    const handleOnClick = async (e: React.MouseEvent, status: string) => {
-        e.preventDefault();
-        const response = await changeInboundStatus(inboundId as string, status, sessionToken);
-        if (response.status === "SUCCESS") {
-            router.refresh();
-            await getInforInbound();
-            if (inboundStatus === "CHO_HANG") router.push(`/inbound/update/${inboundId}`);
-        }
-    };
-
-    const handleSubmitInbound = async (e?: React.MouseEvent) => {
-        e?.preventDefault();
-        const response = await submitInbound(inboundId as string, sessionToken);
-        if (response.status === "SUCCESS") {
-            router.push("/inbound/list");
-            router.refresh();
-            await changeInboundStatus(inboundId as string, "HOAN_THANH", sessionToken);
-        }
-    };
-
     const onSubmit = async (inbound: InboundBodyType) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
+        inbound.totalPrice = totalPrice.toString();
         console.log(inbound);
         setLoading(true);
         try {
             if (inboundType === "NHAP_TU_NHA_CUNG_CAP") delete inbound.fromBranch;
             else delete inbound.supplier;
+            // Nếu là KIEM_HANG, thực hiện ngay API submitInbound và dừng
+            if (inboundStatus === "KIEM_HANG") {
+                const response = await submitInbound(inbound, sessionToken);
+                if (response?.status === "SUCCESS") {
+                    if (action === "HOAN_THANH") {
+                        handleOpenModal(action);
+                        return;
+                    }
+
+                    router.push("/inbound/list");
+                    router.refresh();
+                } else {
+                    toast.error(response?.message || "Đã xảy ra lỗi khi xử lý kiểm hàng!");
+                }
+                return; // Ngừng thực thi đoạn mã tiếp theo
+            }
+
+            // Tiếp tục nếu không phải KIEM_HANG
             const response = await submitDraft(inbound, sessionToken);
 
-            if (response && response.status === "SUCCESS") {
-                if (inboundStatus === "KIEM_HANG")
-                    await changeInboundStatus(inboundId as string, "KIEM_HANG", sessionToken);
-                if (!saveDraft && inboundStatus === "CHUA_LUU")
-                    await changeInboundStatus(watch("inboundId")!.toString(), "CHO_DUYET", sessionToken);
-                if (!saveDraft && inboundStatus === "KIEM_HANG") await handleSubmitInbound();
+            if (response?.status === "SUCCESS") {
+                if (action === "CHO_DUYET") {
+                    handleOpenModal(action);
+                    return;
+                }
+
                 router.push("/inbound/list");
                 router.refresh();
             }
@@ -388,27 +465,33 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         return (
             <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                 {/* <!--  Thông tin người duyệt --> */}
-                {viewMode !== "create" && userInfo?.roles[0].type !== "ADMIN" && (
+                {viewMode !== "create" && (
                     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <div className="p-6.5">
                             <div className="flex flex-col gap-6 xl:flex-row">
-                                <div className="flex w-full items-center gap-2 xl:w-1/2">
+                                <div className="flex w-full items-center gap-2 xl:w-3/5">
                                     <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                        Người duyệt: <span className="text-meta-1">*</span>
+                                        Người duyệt:
                                     </label>
                                     <input
+                                        defaultValue={approver ? `${approver?.firstName} ${approver?.lastName}` : ""}
                                         type="text"
-                                        placeholder="Nhập người duyệt"
-                                        disabled={viewMode === "details"}
+                                        placeholder="Chưa được duyệt"
+                                        disabled
                                         className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                     />
                                 </div>
 
-                                <div className="flex w-full items-center gap-2 xl:w-1/2">
+                                <div className="flex w-full items-center gap-2 xl:w-2/5">
                                     <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                        Ngày duyệt: <span className="text-meta-1">*</span>
+                                        Trạng thái duyệt:
                                     </label>
-                                    <DatePickerOne disabled={viewMode === "details"} />
+                                    <SwitcherApprove
+                                        register={{ ...register("isApproved") }}
+                                        watch={watch}
+                                        setValue={setValue}
+                                        disabled
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -482,7 +565,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     </label>
                                     <textarea
                                         {...register("note")}
-                                        rows={3}
+                                        rows={5}
                                         placeholder="Nhập ghi chú"
                                         disabled={viewMode === "details"}
                                         className="w-full rounded-lg border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -616,10 +699,26 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 />
                             </div>
                             <div className="mb-4.5">
-                                <label className="mb-3 mr-3 inline-flex text-sm font-medium text-black dark:text-white">
-                                    Trạng thái đơn:
-                                </label>
-                                {renderInboundStatus(inboundStatus)}
+                                {/* Dòng đầu tiên */}
+                                <div className="mb-4 flex items-center">
+                                    <label className="mr-3 text-sm font-medium text-black dark:text-white">
+                                        Có tính thuế nhập hàng:{" "}
+                                    </label>
+                                    <SwitcherTaxable
+                                        register={{ ...register("taxable") }}
+                                        watch={watch}
+                                        setValue={setValue}
+                                        disabled={viewMode === "details"}
+                                    />
+                                </div>
+
+                                {/* Dòng thứ hai */}
+                                <div className="flex items-center">
+                                    <label className="mr-3 text-sm font-medium text-black dark:text-white">
+                                        Trạng thái đơn:
+                                    </label>
+                                    {renderInboundStatus(inboundStatus)}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -663,7 +762,18 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     }}
                                     className={"w-full"}
                                 />
-                                <IconButton icon={<FaPlus />} onClick={(e) => addItem(e)} />
+                                <IconButton
+                                    icon={<FaPlus />}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (!product) {
+                                            // Nếu không có sản phẩm, thông báo lỗi
+                                            toast.error("Vui lòng chọn sản phẩm trước khi thêm.");
+                                            return;
+                                        }
+                                        addItem(e);
+                                    }}
+                                />
                             </div>
                         )}
 
@@ -677,7 +787,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                                       ...p,
                                                       batches: [
                                                           {
-                                                              batchCode: undefined,
+                                                              batchCode: "",
                                                               inboundBatchQuantity: 0,
                                                               inboundPrice: 0,
                                                               expireDate: undefined,
@@ -688,8 +798,11 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         ) || []
                                     }
                                     active={viewMode !== "details" && inboundStatus === "KIEM_HANG"}
-                                    errors={errors}
                                     setProducts={setValue}
+                                    taxable={watch("taxable")}
+                                    errors={errors.productInbounds || []} // Truyền lỗi vào đây
+                                    totalPrice={watch("totalPrice")}
+                                    onTotalPriceChange={handleTotalPriceChange}
                                 />
                             ) : (
                                 <ProductsTableAfterCheck
@@ -700,7 +813,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                                       ...p,
                                                       batches: [
                                                           {
-                                                              batchCode: undefined,
+                                                              batchCode: "",
                                                               inboundBatchQuantity: 0,
                                                               inboundPrice: 0,
                                                               expireDate: undefined,
@@ -711,8 +824,11 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         ) || []
                                     }
                                     active={inboundStatus === "KIEM_HANG"}
+                                    taxable={watch("taxable")}
                                     errors={errors}
                                     setProducts={setValue}
+                                    totalPrice={watch("totalPrice")}
+                                    onTotalPriceChange={handleTotalPriceChange}
                                 />
                             )
                         ) : (
@@ -722,6 +838,8 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     viewMode !== "details" && ["CHUA_LUU", "BAN_NHAP"].includes(inboundStatus as string)
                                 }
                                 setProducts={setValue}
+                                errors={errors.productInbounds || []} // Truyền lỗi vào đây
+                                taxable={watch("taxable")}
                             />
                         )}
 
@@ -732,19 +850,16 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                         type="submit"
                                         onClick={() => {
-                                            setSaveDraft(false);
-                                            console.log(errors);
+                                            setAction("CHO_DUYET");
                                         }}
-                                        // onClick={() => console.log(errors)}
                                     >
-                                        Tạo và gửi đơn
+                                        Tạo và gửi yêu cầu duyệt
                                     </button>
                                 </div>
                                 <div className="w-1/2">
                                     <button
                                         className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                         type="submit"
-                                        onClick={() => setSaveDraft(true)}
                                     >
                                         Lưu đơn
                                     </button>
@@ -753,13 +868,28 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                         )}
 
                         {viewMode === "update" && ["CHUA_LUU", "BAN_NHAP"].includes(inboundStatus as string) && (
-                            <button
-                                className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                type="submit"
-                                // onClick={() => console.log(errors)}
-                            >
-                                Cập nhật
-                            </button>
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={() => {
+                                            setAction("CHO_DUYET");
+                                            console.log(errors);
+                                        }}
+                                    >
+                                        Cập nhật và gửi yêu cầu duyệt
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        type="submit"
+                                    >
+                                        Cập nhật
+                                    </button>
+                                </div>
+                            </div>
                         )}
 
                         {viewMode === "update" && ["KIEM_HANG"].includes(inboundStatus as string) && (
@@ -768,112 +898,209 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     <button
                                         className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                         type="submit"
-                                        onClick={() => setSaveDraft(false)}
-                                        // onClick={() => console.log(errors)}
+                                        onClick={() => {setAction("HOAN_THANH");
+                                            console.log(errors);}}
                                     >
-                                        Nhập hàng
+                                        Cập nhật, nhập hàng và xác nhận đơn hoàn thành
                                     </button>
                                 </div>
                                 <div className="w-1/2">
                                     <button
                                         className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                         type="submit"
-                                        onClick={() => setSaveDraft(true)}
                                     >
-                                        Cập nhật
+                                        Cập nhật và nhập hàng vào kho
                                     </button>
                                 </div>
                             </div>
                         )}
-
                         {viewMode === "details" &&
                             (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") &&
-                            ["BAN_NHAP", "CHO_DUYET"].includes(inboundStatus as string) && (
-                                <button
-                                    className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    onClick={(e) => handleOnClick(e, "CHO_HANG")}
-                                >
-                                    Duyệt đơn
-                                </button>
+                            ["CHO_DUYET"].includes(inboundStatus as string) && (
+                                <>
+                                    <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                        <div className="w-1/2">
+                                            <button
+                                                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                                type="button"
+                                                onClick={() => handleOpenModal("DUYỆT")}
+                                            >
+                                                Duyệt Đơn
+                                            </button>
+                                        </div>
+                                        <div className="w-1/2">
+                                            <button
+                                                className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                                type="button"
+                                                onClick={() => handleOpenModal("TỪ_CHỐI")}
+                                            >
+                                                Từ chối Đơn
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         {viewMode === "details" &&
+                            ["CHO_DUYET"].includes(inboundStatus as string) &&
                             userInfo?.roles[0].type === "STAFF" &&
+                            ["CHO_DUYET"].includes(inboundStatus as string) && (
+                                <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                    <div className="w-1/2">
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            onClick={() => handleOpenModal("BỎ_DUYỆT")}
+                                            type={"button"}
+                                        >
+                                            Hủy yêu cầu chờ duyệt
+                                        </button>
+                                    </div>
+                                    <div className="w-1/2">
+                                        <button
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                            onClick={() => router.push(`/inbound/list`)}
+                                            type={"button"}
+                                        >
+                                            Quay lại danh sách
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        {viewMode === "details" &&
+                            //userInfo?.roles[0].type === "STAFF" &&
                             inboundStatus === "BAN_NHAP" && (
-                                <button
-                                    className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    onClick={(e) => handleOnClick(e, "CHO_DUYET")}
-                                >
-                                    Gửi đơn
-                                </button>
+                                <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                    <div className="w-1/2">
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            onClick={() => handleOpenModal("CHO_DUYET")}
+                                            type={"button"}
+                                        >
+                                            Gửi yêu cầu duyệt đơn
+                                        </button>
+                                    </div>
+                                    <div className="w-1/2">
+                                        <button
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                            onClick={() => router.push(`/inbound/list`)}
+                                            type={"button"}
+                                        >
+                                            Quay lại danh sách
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                         {viewMode === "details" && inboundStatus === "CHO_HANG" && (
-                            <button
-                                className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                onClick={(e) => handleOnClick(e, "KIEM_HANG")}
-                            >
-                                Kiểm hàng
-                            </button>
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type={"button"}
+                                        onClick={() => handleOpenModal("KIỂM")}
+                                    >
+                                        Kiểm hàng
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        onClick={() => router.push(`/inbound/list`)}
+                                        type={"button"}
+                                    >
+                                        Quay lại danh sách
+                                    </button>
+                                </div>
+                            </div>
                         )}
                         {viewMode === "details" && inboundStatus === "KIEM_HANG" && (
                             <button
                                 className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                onClick={(e) => handleSubmitInbound(e)}
+                                type="submit"
+                                onClick={() => {handleOpenModal("HOAN_THANH");
+                                    console.log(errors);}}
                             >
                                 Nhập hàng
                             </button>
                         )}
                     </div>
                 </div>
-                <Modal isOpen={isOpen} onOpenChange={onClose} isDismissable={false}>
-                    <div>
-                        <ModalContent>
-                            {(onClose) => (
-                                <>
-                                    <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                    <ModalBody>
-                                        <p>Vui lòng chọn kiểu nhập hàng</p>
-                                        <Select
-                                            value={inboundType}
-                                            onChange={(e) =>
-                                                setInboundType(
-                                                    e.target.value as "NHAP_TU_NHA_CUNG_CAP" | "CHUYEN_KHO_NOI_BO"
-                                                )
-                                            }
-                                            label="Chọn kiểu nhập hàng"
-                                            className="max-w-full"
-                                        >
-                                            <SelectItem key={"NHAP_TU_NHA_CUNG_CAP"}>Nhập từ nhà cung cấp</SelectItem>
-                                            <SelectItem key={"CHUYEN_KHO_NOI_BO"}>Chuyển kho nội bộ</SelectItem>
-                                        </Select>
-                                    </ModalBody>
-                                    <ModalFooter>
-                                        {/* Nút Không sẽ chỉ đóng modal */}
-                                        <Button
-                                            color="default"
-                                            variant="light"
-                                            onPress={() => {
-                                                onClose();
-                                                toast.error("Khởi tạo đơn nhập hàng thất bại");
-                                                router.push(`/inbound/list`);
-                                            }}
-                                        >
-                                            Không
-                                        </Button>
-                                        {/* Nút Chắc chắn sẽ thực hiện thao tác và đóng modal */}
-                                        <Button
-                                            color="primary"
-                                            onPress={async () => {
-                                                await initInbound();
-                                                onClose();
-                                            }}
-                                        >
-                                            Chắc chắn
-                                        </Button>
-                                    </ModalFooter>
-                                </>
-                            )}
-                        </ModalContent>
-                    </div>
+                <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={false}>
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                <ModalBody>
+                                    {(() => {
+                                        switch (action) {
+                                            case "CHO_DUYET":
+                                                return <p>Bạn có chắc muốn gửi yêu cầu duyệt?</p>;
+                                            case "BỎ_DUYỆT":
+                                                return <p>Bạn có chắc muốn hủy yêu cầu duyệt đơn?</p>;
+                                            case "DUYỆT":
+                                                return <p>Bạn có chắc muốn duyệt đơn này?</p>;
+                                            case "TỪ_CHỐI":
+                                                return <p>Bạn có chắc muốn từ chối đơn này?</p>;
+                                            case "KIỂM":
+                                                return <p>Bạn có chắc hàng đã về để kiểm đơn này?</p>;
+                                            case "HOAN_THANH":
+                                                return (
+                                                    <>
+                                                        <p>Bạn có muốn đánh dấu đơn này hoàn thành không?</p>
+                                                        <p>
+                                                            <i style={{ color: "red" }}>
+                                                                Lưu ý: Nếu xác nhận hoàn thành đơn hàng, bạn không thể
+                                                                quay lại chỉnh sửa được nữa.
+                                                            </i>
+                                                        </p>
+                                                    </>
+                                                );
+                                            default:
+                                                return (
+                                                    <>
+                                                        <p>Vui lòng chọn kiểu nhập hàng</p>
+                                                        <Select
+                                                            value={inboundType}
+                                                            onChange={(e) =>
+                                                                setInboundType(
+                                                                    e.target.value as
+                                                                        | "NHAP_TU_NHA_CUNG_CAP"
+                                                                        | "CHUYEN_KHO_NOI_BO"
+                                                                )
+                                                            }
+                                                            label="Chọn kiểu nhập hàng"
+                                                            className="max-w-full"
+                                                        >
+                                                            <SelectItem key={"NHAP_TU_NHA_CUNG_CAP"} isDisabled={userInfo?.branch.branchType === "SUB"}>
+                                                                Nhập từ nhà cung cấp
+                                                            </SelectItem>
+                                                            <SelectItem key={"CHUYEN_KHO_NOI_BO"}>
+                                                                Chuyển kho nội bộ
+                                                            </SelectItem>
+                                                        </Select>
+                                                    </>
+                                                );
+                                        }
+                                    })()}
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button color="default" variant="light" onPress={async () => {
+                                        setAction("");
+                                        onClose(); // Đóng modal
+                                    }}>
+                                        Không
+                                    </Button>
+                                    <Button
+                                        color="primary"
+                                        onPress={async () => {
+                                            await handleAction(action); // Xử lý logic chính
+                                            onClose(); // Đóng modal
+                                        }}
+                                    >
+                                        Chắc chắn
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
                 </Modal>
             </form>
         );

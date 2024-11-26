@@ -14,6 +14,7 @@ const BatchProduct = z
         branchBatches: z.array(z.object({})).optional(),
         outboundBatchDetails: z.array(z.object({})).optional(),
         inventoryCheckDetails: z.array(z.object({})).optional(),
+        quantity: z.number().optional(),
     })
     .strict();
 
@@ -29,7 +30,7 @@ const ProductOutbound = z
             productName: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm").max(100, "Giới hạn 100 kí tự"),
         }),
         productBaseUnit: z.object({ id: z.number(), unitName: z.string() }),
-        baseUnit: z.object({ id: z.number(), unitName: z.string() }),
+        baseUnit: z.object({ id: z.number(), unitName: z.string() }).optional(),
         targetUnit: z.object({ id: z.number().optional(), unitName: z.string().trim().optional() }).optional(),
         batches: z.array(BatchProduct).optional(),
         batch: BatchProduct,
@@ -37,7 +38,15 @@ const ProductOutbound = z
         price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         sellPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
-        outboundQuantity: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
+        outboundQuantity: z
+            .number()
+            .min(1, "Số lượng yêu cầu không thể nhỏ hơn 1")
+            .max(10000, "Số lượng yêu cầu không thể lớn hơn 10,000")
+            .optional() // Make the field optional
+            .refine((value) => value !== undefined && value !== null && value !== 0, {
+                message: "Số lượng không được bỏ trống", // Thông báo tùy chỉnh khi không điền giá trị
+            }),
+        productQuantity: z.number().optional(),
     })
     .strict();
 
@@ -54,12 +63,33 @@ export const OutboundBody = z
         ),
         note: z.string().trim().max(256, "Giới hạn 255 kí tự").optional(),
         createdBy: z.object({ id: z.number() }),
-        supplier: z.object({ id: z.coerce.number() }).optional(),
-        fromBranch: z.object({ id: z.coerce.number() }).optional(),
-        toBranch: z.object({ id: z.coerce.number() }).optional(),
+        supplier: z.object({ id: z.coerce.string().trim() }).optional(),
+        toBranch: z.object({ id: z.coerce.string().trim() }).optional(),
+        fromBranch: z.object({ id: z.number() }).optional(),
         outboundProductDetails: z.array(ProductOutbound),
+        approvedBy: z.object({ id: z.number().optional() }).optional(),
+        isApproved: z.boolean().optional(),
+        taxable: z.boolean().optional(),
     })
-    .strict();
+    .strict()
+    .superRefine((data, ctx) => {
+        // Nếu outboundType là TRA_HANG thì supplier.id là bắt buộc
+        if (data.outboundType === "TRA_HANG" && !data.supplier?.id) {
+            ctx.addIssue({
+                path: ["supplier", "id"],
+                code: z.ZodIssueCode.custom,
+                message: "Vui lòng chọn nhà cung cấp",
+            });
+        }
+        // Nếu outboundType là CHUYEN_KHO_NOI_BO thì fromBranch.id là bắt buộc
+        if (data.outboundType === "CHUYEN_KHO_NOI_BO" && !data.toBranch?.id) {
+            ctx.addIssue({
+                path: ["toBranch", "id"],
+                code: z.ZodIssueCode.custom,
+                message: "Vui lòng chọn chi nhánh nhận hàng",
+            });
+        }
+    });
 
 export type OutboundBodyType = z.TypeOf<typeof OutboundBody>;
 export type ProductOutboundType = z.TypeOf<typeof ProductOutbound>;
