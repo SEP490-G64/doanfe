@@ -2,11 +2,11 @@
 "use client";
 
 const SwitcherThree = ({
-    register,
-    watch,
-    setValue,
-    disabled,
-}: {
+                           register,
+                           watch,
+                           setValue,
+                           disabled,
+                       }: {
     register: any;
     watch: any;
     setValue: any;
