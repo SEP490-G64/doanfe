@@ -128,5 +128,4 @@ export const inventoryCheckColumnsTwo = [
     { name: "Giá gốc", uid: "inboundPrice" },
     { name: "Giá bán", uid: "sellPrice" },
     { name: "Nhà sản xuất", uid: "manufacturerName" },
-    { name: "Tác vụ", uid: "actions" },
 ];

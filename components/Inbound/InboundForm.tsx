@@ -31,6 +31,7 @@ import {
     approveInbound,
     changeInboundStatus,
     createInitInbound,
+    deleteInbound,
     getInboundById,
     submitDraft, submitInbound,
 } from "@/services/inboundServices";
@@ -304,7 +305,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
                 if (inboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.toBranch.id);
 
-                console.log(response.data)
+                console.log(response.data);
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -344,8 +345,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             let response;
             if (inboundType === "NHAP_TU_NHA_CUNG_CAP") {
                 response = await searchAllProductsByKeyword(inputString, sessionToken);
-            }
-            else response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
+            } else response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
@@ -430,6 +430,32 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (inboundStatus === "CHUA_LUU") {
+            const handleBeforeUnload = (event: any) => {
+                event.preventDefault();
+                event.returnValue = "Đơn khởi tạo sẽ bị xóa";
+            };
+
+            const handleUnload = async () => {
+                try {
+                    if (watch("inboundId")) await deleteInbound(watch("inboundId")!.toString(), sessionToken);
+                } catch (error) {
+                    console.error("Failed to send DELETE request:", error);
+                }
+            };
+
+            // Xử lý thoát trình duyệt
+            window.addEventListener("beforeunload", handleBeforeUnload);
+            window.addEventListener("unload", handleUnload);
+
+            return () => {
+                window.removeEventListener("beforeunload", handleBeforeUnload);
+                window.removeEventListener("unload", handleUnload);
+            };
+        }
+    }, [inboundStatus]);
 
     if (loading) return <Loader />;
     else {
