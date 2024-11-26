@@ -43,7 +43,6 @@ import { getAllCategory } from "@/services/categoryServices";
 import { getAllType } from "@/services/typeServices";
 import { Category } from "@/types/category";
 import { Type } from "@/types/type";
-import { ProductInfor } from "@/types/inventoryCheck";
 import IconButton from "../UI/IconButton";
 import ProductsTableInventoryCheck from "../Tables/ProductsTableInventoryCheck";
 
@@ -96,10 +95,14 @@ const InventoryCheckForm = ({
                         Chờ duyệt
                     </p>
                 );
-            case "KIEM_HANG":
+            case "DANG_KIEM":
                 return (
-                    <p className={"inline-flex rounded bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary"}>
-                        Kiểm hàng
+                    <p
+                        className={
+                            "inline-flex rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary"
+                        }
+                    >
+                        Đang kiểm
                     </p>
                 );
             case "DANG_THANH_TOAN":
@@ -222,15 +225,6 @@ const InventoryCheckForm = ({
         if (isFetchingProduct) return;
         setIsFetchingProduct(true);
         try {
-            // let response;
-            // if (inventory-checkType === "TRA_HANG")
-            //     response = await getProductByBranchId(
-            //         branch!.id.toString(),
-            //         inputString,
-            //         sessionToken,
-            //         selectedSupId.toString()
-            //     );
-            // const response = await getProductByBranchId(branch!.id.toString(), inputString, sessionToken);
             let response;
             if (inventoryCheckType === "KIEM_KHO_VAT_LY_TOAN_PHAN")
                 response = await getProductInventoryCheckByCate(branchId, sessionToken, categoryId);
@@ -239,6 +233,7 @@ const InventoryCheckForm = ({
             else response = await getProductInventoryCheck(branchId, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
+                setValue("inventoryCheckProductDetails", response.data);
             }
         } catch (error) {
             console.log(error);
@@ -251,14 +246,6 @@ const InventoryCheckForm = ({
         if (isFetchingProduct) return;
         setIsFetchingProduct(true);
         try {
-            // let response;
-            // if (inventory-checkType === "TRA_HANG")
-            //     response = await getProductByBranchId(
-            //         branch!.id.toString(),
-            //         inputString,
-            //         sessionToken,
-            //         selectedSupId.toString()
-            //     );
             const response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
@@ -581,7 +568,7 @@ const InventoryCheckForm = ({
                             data={products || []}
                             active={
                                 viewMode !== "details" &&
-                                ["BAN_NHAP", "CHUA_LUU"].includes(inventoryCheckStatus as string)
+                                ["BAN_NHAP", "CHUA_LUU", "DANG_KIEM"].includes(inventoryCheckStatus as string)
                             }
                             errors={errors}
                             setProducts={setValue}
@@ -591,7 +578,7 @@ const InventoryCheckForm = ({
                             data={productOpts || []}
                             active={
                                 viewMode !== "details" &&
-                                ["BAN_NHAP", "CHUA_LUU"].includes(inventoryCheckStatus as string)
+                                ["BAN_NHAP", "CHUA_LUU", "DANG_KIEM"].includes(inventoryCheckStatus as string)
                             }
                             startedDate={watch("createdDate")}
                             sessionToken={sessionToken}
@@ -639,28 +626,29 @@ const InventoryCheckForm = ({
                             </div>
                         )}
 
-                    {viewMode === "create" && (
-                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                            <div className="w-1/2">
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                    onClick={() => console.log(errors)}
-                                >
-                                    Tạo và gửi đơn
-                                </button>
+                    {viewMode !== "details" &&
+                        ["BAN_NHAP", "DANG_KIEM", "CHUA_LUU"].includes(inventoryCheckStatus as string) && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={() => console.log(errors)}
+                                    >
+                                        {viewMode === "create" ? "Tạo và gửi đơn" : "Gửi đơn"}
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        type="submit"
+                                        onClick={() => setSaveDraft(true)}
+                                    >
+                                        Lưu đơn
+                                    </button>
+                                </div>
                             </div>
-                            <div className="w-1/2">
-                                <button
-                                    className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                    type="submit"
-                                    onClick={() => setSaveDraft(true)}
-                                >
-                                    Lưu đơn
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                        )}
                 </div>
             </div>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={false}>

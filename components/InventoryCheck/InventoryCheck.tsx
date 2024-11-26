@@ -8,19 +8,9 @@ import {
     TableRow,
     TableCell,
     Pagination,
-    Tooltip,
-    Modal,
-    ModalContent,
-    useDisclosure,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Button,
     Select,
     SelectItem,
 } from "@nextui-org/react";
-import { toast } from "react-toastify";
-import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
 import Loader from "@/components/common/Loader";
@@ -34,8 +24,6 @@ import { Product } from "@/types/product";
 
 const InventoryCheckTable = () => {
     const router = useRouter();
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [inventoryCheckData, setInventoryCheckData] = useState<Product[]>([]);
     const [total, setTotal] = useState(0);
@@ -44,29 +32,22 @@ const InventoryCheckTable = () => {
     const { sessionToken } = useAppContext();
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
+    const [filterMode, setFilterMode] = useState<"quantity" | "price" | "expireDate">("quantity");
+    const [selectedOptions, setSelectedOptions] = useState({
+        lowQuantity: false,
+        warningQuantity: false,
+        outOfStock: false,
+        lostPrice: false,
+        warningPrice: false,
+        outExpireDate: false,
+        lowExpireDate: false,
+    });
+    const [lowQuantity, setLowQuantity] = useState(0);
+    const [numberOfDates, setNumberOfDates] = useState(0);
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
     }, [total, rowsPerPage]);
-
-    // const handleDelete = async (inboundId: string) => {
-    //     if (loading) {
-    //         toast.warning("Hệ thống đang xử lý dữ liệu");
-    //         return;
-    //     }
-    //     setLoading(true);
-    //     try {
-    //         const response = await deleteInventoryCheck(inboundId, sessionToken);
-
-    //         if (response === "200 OK") {
-    //             await getListProductByPage();
-    //         }
-    //     } catch (error) {
-    //         console.log(error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
     const renderCell = useCallback((product: Product, columnKey: React.Key) => {
         const cellValue = product[columnKey as "id" | "productName" | "status"];
@@ -107,6 +88,14 @@ const InventoryCheckTable = () => {
                         page={page}
                         pageSize={rowsPerPage}
                         setTotal={setTotal}
+                        filterMode={filterMode}
+                        setFilterMode={setFilterMode}
+                        selectedOptions={selectedOptions}
+                        setSelectedOptions={setSelectedOptions}
+                        lowQuantity={lowQuantity}
+                        setLowQuantity={setLowQuantity}
+                        numberOfDates={numberOfDates}
+                        setNumberOfDates={setNumberOfDates}
                         sessionToken={sessionToken}
                     />
                     <div className="rounded-sm border border-stroke bg-white px-5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -167,7 +156,11 @@ const InventoryCheckTable = () => {
                                 </TableHeader>
                                 <TableBody items={inventoryCheckData ?? []} emptyContent={"Không có dữ liệu"}>
                                     {(item) => (
-                                        <TableRow key={item?.id}>
+                                        <TableRow
+                                            key={item?.id}
+                                            onClick={() => router.push(`/products/details/${item.id}`)}
+                                            className="hover:cursor-pointer"
+                                        >
                                             {(columnKey) => (
                                                 <TableCell
                                                     className={`border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark ${["inventoryCheckCode", "createdBy"].includes(columnKey as string) ? "text-left" : ""}`}
@@ -180,31 +173,6 @@ const InventoryCheckTable = () => {
                                 </TableBody>
                             </Table>
                         </div>
-
-                        {/* <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                            <ModalContent>
-                                {(onClose) => (
-                                    <>
-                                        <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                                        <ModalBody>Bạn có chắc muốn xóa phiếu xuất hàng này không?</ModalBody>
-                                        <ModalFooter>
-                                            <Button color="default" variant="light" onPress={onClose}>
-                                                Hủy
-                                            </Button>
-                                            <Button
-                                                color="danger"
-                                                onPress={() => {
-                                                    handleDelete(selectedId);
-                                                    onClose();
-                                                }}
-                                            >
-                                                Xóa
-                                            </Button>
-                                        </ModalFooter>
-                                    </>
-                                )}
-                            </ModalContent>
-                        </Modal> */}
                     </div>
                 </>
             );

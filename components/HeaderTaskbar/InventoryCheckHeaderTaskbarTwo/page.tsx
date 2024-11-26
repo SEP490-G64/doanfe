@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
@@ -23,6 +23,14 @@ function HeaderTaskbar({
     page,
     pageSize,
     setTotal,
+    filterMode,
+    setFilterMode,
+    selectedOptions,
+    setSelectedOptions,
+    lowQuantity,
+    setLowQuantity,
+    numberOfDates,
+    setNumberOfDates,
     buttons,
 }: {
     sessionToken: string;
@@ -32,41 +40,44 @@ function HeaderTaskbar({
     page: number;
     pageSize: number;
     setTotal: any;
+    filterMode: "quantity" | "price" | "expireDate";
+    setFilterMode: any;
+    selectedOptions: {
+        lowQuantity: boolean;
+        warningQuantity: boolean;
+        outOfStock: boolean;
+        lostPrice: boolean;
+        warningPrice: boolean;
+        outExpireDate: boolean;
+        lowExpireDate: boolean;
+    };
+    setSelectedOptions: any;
+    lowQuantity: number;
+    setLowQuantity: any;
+    numberOfDates: number;
+    setNumberOfDates: any;
     buttons?: string;
 }) {
     const router = useRouter();
 
-    const [filterMode, setFilerMode] = useState<"quantity" | "price" | "expireDate">("quantity");
-    const [selectedOptions, setSelectedOptions] = useState({
-        lowQuantity: false,
-        warningQuantity: false,
-        outOfStock: false,
-        lostPrice: false,
-        warningPrice: false,
-        outExpireDate: false,
-        lowExpireDate: false,
-    });
-    const [lowQuantity, setLowQuantity] = useState(0);
-    const [numberOfDates, setNumberOfDates] = useState(0);
-
     const handleChangeOpts = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = e.target;
         if (name === "outExpireDate" && checked) {
-            setSelectedOptions((prevState) => ({ ...prevState, lowExpireDate: false }));
+            setSelectedOptions((prevState: any) => ({ ...prevState, lowExpireDate: false }));
         } else if (name === "lowExpireDate" && checked) {
-            setSelectedOptions((prevState) => ({ ...prevState, outExpireDate: false }));
+            setSelectedOptions((prevState: any) => ({ ...prevState, outExpireDate: false }));
         } else if (name === "lostPrice" && checked) {
-            setSelectedOptions((prevState) => ({ ...prevState, warningPrice: false }));
+            setSelectedOptions((prevState: any) => ({ ...prevState, warningPrice: false }));
         } else if (name === "warningPrice" && checked) {
-            setSelectedOptions((prevState) => ({ ...prevState, lostPrice: false }));
+            setSelectedOptions((prevState: any) => ({ ...prevState, lostPrice: false }));
         }
-        setSelectedOptions((prevState) => ({ ...prevState, [name]: checked }));
+        setSelectedOptions((prevState: any) => ({ ...prevState, [name]: checked }));
     };
 
     const handleChangeTabs = (index: number) => {
-        if (index === 0) setFilerMode("quantity");
-        else if (index === 1) setFilerMode("price");
-        else setFilerMode("expireDate");
+        if (index === 0) setFilterMode("quantity");
+        else if (index === 1) setFilterMode("price");
+        else setFilterMode("expireDate");
     };
 
     const getListProducts = async () => {
@@ -130,8 +141,6 @@ function HeaderTaskbar({
                         setInventoryCheckData(
                             response.data.map((item: any, index: number) => ({
                                 ...item,
-                                productName: item.product.productName,
-                                baseUnit: item.product.baseUnit.unitName,
                                 index: index + 1 + (page - 1) * pageSize,
                             }))
                         );
@@ -147,8 +156,6 @@ function HeaderTaskbar({
                         setInventoryCheckData(
                             response.data.map((item: any, index: number) => ({
                                 ...item,
-                                productName: item.product.productName,
-                                baseUnit: item.product.baseUnit.unitName,
                                 index: index + 1 + (page - 1) * pageSize,
                             }))
                         );
@@ -216,7 +223,10 @@ function HeaderTaskbar({
             </div>
 
             <div className="mt-4 flex flex-col space-y-4 rounded-lg bg-white p-4 shadow-lg">
-                <Tabs onSelect={(index) => handleChangeTabs(index)}>
+                <Tabs
+                    onSelect={(index) => handleChangeTabs(index)}
+                    selectedIndex={filterMode === "quantity" ? 0 : filterMode === "price" ? 1 : 2}
+                >
                     <TabList>
                         <Tab>Kiểm kê số lượng</Tab>
                         <Tab>Kiểm kê theo giá sản phẩm</Tab>
