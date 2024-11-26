@@ -51,7 +51,9 @@ const DropdownNotification = () => {
 
     useEffect(() => {
         // Kết nối tới SSE API
-        const eventSource = new EventSource(`localhost:8081/dsd/api/v1/staff/notification/${userInfo!.id}/stream`);
+        const eventSource = new EventSource(
+            `https://warehouse.longtam.store/dsd/api/v1/staff/notification/${userInfo!.id}/stream`
+        );
 
         // Lắng nghe sự kiện "message" từ server
         eventSource.onmessage = async (event) => {

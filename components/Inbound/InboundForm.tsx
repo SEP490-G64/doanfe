@@ -33,7 +33,8 @@ import {
     createInitInbound,
     deleteInbound,
     getInboundById,
-    submitDraft, submitInbound,
+    submitDraft,
+    submitInbound,
 } from "@/services/inboundServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { InboundBody, InboundBodyType } from "@/lib/schemaValidate/inboundSchema";
@@ -42,10 +43,7 @@ import { Supplier } from "@/types/supplier";
 import Loader from "@/components/common/Loader";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import ProductsTableAfterCheck from "@/components/Tables/ProductsTableAfterCheck";
-import {
-    getProductByBranchId,
-    searchAllProductsByKeyword,
-} from "@/services/productServices";
+import { getProductByBranchId, searchAllProductsByKeyword } from "@/services/productServices";
 import { ProductInfor } from "@/types/inbound";
 import { getStaffBranches } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
@@ -69,9 +67,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const [branches, setBranches] = useState([]);
     const [productOpts, setProductOpts] = useState<ProductInfor[]>([]);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    const [inboundType, setInboundType] = useState<"CHUYEN_KHO_NOI_BO" | "NHAP_TU_NHA_CUNG_CAP">(
-        "CHUYEN_KHO_NOI_BO"
-    );
+    const [inboundType, setInboundType] = useState<"CHUYEN_KHO_NOI_BO" | "NHAP_TU_NHA_CUNG_CAP">("CHUYEN_KHO_NOI_BO");
     const [product, setProduct] = useState<ProductInfor>();
     const [totalPrice, setTotalPrice] = useState<number>(0);
 
@@ -141,7 +137,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             supplier: { id: "" },
             fromBranch: { id: "" },
             toBranch: {
-                id: userInfo?.branch?.id ? Number(userInfo?.branch?.id) : undefined
+                id: userInfo?.branch?.id ? Number(userInfo?.branch?.id) : undefined,
             },
             approvedBy: undefined,
             isApproved: false,
@@ -154,6 +150,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const products = watch("productInbounds");
     const selectedSupId = watch("supplier.id");
     const selectedFromBranchId = watch("fromBranch.id");
+    console.log(watch("taxable"));
 
     // Debounced fetch options
     const debouncedFetchOptions = useCallback(
@@ -179,7 +176,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
     // Hàm để nhận giá trị totalPrice từ ProductsTableAfterCheck
     const handleTotalPriceChange = (newTotalPrice: number) => {
-        setTotalPrice(newTotalPrice);  // Cập nhật giá trị totalPrice
+        setTotalPrice(newTotalPrice); // Cập nhật giá trị totalPrice
     };
 
     const addItem = (e?: React.MouseEvent) => {
@@ -361,8 +358,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
         getBranchOpts("");
         if (viewMode === "create") {
             onOpen();
-        }
-        else {
+        } else {
             getInforInbound();
         }
     }, []);
@@ -898,8 +894,10 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     <button
                                         className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                         type="submit"
-                                        onClick={() => {setAction("HOAN_THANH");
-                                            console.log(errors);}}
+                                        onClick={() => {
+                                            setAction("HOAN_THANH");
+                                            console.log(errors);
+                                        }}
                                     >
                                         Cập nhật, nhập hàng và xác nhận đơn hoàn thành
                                     </button>
@@ -1015,8 +1013,10 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                             <button
                                 className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                 type="submit"
-                                onClick={() => {handleOpenModal("HOAN_THANH");
-                                    console.log(errors);}}
+                                onClick={() => {
+                                    handleOpenModal("HOAN_THANH");
+                                    console.log(errors);
+                                }}
                             >
                                 Nhập hàng
                             </button>
@@ -1069,7 +1069,10 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                                             label="Chọn kiểu nhập hàng"
                                                             className="max-w-full"
                                                         >
-                                                            <SelectItem key={"NHAP_TU_NHA_CUNG_CAP"} isDisabled={userInfo?.branch.branchType === "SUB"}>
+                                                            <SelectItem
+                                                                key={"NHAP_TU_NHA_CUNG_CAP"}
+                                                                isDisabled={userInfo?.branch.branchType === "SUB"}
+                                                            >
                                                                 Nhập từ nhà cung cấp
                                                             </SelectItem>
                                                             <SelectItem key={"CHUYEN_KHO_NOI_BO"}>
@@ -1082,10 +1085,14 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     })()}
                                 </ModalBody>
                                 <ModalFooter>
-                                    <Button color="default" variant="light" onPress={async () => {
-                                        setAction("");
-                                        onClose(); // Đóng modal
-                                    }}>
+                                    <Button
+                                        color="default"
+                                        variant="light"
+                                        onPress={async () => {
+                                            setAction("");
+                                            onClose(); // Đóng modal
+                                        }}
+                                    >
                                         Không
                                     </Button>
                                     <Button

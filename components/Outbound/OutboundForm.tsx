@@ -125,7 +125,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             createdBy: undefined,
             supplier: undefined,
             fromBranch: {
-                id: userInfo?.branch?.id ? Number(userInfo?.branch?.id) : undefined
+                id: userInfo?.branch?.id ? Number(userInfo?.branch?.id) : undefined,
             },
             toBranch: undefined,
             approvedBy: undefined,
@@ -146,16 +146,23 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     };
 
     // Debounced fetch options
-    const debouncedFetchOptions = useCallback(
-        debounce((inputValue: string) => {
-            if (inputValue) {
-                getProductOpts(inputValue);
-            } else {
-                setProductOpts([]);
-            }
-        }, 500),
-        [selectedSupId, selectedToBranchId]
-    );
+    const debouncedFetchOptions = debounce((inputValue: string) => {
+        if (inputValue) {
+            getProductOpts(inputValue);
+        } else {
+            setProductOpts([]);
+        }
+    }, 500);
+    // const debouncedFetchOptions = useCallback(
+    //     debounce((inputValue: string) => {
+    //         if (inputValue) {
+    //             getProductOpts(inputValue);
+    //         } else {
+    //             setProductOpts([]);
+    //         }
+    //     }, 500),
+    //     [selectedSupId, selectedToBranchId]
+    // );
 
     const handleTypeProduct = (inputString: string) => {
         debouncedFetchOptions(inputString);
@@ -271,8 +278,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             let response;
             if (outboundType === "TRA_HANG" || outboundType === "HUY_HANG") {
                 response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
-            }
-            else response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken);
+            } else response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
@@ -288,8 +294,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         getBranchOpts("");
         if (viewMode === "create") {
             onOpenChange();
-        }
-        else {
+        } else {
             getInforOutbound();
         }
     }, []);
