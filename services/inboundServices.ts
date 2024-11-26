@@ -82,7 +82,6 @@ export const submitDraft = async (inboundDraft: InboundBodyType, token: string) 
         });
 
         if (res.data) {
-            toast.success("Lưu phiếu nhập thành công");
             return res;
         }
     } catch (error: any) {
@@ -106,7 +105,6 @@ export const changeInboundStatus = async (id: string, status: string, token: str
         );
 
         if (res.status === "SUCCESS") {
-            toast.success("Thay đổi trạng thái phiếu nhập thành công");
             return res;
         }
     } catch (error: any) {
@@ -150,7 +148,6 @@ export const submitInbound = async (inboundDraft: InboundBodyType, token: string
         });
 
         if (res.status === "SUCCESS") {
-            toast.success("Nhập hàng thành công");
             return res;
         }
     } catch (error: any) {
