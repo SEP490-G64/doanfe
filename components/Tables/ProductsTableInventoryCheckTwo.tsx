@@ -132,7 +132,7 @@ const ProductsTableInventoryCheck = ({
                         <div className="flex items-center justify-center">
                             <input
                                 type="number"
-                                value={product?.countedQuantity || 0}
+                                value={product?.countedQuantity || ""}
                                 disabled={!active}
                                 onChange={(e) => handleChangeCountedQuantity(e, index)}
                                 className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -230,6 +230,7 @@ const ProductsTableInventoryCheck = ({
     const handleChangeCountedQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         data![index].countedQuantity = Number(e.target.value);
         if (data![index].systemQuantity) data![index].difference = Number(e.target.value) - data![index].systemQuantity;
+        if (!e.target.value) data![index].difference = undefined;
         setProducts("inventoryCheckProductDetails", data);
     };
 
