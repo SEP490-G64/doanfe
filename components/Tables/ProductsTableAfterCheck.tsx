@@ -429,9 +429,9 @@ const ProductsTableAfterCheck = ({
 
                                     <td className="border-b border-[#eee] px-4 py-5 text-center">
                                         <input
-                                            type="number"
+                                            type="string"
                                             value={
-                                                bIndex === 0 ? batch.inboundPrice.toLocaleString() || product.price : batch.inboundPrice.toLocaleString()
+                                                bIndex === 0 ? batch.inboundPrice || product.price : batch.inboundPrice
                                             }
                                             disabled={!active}
                                             onChange={(e) => handleChangeInboundPrice(e, key, bIndex)}
