@@ -169,7 +169,9 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
     const handleOpenModal = (action: string) => {
         setAction(action);
-        onOpen();
+        if (action !== "") {
+            onOpen();
+        }
     };
 
     const handleTypeProduct = (inputString: string) => {
@@ -202,17 +204,24 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
 
     const handleAction = async (action: string) => {
         try {
+            let res;
             switch (action) {
                 case "CHO_DUYET":
                     if (products.length === 0) {
                         toast.error("Vui lòng thêm sản phẩm vào danh sách trước khi yêu cầu duyệt đơn");
                         return;
                     }
-                    await changeInboundStatus(watch("inboundId")!.toString(), "CHO_DUYET", sessionToken);
+                    res = await changeInboundStatus(watch("inboundId")!.toString(), "CHO_DUYET", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Gửi yêu cầu duyệt đơn thành công!");
+                    }
                     router.push(`/inbound/list`);
                     break;
                 case "BỎ_DUYỆT":
-                    await changeInboundStatus(watch("inboundId")!.toString(), "BAN_NHAP", sessionToken);
+                    res = await changeInboundStatus(watch("inboundId")!.toString(), "BAN_NHAP", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Hủy yêu cầu duyệt đơn thành công!");
+                    }
                     router.push(`/inbound/update/` + watch("inboundId"));
                     break;
                 case "DUYỆT":
@@ -224,11 +233,17 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                     router.push(`/inbound/list`);
                     break;
                 case "KIỂM":
-                    await changeInboundStatus(watch("inboundId")!.toString(), "KIEM_HANG", sessionToken);
+                    res = await changeInboundStatus(watch("inboundId")!.toString(), "KIEM_HANG", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Chuyển đơn nhập hàng sang trạng thái kiểm hàng thành công!");
+                    }
                     router.push(`/inbound/update/` + watch("inboundId"));
                     break;
                 case "HOAN_THANH":
-                    await changeInboundStatus(watch("inboundId")!.toString(), "HOAN_THANH", sessionToken);
+                    res = await changeInboundStatus(watch("inboundId")!.toString(), "HOAN_THANH", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Lưu đơn, nhập hàng và xác nhận đơn hoàn thành thành công!");
+                    }
                     router.push(`/inbound/list`);
                     break;
                 default:
@@ -259,6 +274,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 setValue("toBranch.id", response.data.toBranch.id);
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy.id);
+                setValue("taxable", response.data.taxable);
                 setUser(response.data.createdBy);
                 setBranch(response.data.toBranch);
                 setInboundStatus(response.data.status);
@@ -403,7 +419,9 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                         handleOpenModal(action);
                         return;
                     }
-
+                    else {
+                        toast.success("Lưu đơn và nhập hàng thành công!")
+                    }
                     router.push("/inbound/list");
                     router.refresh();
                 } else {
@@ -416,11 +434,14 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             const response = await submitDraft(inbound, sessionToken);
 
             if (response?.status === "SUCCESS") {
+                await changeInboundStatus(watch("inboundId")!.toString(), "BAN_NHAP", sessionToken);
                 if (action === "CHO_DUYET") {
                     handleOpenModal(action);
                     return;
                 }
-
+                else {
+                    toast.success("Lưu đơn nhập hàng thành công!")
+                }
                 router.push("/inbound/list");
                 router.refresh();
             }
@@ -708,7 +729,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         register={{ ...register("taxable") }}
                                         watch={watch}
                                         setValue={setValue}
-                                        disabled={viewMode === "details"}
+                                        disabled={viewMode === "details" || inboundStatus === "KIEM_HANG"}
                                     />
                                 </div>
 
@@ -1083,7 +1104,32 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button color="default" variant="light" onPress={async () => {
-                                        setAction("");
+                                        switch (action) {
+                                            case "CHO_DUYET":
+                                                toast.warning("Hủy gửi yêu cầu duyệt đơn!");
+                                                break;
+                                            case "BỎ_DUYỆT":
+                                                toast.warning("Bỏ hủy yêu cầu duyệt đơn!");
+                                                break;
+                                            case "DUYỆT":
+                                                toast.warning("Bỏ duyệt đơn nhập hàng!");
+                                                break;
+                                            case "TỪ_CHỐI":
+                                                toast.warning("Từ chối duyệt đơn nhập hàng!");
+                                                break;
+                                            case "KIỂM":
+                                                toast.warning("Hủy chuyển đơn nhập hàng sang trạng thái kiểm hàng thành công!");
+                                                break;
+                                            case "HOAN_THANH":
+                                                toast.warning("Lưu đơn, nhập hàng thành công nhưng xác nhận đơn hoàn thành thất bại!");
+                                                router.push(`/inbound/list`);
+                                                break;
+                                            default:
+                                                toast.error("Khởi tạo đơn nhập hàng thất bại!");
+                                                router.push(`/inbound/list`);
+                                                break;
+                                        }
+                                        handleOpenModal("");
                                         onClose(); // Đóng modal
                                     }}>
                                         Không
