@@ -55,7 +55,10 @@ export const getProductById = async (id: string, token: string) => {
 export const getListProductByCheckQuantity = async (
     page: string,
     size: string,
-    dataSearch: DataSearch,
+    lessThanOrEqual: boolean,
+    quantity: number,
+    warning: boolean,
+    outOfStock: boolean,
     token: string
 ) => {
     const params: Params = {
@@ -63,14 +66,100 @@ export const getListProductByCheckQuantity = async (
         size,
     };
 
-    for (const searchKey in dataSearch) {
-        if (dataSearch[searchKey as keyof typeof dataSearch]) {
-            params[searchKey as keyof typeof params] = dataSearch[searchKey as keyof typeof dataSearch];
+    try {
+        const res = await httpRequest.get(
+            `dsd/api/v1/staff/product/filter?lessThanOrEqual=${lessThanOrEqual}&quantity=${quantity}&warning=${warning}&outOfStock=${outOfStock}`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                params,
+            }
+        );
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
         }
     }
+};
+
+export const getListProductByCheckNonePrice = async (page: string, size: string, token: string) => {
+    const params: Params = {
+        page,
+        size,
+    };
 
     try {
-        const res = await httpRequest.get(`dsd/api/v1/staff/product/filter`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/sell-price-equal-zero`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params,
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
+export const getListProductByCheckPrice = async (page: string, size: string, token: string) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/loss-price`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params,
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
+export const getListProductByCheckNumberOfExpiredDate = async (
+    page: string,
+    size: string,
+    numberOfDate: number,
+    token: string
+) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/batch/expired-batch-days?days=${numberOfDate}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params,
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
+export const getListProductByCheckExpiredDate = async (page: string, size: string, token: string) => {
+    const params: Params = {
+        page,
+        size,
+    };
+
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/batch/expired-batch`, {
             headers: { Authorization: `Bearer ${token}` },
             params,
         });

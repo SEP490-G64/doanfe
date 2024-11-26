@@ -1,59 +1,175 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
 import { FaFileImport, FaPlus } from "react-icons/fa6";
 
 import Button from "@/components/UI/Button";
-import { DataSearch } from "@/types/product";
-import SelectGroupOne from "@/components/SelectGroup/SelectGroupOne";
-import InputDateOne from "@/components/FormElements/InputDate/InputDateOne";
-import { getStaffBranches } from "@/services/branchServices";
-import { Branch } from "@/types/branch";
+import {
+    getListProductByCheckExpiredDate,
+    getListProductByCheckNonePrice,
+    getListProductByCheckNumberOfExpiredDate,
+    getListProductByCheckPrice,
+    getListProductByCheckQuantity,
+} from "@/services/productServices";
+import { Product } from "@/types/product";
 
 function HeaderTaskbar({
     sessionToken,
+    setInventoryCheckData,
+    loading,
+    setLoading,
+    page,
+    pageSize,
+    setTotal,
     buttons,
-    dataSearch,
-    setDataSearch,
-    handleSearch,
 }: {
     sessionToken: string;
+    setInventoryCheckData: any;
+    loading: boolean;
+    setLoading: any;
+    page: number;
+    pageSize: number;
+    setTotal: any;
     buttons?: string;
-    dataSearch?: DataSearch;
-    setDataSearch?: any;
-    handleSearch?: any;
 }) {
     const router = useRouter();
-    const typeOpts = [
-        { value: "CHUYEN_KHO_NOI_BO", label: "Chuyển kho nội bộ" },
-        { value: "HUY_HANG", label: "Hủy hàng" },
-        { value: "TRA_HANG", label: "Trả hàng" },
-        { value: "BAN_HANG", label: "Bán hàng" },
-    ];
-    const statusOpts = [
-        { value: "CHUA_LUU", label: "Khởi tạo" },
-        { value: "BAN_NHAP", label: "Bản nháp" },
-        { value: "DANG_KIEM", label: "Đang kiểm" },
-        { value: "CHO_DUYET", label: "Chờ duyệt" },
-        { value: "DA_CAN_BANG", label: "Đã cân bằng" },
-    ];
-    const [branchOpts, setBranchOpts] = useState([]);
 
-    const getDataOptions = async () => {
+    const [filterMode, setFilerMode] = useState<"quantity" | "price" | "expireDate">("quantity");
+    const [selectedOptions, setSelectedOptions] = useState({
+        lowQuantity: false,
+        warningQuantity: false,
+        outOfStock: false,
+        lostPrice: false,
+        warningPrice: false,
+        outExpireDate: false,
+        lowExpireDate: false,
+    });
+    const [lowQuantity, setLowQuantity] = useState(0);
+    const [numberOfDates, setNumberOfDates] = useState(0);
+
+    const handleChangeOpts = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = e.target;
+        if (name === "outExpireDate" && checked) {
+            setSelectedOptions((prevState) => ({ ...prevState, lowExpireDate: false }));
+        } else if (name === "lowExpireDate" && checked) {
+            setSelectedOptions((prevState) => ({ ...prevState, outExpireDate: false }));
+        } else if (name === "lostPrice" && checked) {
+            setSelectedOptions((prevState) => ({ ...prevState, warningPrice: false }));
+        } else if (name === "warningPrice" && checked) {
+            setSelectedOptions((prevState) => ({ ...prevState, lostPrice: false }));
+        }
+        setSelectedOptions((prevState) => ({ ...prevState, [name]: checked }));
+    };
+
+    const handleChangeTabs = (index: number) => {
+        if (index === 0) setFilerMode("quantity");
+        else if (index === 1) setFilerMode("price");
+        else setFilerMode("expireDate");
+    };
+
+    const getListProducts = async () => {
+        if (loading) return;
+        setLoading(true);
         try {
-            const response = await Promise.all([getStaffBranches(sessionToken)]);
+            let response;
+            if (filterMode === "quantity") {
+                response = await getListProductByCheckQuantity(
+                    page.toString(),
+                    pageSize.toString(),
+                    selectedOptions.lowQuantity,
+                    lowQuantity,
+                    selectedOptions.warningQuantity,
+                    selectedOptions.outOfStock,
+                    sessionToken
+                );
 
-            if (response) {
-                setBranchOpts(response[0].data.map((c: Branch) => ({ value: c.id, label: c.location })));
+                if (response.message === "200 OK") {
+                    setInventoryCheckData(
+                        response.data.map((item: Product, index: number) => ({
+                            ...item,
+                            index: index + 1 + (page - 1) * pageSize,
+                        }))
+                    );
+                    setTotal(response.total);
+                }
+            } else if (filterMode === "price") {
+                if (selectedOptions.warningPrice) {
+                    response = await getListProductByCheckPrice(page.toString(), pageSize.toString(), sessionToken);
+                    if (response.message === "200 OK") {
+                        setInventoryCheckData(
+                            response.data.map((item: Product, index: number) => ({
+                                ...item,
+                                index: index + 1 + (page - 1) * pageSize,
+                            }))
+                        );
+                        setTotal(response.total);
+                    }
+                } else if (selectedOptions.lostPrice) {
+                    response = await getListProductByCheckNonePrice(page.toString(), pageSize.toString(), sessionToken);
+                    if (response.message === "200 OK") {
+                        setInventoryCheckData(
+                            response.data.map((item: Product, index: number) => ({
+                                ...item,
+                                index: index + 1 + (page - 1) * pageSize,
+                            }))
+                        );
+                        setTotal(response.total);
+                    }
+                }
+            } else if (filterMode === "expireDate") {
+                if (selectedOptions.lowExpireDate) {
+                    response = await getListProductByCheckNumberOfExpiredDate(
+                        page.toString(),
+                        pageSize.toString(),
+                        numberOfDates,
+                        sessionToken
+                    );
+                    if (response.message === "200 OK") {
+                        setInventoryCheckData(
+                            response.data.map((item: any, index: number) => ({
+                                ...item,
+                                productName: item.product.productName,
+                                baseUnit: item.product.baseUnit.unitName,
+                                index: index + 1 + (page - 1) * pageSize,
+                            }))
+                        );
+                        setTotal(response.total);
+                    }
+                } else if (selectedOptions.outExpireDate) {
+                    response = await getListProductByCheckExpiredDate(
+                        page.toString(),
+                        pageSize.toString(),
+                        sessionToken
+                    );
+                    if (response.message === "200 OK") {
+                        setInventoryCheckData(
+                            response.data.map((item: any, index: number) => ({
+                                ...item,
+                                productName: item.product.productName,
+                                baseUnit: item.product.baseUnit.unitName,
+                                index: index + 1 + (page - 1) * pageSize,
+                            }))
+                        );
+                        setTotal(response.total);
+                    }
+                }
             }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSearch = async () => {
+        try {
+            await getListProducts();
         } catch (error) {
             console.log(error);
         }
     };
-
-    useEffect(() => {
-        getDataOptions();
-    }, []);
 
     return (
         <div className="mb-6 flex flex-col gap-3">
@@ -61,7 +177,7 @@ function HeaderTaskbar({
             <div className="flex items-center gap-3">
                 <div className="relative flex-1">
                     <button
-                        className="absolute left-0 top-0 flex h-full items-center justify-center rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
+                        className="absolute left-0 top-0 flex h-full items-center justify-center rounded bg-primary p-4 text-white hover:bg-blue-700"
                         onClick={handleSearch}
                     >
                         <svg
@@ -86,14 +202,6 @@ function HeaderTaskbar({
                             />
                         </svg>
                     </button>
-
-                    <input
-                        type="text"
-                        value={dataSearch?.keyword}
-                        placeholder="Nhập để tìm kiếm..."
-                        onChange={(e) => setDataSearch({ ...dataSearch, keyword: e.target.value })}
-                        className="w-full bg-white py-2 pl-12 pr-4 font-medium focus:outline-none xl:w-125"
-                    />
                 </div>
 
                 {buttons === "import" && (
@@ -107,35 +215,115 @@ function HeaderTaskbar({
                 />
             </div>
 
-            {/* Dòng thứ hai */}
-            <div className="mt-2 flex items-center gap-2">
-                <div className="max-w-xs">
-                    <SelectGroupOne
-                        placeHolder="Chọn chi nhánh"
-                        optsData={branchOpts}
-                        dataSearch={dataSearch}
-                        setDataSearch={setDataSearch}
-                        dataKey="branchId"
-                    />
-                </div>
-                <span className="flex items-center">Từ</span>
-                <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="startDate" />
-                <span className="flex items-center">đến</span>
-                <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="endDate" />
-                {/*<SelectGroupOne
-                    placeHolder="Chọn kiểu xuất hàng"
-                    optsData={typeOpts}
-                    dataSearch={dataSearch}
-                    setDataSearch={setDataSearch}
-                    dataKey="type"
-                />*/}
-                <SelectGroupOne
-                    placeHolder="Chọn trạng thái đơn"
-                    optsData={statusOpts}
-                    dataSearch={dataSearch}
-                    setDataSearch={setDataSearch}
-                    dataKey="status"
-                />
+            <div className="mt-4 flex flex-col space-y-4 rounded-lg bg-white p-4 shadow-lg">
+                <Tabs onSelect={(index) => handleChangeTabs(index)}>
+                    <TabList>
+                        <Tab>Kiểm kê số lượng</Tab>
+                        <Tab>Kiểm kê theo giá sản phẩm</Tab>
+                        <Tab>Kiểm kê theo ngày hết hạn</Tab>
+                    </TabList>
+
+                    <TabPanel>
+                        <div className="flex items-center gap-6">
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    name="lowQuantity"
+                                    checked={selectedOptions.lowQuantity}
+                                    onChange={handleChangeOpts}
+                                    className="size-4 accent-primary"
+                                />
+                                <span>Số lượng còn ít hơn hoặc bằng</span>
+                                <input
+                                    type="number"
+                                    value={lowQuantity}
+                                    onChange={(e) => setLowQuantity(Number(e.target.value))}
+                                    className="border-gray-300 text-gray-700 w-32 rounded-md border p-1 shadow-sm focus:outline-none"
+                                />
+                            </label>
+
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    name="warningQuantity"
+                                    checked={selectedOptions.warningQuantity}
+                                    onChange={handleChangeOpts}
+                                    className="size-4 accent-primary"
+                                />
+                                <span>Chạm số lượng cảnh báo</span>
+                            </label>
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    name="outOfStock"
+                                    checked={selectedOptions.outOfStock}
+                                    onChange={handleChangeOpts}
+                                    className="size-4 accent-primary"
+                                />
+                                <span>Số lượng đã hết</span>
+                            </label>
+                        </div>
+                    </TabPanel>
+                    <TabPanel>
+                        {/* Kiểm kê giá sản phẩm */}
+                        <div className="flex items-center gap-6">
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    name="warningPrice"
+                                    checked={selectedOptions.warningPrice}
+                                    onChange={handleChangeOpts}
+                                    className="size-4 accent-primary"
+                                />
+                                <span>Giá bán nhỏ hơn giá nhập</span>
+                            </label>
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    name="lostPrice"
+                                    checked={selectedOptions.lostPrice}
+                                    onChange={handleChangeOpts}
+                                    className="size-4 accent-primary"
+                                />
+                                <span>Chưa có giá bán</span>
+                            </label>
+                        </div>
+                    </TabPanel>
+                    <TabPanel>
+                        {/* Kiểm kê ngày hết hạn */}
+                        <div className="flex space-y-4">
+                            <div className="flex items-center gap-6">
+                                <label className="flex items-center space-x-2">
+                                    <input
+                                        type="checkbox"
+                                        name="outExpireDate"
+                                        checked={selectedOptions.outExpireDate}
+                                        onChange={handleChangeOpts}
+                                        className="size-4 accent-primary"
+                                    />
+                                    <span>Sản phẩm đã hết hạn</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                    <input
+                                        type="checkbox"
+                                        name="lowExpireDate"
+                                        checked={selectedOptions.lowExpireDate}
+                                        onChange={handleChangeOpts}
+                                        className="size-4 accent-primary"
+                                    />
+                                    <span>Sản phẩm hết hạn trong</span>
+                                    <input
+                                        type="number"
+                                        value={numberOfDates}
+                                        onChange={(e) => setNumberOfDates(Number(e.target.value))}
+                                        className="border-gray-300 text-gray-700 w-24 rounded-md border p-1 shadow-sm focus:outline-none"
+                                    />
+                                    <span>ngày</span>
+                                </label>
+                            </div>
+                        </div>
+                    </TabPanel>
+                </Tabs>
             </div>
         </div>
     );

@@ -27,6 +27,7 @@ const ProductInbound = z
         requestQuantity: z.number().int(),
         quantity: z.number().int().optional(),
         receiveQuantity: z.number().int().optional(),
+        productQuantity: z.number().int().optional(),
         batches: z.array(BatchProduct).optional(),
         price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
     })
