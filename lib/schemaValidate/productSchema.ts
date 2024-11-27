@@ -19,6 +19,7 @@ const BranchProduct = z
             .max(10000000, "Số lượng tối đa không thể lớn hơn 10,000,000")
             .optional(),
         quantity: z.coerce.number({ message: "Vui lòng nhập số" }).optional(),
+        productStatus: z.string().optional(),
     })
     .strict()
     .refine((data) => (data.minQuantity ?? 0) <= (data.maxQuantity ?? 0), {
