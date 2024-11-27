@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
 
@@ -8,8 +9,10 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { getAllNotifications, getQuantityUnreadNoti, markAsRead } from "@/services/notificationServices";
 import { Notification } from "@/types/notification";
+import { formatDateTimeDDMMYYYYHHMM } from "@/utils/methods";
 
 const DropdownNotification = () => {
+    const router = useRouter();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [notifying, setNotifying] = useState(true);
     const { sessionToken } = useAppContext();
@@ -78,13 +81,20 @@ const DropdownNotification = () => {
         };
     }, []);
 
-    const handleClickNoti = async (notiId: string) => {
+    const handleClickNoti = async (notiId: string, notiType: string) => {
         try {
-            const response = await markAsRead(userInfo!.id.toString(), notiId, sessionToken);
+            await markAsRead(userInfo!.id.toString(), notiId, sessionToken);
 
-            if (response) {
-                console.log(response);
-            }
+            if (["CANH_BAO_SAN_PHAM", "DUOI_DINH_MUC", "VUOT_DINH_MUC", "HET_HAN", "GAN_HET_HAN"].includes(notiType))
+                router.push("/inventory-check");
+            else if (["YEU_CAU_DUYET_DON_NHAP", "NHAP_PHIEU_NHAP_VAO_HE_THONG"].includes(notiType))
+                router.push("/inbound/list");
+            else if (["YEU_CAU_DUYET_DON_XUAT", "NHAP_PHIEU_XUAT_VAO_HE_THONG"].includes(notiType))
+                router.push("/outbound/list");
+            else if (["YEU_CAU_DUYET_DON_KIEM", "NHAP_PHIEU_KIEM_VAO_HE_THONG"].includes(notiType))
+                router.push("/inventory-check-note/list");
+            else if (notiType === "YEU_CAU_DANG_KY_TAI_KHOAN") router.push("/users/request");
+            else if (notiType === "GIA_SAN_PHAM_THAY_DOI") router.push("/products/list");
         } catch (error: any) {
             console.log(error);
         }
@@ -138,12 +148,10 @@ const DropdownNotification = () => {
                                 <li key={noti.id}>
                                     <Link
                                         className={`flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 ${noti.read === false ? "bg-gray hover:bg-strokedark/20" : ""}`}
-                                        href={
-                                            noti.notification.notiType === "NHAP_PHIEU_VAO_HE_THONG"
-                                                ? "/inventory-check"
-                                                : "#"
+                                        href="#"
+                                        onClick={() =>
+                                            handleClickNoti(noti.notification.id.toString(), noti.notification.notiType)
                                         }
-                                        onClick={() => handleClickNoti(noti.notification.id.toString())}
                                     >
                                         <p className="text-sm">
                                             <span className="text-black dark:text-white">
@@ -152,7 +160,7 @@ const DropdownNotification = () => {
                                             {noti.notification.message}
                                         </p>
 
-                                        <p className="text-xs">12 May, 2025</p>
+                                        <p className="text-xs">{formatDateTimeDDMMYYYYHHMM(noti.createdDate)}</p>
                                     </Link>
                                 </li>
                             ))}
