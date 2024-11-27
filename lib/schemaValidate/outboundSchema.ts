@@ -15,7 +15,7 @@ const BatchProduct = z
         outboundBatchDetails: z.array(z.object({})).optional(),
         inventoryCheckDetails: z.array(z.object({})).optional(),
         quantity: z.number().optional(),
-        preQuantity: z.number().min(0).optional(),
+        preQuantity: z.number().min(1).optional(),
     })
     .strict();
 
@@ -35,7 +35,7 @@ const ProductOutbound = z
         baseUnit: z.object({ id: z.number(), unitName: z.string() }).optional(),
         targetUnit: z.object({ id: z.number().optional(), unitName: z.string().trim().optional() }).optional(),
         batches: z.array(BatchProduct).optional(),
-        batch: BatchProduct,
+        batch: BatchProduct.optional(),
         productUnits: z
             .array(z.object({ id: z.number(), unitName: z.string(), productUnitQuantity: z.number() }))
             .optional(),
@@ -50,7 +50,7 @@ const ProductOutbound = z
         productQuantity: z.number().optional(),
         taxRate: z.number().optional(),
         batchQuantity: z.number().min(0).optional(),
-        preQuantity: z.number().min(0).optional(),
+        preQuantity: z.number().min(1).optional(),
     })
     .strict();
 

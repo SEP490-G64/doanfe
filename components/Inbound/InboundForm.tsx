@@ -401,7 +401,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
-        inbound.totalPrice = totalPrice.toString();
+        inbound.totalPrice = totalPrice?.toString() || "0";
         console.log(inbound);
         setLoading(true);
         try {

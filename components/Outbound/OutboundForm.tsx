@@ -342,7 +342,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
-        outbound.totalPrice = totalPrice.toString();
+        outbound.totalPrice = totalPrice?.toString() || "0";
         console.log(outbound);
         setLoading(true);
         try {
