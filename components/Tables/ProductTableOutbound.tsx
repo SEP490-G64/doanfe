@@ -10,6 +10,9 @@ import { ProductOutboundType } from "@/lib/schemaValidate/outboundSchema";
 interface ProductOutboundError {
     index: number;
     message: string;
+    preQuantity: string;
+    batches: string;
+    outboundQuantity: string;
 }
 
 const ProductsTableOutbound = ({
@@ -233,21 +236,8 @@ const ProductsTableOutbound = ({
 
             // Danh sách lỗi mới
             const newErrors = [];
-
-            // Kiểm tra nếu ô nhập là trống
-            if (newQuantity === "" || newQuantity === undefined || newQuantity === 0) {
-                newErrors.push({ index, message: "Số lượng xuất không được để trống và phải > 0." });
-            }
-
-            // Kiểm tra nếu số lượng nhập là số âm
-            else if (parsedQuantity < 0) {
-                newErrors.push({ index, message: "Số lượng xuất không thể là số âm." });
-            }
-
             // Kiểm tra nếu số lượng xuất vượt quá tồn kho
-            else if (hasBatches && parsedQuantity > currentBatchQuantity) {
-                newErrors.push({ index, message: "Số lượng xuất phải <= số lượng tồn kho trong lô." });
-            } else if (!hasBatches && parsedQuantity > currentProductQuantity) {
+            if (!hasBatches && parsedQuantity > currentProductQuantity) {
                 newErrors.push({ index, message: "Số lượng xuất phải <= số lượng tồn kho sản phẩm." });
             }
 
@@ -330,8 +320,7 @@ const ProductsTableOutbound = ({
                         <th
                             className="p-4 text-center font-medium text-black"
                             hidden={
-                                ["CHO_DUYET"].includes(outboundStatus as string) ||
-                                (["HOAN_THANH"].includes(outboundStatus as string) && outboundType === "BAN_HANG")
+                                ["CHO_DUYET", "HOAN_THANH"].includes(outboundStatus as string)
                             }
                         >
                             Số lượng tồn kho
@@ -342,11 +331,19 @@ const ProductsTableOutbound = ({
                         <th
                             className="p-4 text-center font-medium text-black"
                             hidden={
-                                !["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(outboundStatus as string) &&
-                                outboundType !== "BAN_HANG"
+                                !["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(outboundStatus as string) ||
+                                outboundType === "BAN_HANG"
                             }
                         >
                             Số lượng thực tế
+                        </th>
+                        <th
+                            className="p-4 text-center font-medium text-black"
+                            hidden={
+                                outboundType !== "BAN_HANG"
+                            }
+                        >
+                            Số lượng bán
                         </th>
                         <th className="p-4 text-center font-medium text-black">Đơn giá</th>
                         <th className="p-4 text-center font-medium text-black" hidden={!taxable}>
@@ -384,36 +381,41 @@ const ProductsTableOutbound = ({
                             {outboundType !== "BAN_HANG" && (product?.batches || product?.product?.batches) && (
                                 <td className="border-b border-[#eee] px-4 py-5 text-center text-black-2">
                                     {product?.batches?.length > 0 || product?.product?.batches?.length > 0 ? (
-                                        <select
-                                            disabled={!active || outboundStatus === "KIEM_HANG"}
-                                            value={product?.batch?.batchCode || ""}
-                                            onChange={(e) => handleChangeBatchCode(e, key)}
-                                            className="w-full min-w-[120px] appearance-none rounded border border-strokedark bg-transparent px-3 py-2 outline-none transition"
-                                        >
-                                            <option value="" className="text-black dark:text-white">
-                                                Chọn lô
-                                            </option>
-                                            {(product?.batches || []).map((batch) => (
-                                                <option
-                                                    key={batch.id}
-                                                    value={batch.batchCode}
-                                                    className="text-black dark:text-white"
-                                                >
-                                                    {batch.batchCode}
+                                        <>
+                                            <select
+                                                disabled={!active || outboundStatus === "KIEM_HANG"}
+                                                value={product?.batch?.batchCode || ""}
+                                                onChange={(e) => handleChangeBatchCode(e, key)}
+                                                className="w-full min-w-[120px] appearance-none rounded border border-strokedark bg-transparent px-3 py-2 outline-none transition"
+                                            >
+                                                <option value="" className="text-black dark:text-white">
+                                                    Chọn lô
                                                 </option>
-                                            ))}
-                                            {(product?.product?.batches || []).map((batch) => (
-                                                <option
-                                                    key={batch.id}
-                                                    value={batch.batchCode}
-                                                    className="text-black dark:text-white"
-                                                >
-                                                    {batch.batchCode}
-                                                </option>
-                                            ))}
-                                        </select>
+                                                {(product?.batches || []).map((batch) => (
+                                                    <option
+                                                        key={batch.id}
+                                                        value={batch.batchCode}
+                                                        className="text-black dark:text-white"
+                                                    >
+                                                        {batch.batchCode}
+                                                    </option>
+                                                ))}
+                                                {(product?.product?.batches || []).map((batch) => (
+                                                    <option
+                                                        key={batch.id}
+                                                        value={batch.batchCode}
+                                                        className="text-black dark:text-white"
+                                                    >
+                                                        {batch.batchCode}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {errors[key]?.batches && (
+                                                <p className="mt-1 text-xs text-danger">{errors[key]?.batches?.message}</p>
+                                            )}
+                                        </>
                                     ) : (
-                                        <span className="text-gray-500 text-sm">Sản phẩm không có lô</span>
+                                        <span className="text-gray-500">Sản phẩm không có lô</span>
                                     )}
                                     {batchErrors.includes(key) && !product?.batch?.batchCode && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">Chưa chọn mã lô</span>
@@ -473,8 +475,7 @@ const ProductsTableOutbound = ({
                             <td
                                 className="border-b border-[#eee] px-4 py-5 text-center"
                                 hidden={
-                                    ["CHO_DUYET"].includes(outboundStatus as string) ||
-                                    (["HOAN_THANH"].includes(outboundStatus as string) && outboundType === "BAN_HANG")
+                                    ["CHO_DUYET", "HOAN_THANH"].includes(outboundStatus as string)
                                 }
                             >
                                 {product?.batches?.length === 0 || product?.product?.batches?.length === 0 ? (
@@ -502,7 +503,7 @@ const ProductsTableOutbound = ({
                             >
                                 <input
                                     type="number"
-                                    value={product?.preQuantity || ""}
+                                    value={product?.preQuantity || 0}
                                     disabled={!active || outboundStatus === "KIEM_HANG"}
                                     onChange={(e) => handlePreQuantity(e, key)}
                                     className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -513,6 +514,9 @@ const ProductsTableOutbound = ({
                                             {validationErrors.find((error) => error.index === key)?.message}
                                         </span>
                                     )}
+                                {errors[key]?.preQuantity && (
+                                    <p className="mt-1 text-xs text-danger">{errors[key]?.preQuantity?.message}</p>
+                                )}
                             </td>
 
                             <td
@@ -525,7 +529,7 @@ const ProductsTableOutbound = ({
                             >
                                 <input
                                     type="number"
-                                    value={product?.outboundQuantity || "0"}
+                                    value={product?.outboundQuantity}
                                     disabled={!active}
                                     onChange={(e) => handleChangeQuantity(e, key)}
                                     className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -535,28 +539,31 @@ const ProductsTableOutbound = ({
                                         {validationErrors.find((error) => error.index === key)?.message}
                                     </span>
                                 )}
+                                {errors[key]?.outboundQuantity && (
+                                    <p className="mt-1 text-xs text-danger">{errors[key]?.outboundQuantity?.message}</p>
+                                )}
                             </td>
 
                             {outboundType !== "BAN_HANG" ? (
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                        {product?.batches?.length === 0 || product?.product?.batches?.length === 0 ? (
-                                            // Hiển thị productQuantity khi không có batches
-                                            <input
-                                                type="number"
-                                                value={product?.inboundPrice || 0}
-                                                disabled
-                                                className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                            />
-                                        ) : (
-                                            // Hiển thị batchQuantity nếu có, nếu không thì 0
-                                            <input
-                                                type="number"
-                                                value={product?.price || 0}
-                                                disabled
-                                                className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                            />
-                                        )}
-                                    </td>
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    {product?.batches?.length === 0 || product?.product?.batches?.length === 0 ? (
+                                        // Hiển thị productQuantity khi không có batches
+                                        <input
+                                            type="number"
+                                            value={product?.inboundPrice || 0}
+                                            disabled
+                                            className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                        />
+                                    ) : (
+                                        // Hiển thị batchQuantity nếu có, nếu không thì 0
+                                        <input
+                                            type="number"
+                                            value={product?.price || 0}
+                                            disabled
+                                            className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                        />
+                                    )}
+                                </td>
                             ) : (
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <input
@@ -610,8 +617,8 @@ const ProductsTableOutbound = ({
                         </tr>
                     ))}
                     <tr>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                        <td className="border-b border-[#eee] px-4 py-5 text-center" hidden={["HOAN_THANH"].includes(outboundStatus as string) && outboundType != "BAN_HANG"}></td>
+                        <td className="border-b border-[#eee] px-4 py-5 text-center" hidden={["HOAN_THANH"].includes(outboundStatus as string) && outboundType != "BAN_HANG"}></td>
                         <td
                             className="border-b border-[#eee] px-4 py-5 text-center"
                             hidden={outboundType === "BAN_HANG"}

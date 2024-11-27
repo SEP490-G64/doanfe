@@ -821,6 +821,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                         className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                         type="submit"
                                         onClick={() => {
+                                            setValue("status", "KIEM_HANG");
                                             setAction("HOAN_THANH");
                                             console.log(errors);
                                         }}
@@ -832,6 +833,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     <button
                                         className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                         type="submit"
+                                        onClick={setValue("status", "KIEM_HANG")}
                                     >
                                         Cập nhật và xuất hàng
                                     </button>

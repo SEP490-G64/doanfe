@@ -262,7 +262,7 @@ function HeaderTaskbar({
                                         và tải lên lại file để nhập dữ liệu.
                                     </p>
                                     <a
-                                        href="" // sửa sau
+                                        href="https://hrm-be-bucket.sgp1.digitaloceanspaces.com/documents/ProductTemplate.xlsx"
                                         download
                                         className="mt-3 inline-flex items-center font-medium text-blue-500 hover:text-blue-700"
                                     >

@@ -16,8 +16,13 @@ const BatchProduct = z
         inventoryCheckDetails: z.array(z.object({})).optional(),
         quantity: z.number().optional(),
         preQuantity: z.number().min(1).optional(),
+        batchQuantity: z.number().min(0).optional(),
     })
-    .strict();
+    .strict()
+    .refine((data) => !data.preQuantity || data.preQuantity <= data.batchQuantity, {
+        message: "preQuantity phải nhỏ hơn hoặc bằng batchQuantity",
+        path: ["preQuantity"], // Gán lỗi này cho trường `preQuantity`
+    });
 
 const ProductOutbound = z
     .object({
@@ -50,7 +55,7 @@ const ProductOutbound = z
         productQuantity: z.number().optional(),
         taxRate: z.number().optional(),
         batchQuantity: z.number().min(0).optional(),
-        preQuantity: z.number().min(1).optional(),
+        preQuantity: z.number().min(1, "Số lượng xuất không được nhỏ hơn 1").optional(),
     })
     .strict();
 
@@ -75,9 +80,35 @@ export const OutboundBody = z
         isApproved: z.boolean().optional(),
         taxable: z.boolean().optional(),
         totalPrice: z.string().optional(),
+        status: z.string().optional(),
     })
     .strict()
     .superRefine((data, ctx) => {
+        // Kiểm tra từng ProductOutbound dựa trên status
+        if (data.status === "KIEM_HANG") {
+            data.outboundProductDetails.forEach((product, index) => {
+                if (product.preQuantity && (product.outboundQuantity === undefined || product.outboundQuantity < 0)) {
+                    ctx.addIssue({
+                        path: ["outboundProductDetails", index, "outboundQuantity"], // Gán lỗi vào field cụ thể
+                        code: z.ZodIssueCode.custom,
+                        message: "Số lượng xuất phải >= 0",
+                    });
+                }
+            });
+        }
+
+        if (data.outboundType !== "BAN_HANG") {
+            data.outboundProductDetails.forEach((product, index) => {
+                if (product.preQuantity! < 1) {
+                    ctx.addIssue({
+                        path: ["outboundProductDetails", index, "preQuantity"], // Gán lỗi vào field cụ thể
+                        code: z.ZodIssueCode.custom,
+                        message: "Số lượng xuất phải >= 1",
+                    });
+                }
+            });
+        }
+
         // Nếu outboundType là TRA_HANG thì supplier.id là bắt buộc
         if (data.outboundType === "TRA_HANG" && !data.supplier?.id) {
             ctx.addIssue({
