@@ -84,8 +84,12 @@ export const submitDraft = async (outboundDraft: OutboundBodyType, token: string
             headers: { Authorization: `Bearer ${token}` },
         });
 
+        if (res.errors) {
+            toast.error(res.errors[0]);
+            return;
+        }
+
         if (res.data) {
-            toast.success("Lưu phiếu xuất thành công");
             return res;
         }
     } catch (error: any) {
@@ -103,8 +107,13 @@ export const submitDraftForSell = async (outboundDraft: OutboundBodyType, token:
             headers: { Authorization: `Bearer ${token}` },
         });
 
+        if (res.errors) {
+            toast.error(res.errors[0]);
+            return;
+        }
+
         if (res.data) {
-            toast.success("Lưu phiếu xuất thành công");
+            toast.success("Xuất bán thành công");
             return res;
         }
     } catch (error: any) {
@@ -128,7 +137,6 @@ export const changeOutboundStatus = async (id: string, status: string, token: st
         );
 
         if (res.status === "SUCCESS") {
-            toast.success("Thay đổi trạng thái phiếu xuất thành công");
             return res;
         }
     } catch (error: any) {
@@ -171,8 +179,12 @@ export const submitOutbound = async (outboundDraft: OutboundBodyType, token: str
             headers: { Authorization: `Bearer ${token}` },
         });
 
+        if (res.errors) {
+            toast.error(res.errors[0]);
+            return;
+        }
+
         if (res.status === "SUCCESS") {
-            toast.success("Xuất hàng thành công");
             return res;
         }
     } catch (error: any) {

@@ -9,12 +9,13 @@ const BatchProduct = z
         outboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
-        outboundBatchQuantity: z.number().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
+        outboundBatchQuantity: z.number().optional(),
         outboundDetails: z.array(z.object({})).optional(),
         branchBatches: z.array(z.object({})).optional(),
         outboundBatchDetails: z.array(z.object({})).optional(),
         inventoryCheckDetails: z.array(z.object({})).optional(),
         quantity: z.number().optional(),
+        preQuantity: z.number().min(1).optional(),
     })
     .strict();
 
@@ -28,25 +29,28 @@ const ProductOutbound = z
             productCode: z.string().trim().optional(),
             registrationCode: z.string().trim().optional(),
             productName: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm").max(100, "Giới hạn 100 kí tự"),
+            batches: z.array(BatchProduct).optional(),
         }),
         productBaseUnit: z.object({ id: z.number(), unitName: z.string() }),
         baseUnit: z.object({ id: z.number(), unitName: z.string() }).optional(),
         targetUnit: z.object({ id: z.number().optional(), unitName: z.string().trim().optional() }).optional(),
         batches: z.array(BatchProduct).optional(),
-        batch: BatchProduct,
-        productUnits: z.array(z.object({ id: z.number(), unitName: z.string() })).optional(),
+        batch: BatchProduct.optional(),
+        productUnits: z
+            .array(z.object({ id: z.number(), unitName: z.string(), productUnitQuantity: z.number() }))
+            .optional(),
         price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         sellPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         outboundQuantity: z
             .number()
-            .min(1, "Số lượng yêu cầu không thể nhỏ hơn 1")
+            .min(0, "Số lượng yêu cầu không thể nhỏ hơn 0")
             .max(10000, "Số lượng yêu cầu không thể lớn hơn 10,000")
-            .optional() // Make the field optional
-            .refine((value) => value !== undefined && value !== null && value !== 0, {
-                message: "Số lượng không được bỏ trống", // Thông báo tùy chỉnh khi không điền giá trị
-            }),
+            .optional(), // Make the field optional
         productQuantity: z.number().optional(),
+        taxRate: z.number().optional(),
+        batchQuantity: z.number().min(0).optional(),
+        preQuantity: z.number().min(1).optional(),
     })
     .strict();
 
@@ -70,6 +74,7 @@ export const OutboundBody = z
         approvedBy: z.object({ id: z.number().optional() }).optional(),
         isApproved: z.boolean().optional(),
         taxable: z.boolean().optional(),
+        totalPrice: z.string().optional(),
     })
     .strict()
     .superRefine((data, ctx) => {
