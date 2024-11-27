@@ -48,8 +48,6 @@ import { ProductInfor } from "@/types/inbound";
 import { getStaffBranches } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
 import Unauthorized from "@/components/common/Unauthorized";
-import SwitcherApprove from "@/components/Switchers/SwitcherApprove";
-import SwitcherTaxable from "@/components/Switchers/SwitcherTaxable";
 
 const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" | "create"; inboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -63,6 +61,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const [approver, setApprover] = useState<{ firstName: string; lastName: string } | undefined>();
     const [branch, setBranch] = useState<{ id: number; branchName: string } | undefined>();
     const [inboundStatus, setInboundStatus] = useState<string | undefined>();
+    const [approve, setIsApprove] = useState<boolean | undefined>();
     const [suppliers, setSuppliers] = useState([]);
     const [branches, setBranches] = useState([]);
     const [productOpts, setProductOpts] = useState<ProductInfor[]>([]);
@@ -140,7 +139,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 id: userInfo?.branch?.id ? Number(userInfo?.branch?.id) : undefined,
             },
             approvedBy: undefined,
-            isApproved: false,
+            isApproved: undefined,
             taxable: false,
             productInbounds: [],
             totalPrice: undefined,
@@ -315,6 +314,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 setInboundType(response.data.inboundType);
                 setSelectedSupplier(response.data.supplier);
                 setSelectedFromBranch(response.data.fromBranch);
+                setIsApprove(response.data.isApproved);
 
                 if (inboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.toBranch.id);
 
@@ -401,7 +401,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
-        inbound.totalPrice = totalPrice.toString();
+        inbound.totalPrice = totalPrice?.toString() || "0";
         console.log(inbound);
         setLoading(true);
         try {
@@ -415,9 +415,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                         handleOpenModal(action);
                         return;
                     }
-                    else {
-                        toast.success("Lưu đơn và nhập hàng thành công!")
-                    }
+                    toast.success("Lưu đơn và nhập hàng thành công!")
                     router.push("/inbound/list");
                     router.refresh();
                 } else {
@@ -435,9 +433,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                     handleOpenModal(action);
                     return;
                 }
-                else {
-                    toast.success("Lưu đơn nhập hàng thành công!")
-                }
+                toast.success("Lưu đơn nhập hàng thành công!")
                 router.push("/inbound/list");
                 router.refresh();
             }
@@ -503,12 +499,28 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                         Trạng thái duyệt:
                                     </label>
-                                    <SwitcherApprove
-                                        register={{ ...register("isApproved") }}
-                                        watch={watch}
-                                        setValue={setValue}
-                                        disabled
-                                    />
+                                    {(() => {
+                                        switch (approve) {
+                                            case false:
+                                                return (
+                                                    <p className="inline-flex rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger">
+                                                        Đơn bị từ chối
+                                                    </p>
+                                                );
+                                            case true:
+                                                return (
+                                                    <p className="inline-flex rounded bg-success/10 px-3 py-1 text-sm font-medium text-success">
+                                                        Đơn đã được duyệt
+                                                    </p>
+                                                );
+                                            default:
+                                                return (
+                                                    <p className="inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning">
+                                                        Đơn chưa được duyệt
+                                                    </p>
+                                                );
+                                        }
+                                    })()}
                                 </div>
                             </div>
                         </div>
@@ -721,11 +733,13 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     <label className="mr-3 text-sm font-medium text-black dark:text-white">
                                         Có tính thuế nhập hàng:{" "}
                                     </label>
-                                    <SwitcherTaxable
-                                        register={{ ...register("taxable") }}
-                                        watch={watch}
-                                        setValue={setValue}
-                                        disabled={viewMode === "details" || inboundStatus === "KIEM_HANG"}
+                                    <input
+                                        type="checkbox"
+                                        {...register("taxable")} // Kế thừa đăng ký từ React Hook Form
+                                        checked={watch("taxable")} // Đồng bộ hóa với giá trị từ React Hook Form
+                                        onChange={(e) => setValue("taxable", e.target.checked)} // Cập nhật giá trị
+                                        disabled={viewMode === "details" || inboundStatus === "KIEM_HANG"} // Vô hiệu hóa theo điều kiện
+                                        className="border-gray-300 rounded text-primary focus:ring-primary disabled:cursor-not-allowed"
                                     />
                                 </div>
 
@@ -1106,35 +1120,43 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     })()}
                                 </ModalBody>
                                 <ModalFooter>
-                                    <Button color="default" variant="light" onPress={async () => {
-                                        switch (action) {
-                                            case "CHO_DUYET":
-                                                toast.warning("Hủy gửi yêu cầu duyệt đơn!");
-                                                break;
-                                            case "BỎ_DUYỆT":
-                                                toast.warning("Bỏ hủy yêu cầu duyệt đơn!");
-                                                break;
-                                            case "DUYỆT":
-                                                toast.warning("Bỏ duyệt đơn nhập hàng!");
-                                                break;
-                                            case "TỪ_CHỐI":
-                                                toast.warning("Từ chối duyệt đơn nhập hàng!");
-                                                break;
-                                            case "KIỂM":
-                                                toast.warning("Hủy chuyển đơn nhập hàng sang trạng thái kiểm hàng thành công!");
-                                                break;
-                                            case "HOAN_THANH":
-                                                toast.warning("Lưu đơn, nhập hàng thành công nhưng xác nhận đơn hoàn thành thất bại!");
-                                                router.push(`/inbound/list`);
-                                                break;
-                                            default:
-                                                toast.error("Khởi tạo đơn nhập hàng thất bại!");
-                                                router.push(`/inbound/list`);
-                                                break;
-                                        }
-                                        handleOpenModal("");
-                                        onClose(); // Đóng modal
-                                    }}>
+                                    <Button
+                                        color="default"
+                                        variant="light"
+                                        onPress={async () => {
+                                            switch (action) {
+                                                case "CHO_DUYET":
+                                                    toast.warning("Hủy gửi yêu cầu duyệt đơn!");
+                                                    break;
+                                                case "BỎ_DUYỆT":
+                                                    toast.warning("Bỏ hủy yêu cầu duyệt đơn!");
+                                                    break;
+                                                case "DUYỆT":
+                                                    toast.warning("Bỏ duyệt đơn nhập hàng!");
+                                                    break;
+                                                case "TỪ_CHỐI":
+                                                    toast.warning("Từ chối duyệt đơn nhập hàng!");
+                                                    break;
+                                                case "KIỂM":
+                                                    toast.warning(
+                                                        "Hủy chuyển đơn nhập hàng sang trạng thái kiểm hàng thành công!"
+                                                    );
+                                                    break;
+                                                case "HOAN_THANH":
+                                                    toast.warning(
+                                                        "Lưu đơn, nhập hàng thành công nhưng xác nhận đơn hoàn thành thất bại!"
+                                                    );
+                                                    router.push(`/inbound/list`);
+                                                    break;
+                                                default:
+                                                    toast.error("Khởi tạo đơn nhập hàng thất bại!");
+                                                    router.push(`/inbound/list`);
+                                                    break;
+                                            }
+                                            handleOpenModal("");
+                                            onClose(); // Đóng modal
+                                        }}
+                                    >
                                         Không
                                     </Button>
                                     <Button

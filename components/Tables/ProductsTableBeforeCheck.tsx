@@ -23,7 +23,7 @@ const ProductsTableBeforeCheck = ({
     active: boolean,
     setProducts: any,
     errors: ProductInboundError[],
-    taxable: boolean
+    taxable: boolean | undefined
 }) => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [removedItemIndex, setRemovedItemIndex] = useState<number>(-1);
@@ -145,7 +145,7 @@ const ProductsTableBeforeCheck = ({
                                 <div className="flex items-center justify-center gap-1">
                                     <input
                                         type="text"
-                                        defaultValue={product.taxRate}
+                                        defaultValue={taxable ? product.taxRate || "0" : "0"}
                                         onChange={(e) => handleChangeTaxRate(e, key)}
                                         disabled
                                         className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
