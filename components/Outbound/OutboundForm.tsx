@@ -45,7 +45,6 @@ import {
 } from "@/services/outboundServices";
 import SelectGroupTwo from "../SelectGroup/SelectGroupTwo";
 import ProductsTableOutbound from "../Tables/ProductTableOutbound";
-import SwitcherApprove from "@/components/Switchers/SwitcherApprove";
 
 const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update" | "create"; outboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -65,6 +64,8 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     const [product, setProduct] = useState<ProductInfor>();
     const [action, setAction] = useState<string>("");
     const [approver, setApprover] = useState<{ firstName: string; lastName: string } | undefined>();
+    const [totalPrice, setTotalPrice] = useState<number>(0);
+    const [approve, setIsApprove] = useState<boolean | undefined>();
 
     const renderOutboundStatus = useCallback((status: string | undefined) => {
         if (!status) return;
@@ -132,8 +133,14 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             isApproved: false,
             taxable: false,
             outboundProductDetails: [],
+            totalPrice: undefined
         },
     });
+
+    // Hàm để nhận giá trị totalPrice từ ProductsTableAfterCheck
+    const handleTotalPriceChange = (newTotalPrice: number) => {
+        setTotalPrice(newTotalPrice);  // Cập nhật giá trị totalPrice
+    };
 
     const products = watch("outboundProductDetails");
     const selectedSupId = watch("supplier.id");
@@ -142,7 +149,9 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     const handleOpenModal = (action: string) => {
         setAction(action);
-        onOpen();
+        if (action !== "") {
+            onOpen();
+        }
     };
 
     // Debounced fetch options
@@ -197,6 +206,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                 setUser(response.data.createdBy);
                 setBranch(response.data.fromBranch);
                 setOutboundStatus(response.data.status);
+                setIsApprove(response.data.isApproved);
 
                 if (outboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.fromBranch.id);
             }
@@ -237,8 +247,10 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                 setSelectedSupplier(response.data.supplier);
                 setSelectedToBranch(response.data.toBranch);
                 setApprover(response.data.approvedBy);
+                setIsApprove(response.data.isApproved);
 
-                if (outboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.fromBranch.id);
+                if (outboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.fromBranch?.id);
+
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -330,6 +342,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
         }
+        outbound.totalPrice = totalPrice.toString();
         console.log(outbound);
         setLoading(true);
         try {
@@ -347,7 +360,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                         handleOpenModal(action);
                         return;
                     }
-
+                    toast.success("Lưu đơn và xuất hàng thành công!");
                     router.push("/outbound/list");
                     router.refresh();
                 } else {
@@ -362,11 +375,15 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             else response = await submitDraftForSell(outbound, sessionToken);
 
             if (response?.status === "SUCCESS") {
+                if (outboundType !== "BAN_HANG") await changeOutboundStatus(watch("outboundId")!.toString(), "BAN_NHAP", sessionToken);
+                else await changeOutboundStatus(watch("outboundId")!.toString(), "HOAN_THANH", sessionToken);
+
                 if (action === "CHO_DUYET") {
                     handleOpenModal(action);
                     return;
                 }
 
+                toast.success("Lưu đơn và xuất hàng thành công!");
                 router.push("/outbound/list");
                 router.refresh();
             }
@@ -387,19 +404,26 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     const handleAction = async (action: string) => {
         try {
+            let res;
             switch (action) {
                 case "CHO_DUYET":
                     if (products.length === 0) {
                         toast.error("Vui lòng thêm sản phẩm vào danh sách trước khi yêu cầu duyệt đơn");
                         return;
                     }
-                    await changeOutboundStatus(watch("outboundId")!.toString(), "CHO_DUYET", sessionToken);
+                    res = await changeOutboundStatus(watch("outboundId")!.toString(), "CHO_DUYET", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Gửi yêu cầu duyệt đơn thành công!");
+                    }
                     router.push(`/outbound/list`);
                     break;
                 case "BỎ_DUYỆT":
-                    await changeOutboundStatus(watch("outboundId")!.toString(), "BAN_NHAP", sessionToken);
+                    res = await changeOutboundStatus(watch("outboundId")!.toString(), "BAN_NHAP", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Hủy yêu cầu duyệt đơn thành công!");
+                    }
                     router.push(`/outbound/update/` + watch("outboundId"));
-                    return;
+                    break;
                 case "DUYỆT":
                     await handleApprove(true);
                     router.push(`/outbound/list`);
@@ -409,17 +433,24 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                     router.push(`/outbound/list`);
                     break;
                 case "KIỂM":
-                    await changeOutboundStatus(watch("outboundId")!.toString(), "KIEM_HANG", sessionToken);
+                    res = await changeOutboundStatus(watch("outboundId")!.toString(), "KIEM_HANG", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Chuyển đơn xuất hàng sang trạng thái kiểm hàng thành công!");
+                    }
                     router.push(`/outbound/update/` + watch("outboundId"));
-                    return;
+                    break;
                 case "HOAN_THANH":
-                    await changeOutboundStatus(watch("outboundId")!.toString(), "HOAN_THANH", sessionToken);
+                    res = await changeOutboundStatus(watch("outboundId")!.toString(), "HOAN_THANH", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Lưu đơn, xuất hàng và xác nhận đơn hoàn thành thành công!");
+                    }
                     router.push(`/outbound/list`);
-                    return;
+                    break;
                 default:
                     await initOutbound();
                     break;
             }
+            setAction("");
         } catch (error) {
             console.error("Error handling action:", error);
             toast.error("Có lỗi xảy ra khi xử lý yêu cầu");
@@ -430,7 +461,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     return (
         <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate>
             {/* <!--  Thông tin người duyệt --> */}
-            {viewMode !== "create" && (
+            {viewMode !== "create" && outboundType != "BAN_HANG" && (
                 <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <div className="p-6.5">
                         <div className="flex flex-col gap-6 xl:flex-row">
@@ -451,12 +482,28 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                     Trạng thái duyệt:
                                 </label>
-                                <SwitcherApprove
-                                    register={{ ...register("isApproved") }}
-                                    watch={watch}
-                                    setValue={setValue}
-                                    disabled
-                                />
+                                {(() => {
+                                    switch (approve) {
+                                        case false:
+                                            return (
+                                                <p className="inline-flex rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger">
+                                                    Đơn bị từ chối
+                                                </p>
+                                            );
+                                        case true:
+                                            return (
+                                                <p className="inline-flex rounded bg-success/10 px-3 py-1 text-sm font-medium text-success">
+                                                    Đơn đã được duyệt
+                                                </p>
+                                            );
+                                        default:
+                                            return (
+                                                <p className="inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning">
+                                                    Đơn chưa được duyệt
+                                                </p>
+                                            );
+                                    }
+                                })()}
                             </div>
                         </div>
                     </div>
@@ -573,34 +620,6 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             </div>
                         </div>
                     )}
-                    {/* {outboundType === "BAN_HANG" && (
-                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                            <div className="w-full xl:w-1/2">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Xuất hàng cho <span className="text-meta-1">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Nhập nơi xuất hàng"
-                                    disabled={viewMode === "details"}
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                />
-                            </div>
-
-                            <div className="w-full xl:w-1/2">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Địa chỉ xuất hàng <span className="text-meta-1">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Nhập địa chỉ xuất hàng"
-                                    disabled={viewMode === "details"}
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                />
-                            </div>
-                        </div>
-                    )} */}
-
                     <div className="mb-4.5 flex flex-row gap-6">
                         <div className="w-1/2">
                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
@@ -617,10 +636,28 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             />
                         </div>
                         <div className="w-1/2">
-                            <label className="mb-3 mr-3 inline-flex text-sm font-medium text-black dark:text-white">
-                                Trạng thái đơn:
-                            </label>
-                            {renderOutboundStatus(outboundStatus)}
+                            {/* Dòng đầu tiên */}
+                            <div className="mb-4 flex items-center">
+                                <label className="mr-3 text-sm font-medium text-black dark:text-white">
+                                    Có tính thuế nhập hàng:{" "}
+                                </label>
+                                <input
+                                    type="checkbox"
+                                    {...register("taxable")} // Kế thừa đăng ký từ React Hook Form
+                                    checked={watch("taxable")} // Đồng bộ hóa với giá trị từ React Hook Form
+                                    onChange={(e) => setValue("taxable", e.target.checked)} // Cập nhật giá trị
+                                    disabled={viewMode === "details" || outboundStatus === "KIEM_HANG"} // Vô hiệu hóa theo điều kiện
+                                    className="border-gray-300 rounded text-primary focus:ring-primary disabled:cursor-not-allowed"
+                                />
+                            </div>
+
+                            {/* Dòng thứ hai */}
+                            <div className="flex items-center">
+                                <label className="mr-3 text-sm font-medium text-black dark:text-white">
+                                    Trạng thái đơn:
+                                </label>
+                                {renderOutboundStatus(outboundStatus)}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -696,11 +733,44 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                     )}
                     <ProductsTableOutbound
                         data={products || []}
-                        active={viewMode !== "details" && ["BAN_NHAP", "CHUA_LUU"].includes(outboundStatus as string)}
+                        active={
+                            viewMode !== "details" &&
+                            ["BAN_NHAP", "CHUA_LUU", "KIEM_HANG"].includes(outboundStatus as string)
+                        }
                         errors={errors.outboundProductDetails || []} // Truyền lỗi vào đây
                         outboundType={outboundType}
                         setProducts={setValue}
+                        outboundStatus={outboundStatus}
+                        taxable={watch("taxable")}
+                        totalPrice={watch("totalPrice")}
+                        onTotalPriceChange={handleTotalPriceChange}
                     />
+
+                    {viewMode === "details" &&
+                        ["CHO_DUYET"].includes(outboundStatus as string) &&
+                        userInfo?.roles[0].type === "STAFF" &&
+                        ["CHO_DUYET"].includes(outboundStatus as string) && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        onClick={() => handleOpenModal("BỎ_DUYỆT")}
+                                        type={"button"}
+                                    >
+                                        Hủy yêu cầu chờ duyệt
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        onClick={() => router.push(`/inbound/list`)}
+                                        type={"button"}
+                                    >
+                                        Quay lại danh sách
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                     {viewMode === "details" &&
                         ["BAN_NHAP"].includes(outboundStatus as string) &&
@@ -717,30 +787,57 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                         )}
 
                     {viewMode === "details" &&
-                        ["CHO_DUYET", "BAN_NHAP"].includes(outboundStatus as string) &&
-                        (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") && (
-                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                    onClick={(e) => handleChangeStatus(e, "KIEM_HANG")}
-                                >
-                                    Duyệt Đơn
-                                </button>
-                            </div>
+                        (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") &&
+                        ["CHO_DUYET"].includes(outboundStatus as string) && (
+                            <>
+                                <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                    <div className="w-1/2">
+                                        <button
+                                            className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                            type="button"
+                                            onClick={() => handleOpenModal("DUYỆT")}
+                                        >
+                                            Duyệt Đơn
+                                        </button>
+                                    </div>
+                                    <div className="w-1/2">
+                                        <button
+                                            className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                            type="button"
+                                            onClick={() => handleOpenModal("TỪ_CHỐI")}
+                                        >
+                                            Từ chối Đơn
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
                         )}
 
-                    {viewMode === "details" && ["KIEM_HANG"].includes(outboundStatus as string) && (
-                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                            <button
-                                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                type="submit"
-                                //onClick={(e) => handleSubmitOutbound(e)}
-                            >
-                                Xuất hàng
-                            </button>
-                        </div>
-                    )}
+                    {viewMode === "update" &&
+                        ["KIEM_HANG"].includes(outboundStatus as string) && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={() => {
+                                            setAction("HOAN_THANH");
+                                            console.log(errors);
+                                        }}
+                                    >
+                                        Cập nhật, xuất hàng và xác nhận đơn hoàn thành
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        type="submit"
+                                    >
+                                        Cập nhật và xuất hàng
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                     {viewMode === "create" && outboundType !== "BAN_HANG" && (
                         <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
@@ -750,6 +847,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     type="submit"
                                     onClick={() => {
                                         setAction("CHO_DUYET");
+                                        console.log(errors);
                                     }}
                                 >
                                     Tạo và gửi yêu cầu duyệt
@@ -759,6 +857,10 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 <button
                                     className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                     type="submit"
+                                    onClick={() => {
+                                        setAction("BAN_NHAP");
+                                        console.log(errors);
+                                    }}
                                 >
                                     Lưu đơn
                                 </button>
@@ -784,6 +886,10 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 <button
                                     className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                     type="submit"
+                                    onClick={() => {
+                                        setAction("BAN_NHAP");
+                                        console.log(errors);
+                                    }}
                                 >
                                     Cập nhật
                                 </button>
@@ -801,6 +907,19 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 Tạo đơn
                             </button>
                         </div>
+                    )}
+
+                    {viewMode === "details" && outboundStatus === "KIEM_HANG" && (
+                        <button
+                            className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                            type="submit"
+                            onClick={() => {
+                                handleOpenModal("HOAN_THANH");
+                                console.log(errors);
+                            }}
+                        >
+                            Xuất hàng
+                        </button>
                     )}
                 </div>
             </div>
@@ -869,8 +988,37 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     color="default"
                                     variant="light"
                                     onPress={async () => {
-                                        onClose(); // Đóng modal
+                                        switch (action) {
+                                            case "CHO_DUYET":
+                                                toast.warning("Hủy gửi yêu cầu duyệt đơn!");
+                                                break;
+                                            case "BỎ_DUYỆT":
+                                                toast.warning("Bỏ hủy yêu cầu duyệt đơn!");
+                                                break;
+                                            case "DUYỆT":
+                                                toast.warning("Bỏ duyệt đơn xuất hàng!");
+                                                break;
+                                            case "TỪ_CHỐI":
+                                                toast.warning("Từ chối duyệt đơn xuất hàng!");
+                                                break;
+                                            case "KIỂM":
+                                                toast.warning(
+                                                    "Hủy chuyển đơn xuất hàng sang trạng thái kiểm hàng thành công!"
+                                                );
+                                                break;
+                                            case "HOAN_THANH":
+                                                toast.warning(
+                                                    "Lưu đơn, xuất hàng thành công nhưng xác nhận đơn hoàn thành thất bại!"
+                                                );
+                                                router.push(`/outbound/list`);
+                                                break;
+                                            default:
+                                                toast.error("Khởi tạo đơn xuất hàng thất bại!");
+                                                router.push(`/outbound/list`);
+                                                break;
+                                        }
                                         setAction("");
+                                        onClose(); // Đóng modal
                                     }}
                                 >
                                     Không

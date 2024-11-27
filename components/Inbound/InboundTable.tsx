@@ -293,7 +293,7 @@ const InboundTable = () => {
                             </button>
                         </Tooltip>
                         <Tooltip color="success" content="Xuất file" hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inbound.status)}>
-                            <button hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inbound.status)} className="hover:text-success" onClick={() => handleExport(inbound.id.toString(), inbound.outboundCode)}>
+                            <button hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inbound.status)} className="hover:text-success" onClick={() => handleExport(inbound.id.toString(), inbound.inboundCode)}>
                                 <CiExport />
                             </button>
                         </Tooltip>

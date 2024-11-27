@@ -243,7 +243,22 @@ const OutboundTable = () => {
             case "outboundName":
                 return (
                     <p className="font-normal text-black dark:text-white">
-                        {outbound.supplier?.supplierName || outbound.toBranch?.branchName || "Khách mua"}
+                        {(() => {
+                            switch (outbound.outboundType) {
+                                case "CHUYEN_KHO_NOI_BO":
+                                    return <span>
+                                            {outbound.toBranch?.branchName}
+                                        </span>;
+                                case "TRA_HANG":
+                                    return <span>
+                                            {outbound.supplier?.supplierName}
+                                        </span>;
+                                case "BAN_HANG":
+                                    return <span>{"Khách mua"}</span>;
+                                default:
+                                    return <span></span>;
+                            }
+                        })()}
                     </p>
                 );
             case "outboundType":
@@ -295,7 +310,7 @@ const OutboundTable = () => {
                             <button
                                 className="hover:text-secondary"
                                 onClick={() => router.push(`/outbound/update/${outbound.id}`)}
-                                hidden={outbound.status === "CHO_DUYET" || outbound.status === "KIEM_HANG"}
+                                hidden={["CHO_DUYET", "HOAN_THANH"].includes(outbound.status)}
                             >
                                 <FaPencil />
                             </button>

@@ -27,6 +27,8 @@ export interface ProductInfor {
         id?: string;
         batchCode?: string;
         expireDate?: string;
+        inboundPrice: string;
+        quantity: string;
     }[];
     targetUnit?: {
         id?: string;
