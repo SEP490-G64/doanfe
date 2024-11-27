@@ -8,6 +8,7 @@ export const getAllUnit = async (token: string) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/unit-of-measurement`, {
             headers: { Authorization: `Bearer ${token}` },
+            params: { page: 0, size: 100 },
         });
 
         return res;

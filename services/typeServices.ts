@@ -6,7 +6,7 @@ import { DataSearch } from "@/types/type";
 
 export const getAllType = async (token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/staff/type`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/type/get-all`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
