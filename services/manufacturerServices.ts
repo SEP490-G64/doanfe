@@ -6,7 +6,7 @@ import { DataSearch } from "@/types/supplier";
 
 export const getAllManufacturer = async (token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/staff/manufacturer`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/manufacturer/get-all`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
