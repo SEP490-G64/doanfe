@@ -13,13 +13,13 @@ import {
     ModalHeader,
     useDisclosure,
     Select,
-    SelectItem,
+    SelectItem, Tooltip,
 } from "@nextui-org/react";
 
 import ReactSelect from "react-select";
 import { debounce } from "lodash";
 import { jwtDecode } from "jwt-decode";
-import { FaPlus } from "react-icons/fa6";
+import { FaFileImport, FaPencil, FaPlus } from "react-icons/fa6";
 import { TfiSupport } from "react-icons/tfi";
 import { AiOutlineShop } from "react-icons/ai";
 
@@ -31,7 +31,7 @@ import {
     approveInbound,
     changeInboundStatus,
     createInitInbound,
-    deleteInbound,
+    deleteInbound, exportInbound,
     getInboundById,
     submitDraft,
     submitInbound,
@@ -69,6 +69,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const [inboundType, setInboundType] = useState<"CHUYEN_KHO_NOI_BO" | "NHAP_TU_NHA_CUNG_CAP">("CHUYEN_KHO_NOI_BO");
     const [product, setProduct] = useState<ProductInfor>();
     const [totalPrice, setTotalPrice] = useState<number>(0);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const renderInboundStatus = useCallback((status: string | undefined) => {
         if (!status) return;
@@ -241,6 +242,9 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                     }
                     router.push(`/inbound/list`);
                     break;
+                case "EXPORT":
+                    handleDownload();
+                    break;
                 default:
                     await initInbound();
                     break;
@@ -400,6 +404,47 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
     const [selectedFromBranch, setSelectedFromBranch] = useState<Branch | undefined>();
 
+    const handleExport = async (id: string, code: string) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+
+        try {
+            const res = await exportInbound(id, sessionToken);
+
+            if (res && res instanceof Blob) {
+                // Tạo URL tạm thời từ Blob để preview
+                const url = window.URL.createObjectURL(res);
+
+                // Mở modal và hiển thị preview
+                setPreviewUrl(url);
+                handleOpenModal("EXPORT");
+
+                toast.success("Xem trước phiếu nhập hàng thành công");
+            } else {
+                toast.error("Dữ liệu không hợp lệ");
+            }
+        } catch (error) {
+            toast.error("Xem trước phiếu nhập hàng thất bại");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownload = () => {
+        if (previewUrl) {
+            const link = document.createElement('a');
+            link.href = previewUrl;
+            link.setAttribute('download', 'inbound-' + watch("inboundCode") + '.pdf');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success("Xuất phiếu nhập hàng thành công")
+        }
+    };
+
     useEffect(() => {
         if (selectedSupId) {
             const sup = suppliers.find((item: Supplier) => item.id.toString() === selectedSupId);
@@ -500,7 +545,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <div className="p-6.5">
                             <div className="flex flex-col gap-6 xl:flex-row">
-                                <div className="flex w-full items-center gap-2 xl:w-3/5">
+                                <div className="flex w-full items-center gap-2 xl:w-1/2">
                                     <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                         Người duyệt:
                                     </label>
@@ -513,7 +558,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     />
                                 </div>
 
-                                <div className="flex w-full items-center gap-2 xl:w-2/5">
+                                <div className="flex w-full items-center gap-2 xl:w-1/3">
                                     <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                         Trạng thái duyệt:
                                     </label>
@@ -539,6 +584,19 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                                 );
                                         }
                                     })()}
+                                </div>
+
+                                <div className="flex w-full items-center gap-2 xl:w-1/6">
+                                    <Button
+                                        hidden={
+                                            !["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inboundStatus as string)
+                                        }
+                                        icon={<FaFileImport />}
+                                        className="bg-green-500 text-white hover:bg-green-600 hover:text-white"
+                                        onClick={() => handleExport(inboundId as string, watch("inboundCode").toString())}
+                                    >
+                                        Xuất file
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -1106,6 +1164,15 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                                         </p>
                                                     </>
                                                 );
+                                            case "EXPORT":
+                                                return (
+                                                    <iframe
+                                                        src={previewUrl}
+                                                        width="100%"
+                                                        height="500px"
+                                                        title="Preview PDF"
+                                                    ></iframe>
+                                                );
                                             default:
                                                 return (
                                                     <>
@@ -1165,6 +1232,9 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                                         "Lưu đơn, nhập hàng thành công nhưng xác nhận đơn hoàn thành thất bại!"
                                                     );
                                                     router.push(`/inbound/list`);
+                                                    break;
+                                                case "EXPORT":
+                                                    toast.error("Hủy xuất phiếu!");
                                                     break;
                                                 default:
                                                     toast.error("Khởi tạo đơn nhập hàng thất bại!");

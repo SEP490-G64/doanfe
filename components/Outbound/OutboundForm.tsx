@@ -18,7 +18,7 @@ import {
 } from "@nextui-org/react";
 import { debounce } from "lodash";
 import ReactSelect from "react-select";
-import { FaPlus } from "react-icons/fa6";
+import { FaFileImport, FaPlus } from "react-icons/fa6";
 import { TfiSupport } from "react-icons/tfi";
 import { AiOutlineShop } from "react-icons/ai";
 
@@ -45,6 +45,7 @@ import {
 } from "@/services/outboundServices";
 import SelectGroupTwo from "../SelectGroup/SelectGroupTwo";
 import ProductsTableOutbound from "../Tables/ProductTableOutbound";
+import { exportOutbound } from "@/services/outboundServices";
 
 const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update" | "create"; outboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -66,6 +67,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     const [approver, setApprover] = useState<{ firstName: string; lastName: string } | undefined>();
     const [totalPrice, setTotalPrice] = useState<number>(0);
     const [approve, setIsApprove] = useState<boolean | undefined>();
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const renderOutboundStatus = useCallback((status: string | undefined) => {
         if (!status) return;
@@ -410,6 +412,47 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         }
     };
 
+    const handleExport = async (id: string, code: string) => {
+        if (loading) {
+            toast.warning("Hệ thống đang xử lý dữ liệu");
+            return;
+        }
+        setLoading(true);
+
+        try {
+            const res = await exportOutbound(id, sessionToken);
+
+            if (res && res instanceof Blob) {
+                // Tạo URL tạm thời từ Blob để preview
+                const url = window.URL.createObjectURL(res);
+
+                // Mở modal và hiển thị preview
+                setPreviewUrl(url);
+                handleOpenModal("EXPORT");
+
+                toast.success("Xem trước phiếu xuất hàng thành công");
+            } else {
+                toast.error("Dữ liệu không hợp lệ");
+            }
+        } catch (error) {
+            toast.error("Xem trước phiếu xuất hàng thất bại");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownload = () => {
+        if (previewUrl) {
+            const link = document.createElement('a');
+            link.href = previewUrl;
+            link.setAttribute('download', 'outbound-' + watch("outboundCode") + '.pdf');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success("Xuất phiếu xuất hàng thành công")
+        }
+    };
+
     const handleApprove = async (accept: boolean) => {
         const response = await approveOutbound(outboundId as string, accept, sessionToken);
         if (response.status === "SUCCESS") {
@@ -462,6 +505,9 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                     }
                     router.push(`/outbound/list`);
                     break;
+                case "EXPORT":
+                    handleDownload();
+                    break;
                 default:
                     await initOutbound();
                     break;
@@ -481,7 +527,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                 <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <div className="p-6.5">
                         <div className="flex flex-col gap-6 xl:flex-row">
-                            <div className="flex w-full items-center gap-2 xl:w-3/5">
+                            <div className="flex w-full items-center gap-2 xl:w-1/2">
                                 <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                     Người duyệt:
                                 </label>
@@ -494,7 +540,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 />
                             </div>
 
-                            <div className="flex w-full items-center gap-2 xl:w-2/5">
+                            <div className="flex w-full items-center gap-2 xl:w-1/3">
                                 <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                     Trạng thái duyệt:
                                 </label>
@@ -520,6 +566,21 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                             );
                                     }
                                 })()}
+                            </div>
+
+                            <div className="flex w-full items-center gap-2 xl:w-1/6">
+                                <Button
+                                    hidden={
+                                        !["HOAN_THANH"].includes(
+                                            outboundStatus as string
+                                        )
+                                    }
+                                    icon={<FaFileImport />}
+                                    className="bg-green-500 text-white hover:bg-green-600 hover:text-white"
+                                    onClick={() => handleExport(outboundId as string, watch("outboundCode").toString())}
+                                >
+                                    Xuất file
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -779,7 +840,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 <div className="w-1/2">
                                     <button
                                         className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                        onClick={() => router.push(`/inbound/list`)}
+                                        onClick={() => router.push(`/outbound/list`)}
                                         type={"button"}
                                     >
                                         Quay lại danh sách
@@ -829,33 +890,32 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             </>
                         )}
 
-                    {viewMode === "update" &&
-                        ["KIEM_HANG"].includes(outboundStatus as string) && (
-                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                                <div className="w-1/2">
-                                    <button
-                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                        type="submit"
-                                        onClick={() => {
-                                            setValue("status", "KIEM_HANG");
-                                            setAction("HOAN_THANH");
-                                            console.log(errors);
-                                        }}
-                                    >
-                                        Cập nhật, xuất hàng và xác nhận đơn hoàn thành
-                                    </button>
-                                </div>
-                                <div className="w-1/2">
-                                    <button
-                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                        type="submit"
-                                        onClick={setValue("status", "KIEM_HANG")}
-                                    >
-                                        Cập nhật và xuất hàng
-                                    </button>
-                                </div>
+                    {viewMode === "update" && ["KIEM_HANG"].includes(outboundStatus as string) && (
+                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                            <div className="w-1/2">
+                                <button
+                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                    type="submit"
+                                    onClick={() => {
+                                        setValue("status", "KIEM_HANG");
+                                        setAction("HOAN_THANH");
+                                        console.log(errors);
+                                    }}
+                                >
+                                    Cập nhật, xuất hàng và xác nhận đơn hoàn thành
+                                </button>
                             </div>
-                        )}
+                            <div className="w-1/2">
+                                <button
+                                    className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                    type="submit"
+                                    onClick={setValue("status", "KIEM_HANG")}
+                                >
+                                    Cập nhật và xuất hàng
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {viewMode === "create" && outboundType !== "BAN_HANG" && (
                         <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
@@ -971,6 +1031,15 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                                     </p>
                                                 </>
                                             );
+                                        case "EXPORT":
+                                            return (
+                                                <iframe
+                                                    src={previewUrl}
+                                                    width="100%"
+                                                    height="500px"
+                                                    title="Preview PDF"
+                                                ></iframe>
+                                            );
                                         default:
                                             return (
                                                 <>
@@ -1029,6 +1098,9 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                                     "Lưu đơn, xuất hàng thành công nhưng xác nhận đơn hoàn thành thất bại!"
                                                 );
                                                 router.push(`/outbound/list`);
+                                                break;
+                                            case "EXPORT":
+                                                toast.error("Hủy xuất phiếu!");
                                                 break;
                                             default:
                                                 toast.error("Khởi tạo đơn xuất hàng thất bại!");
