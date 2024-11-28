@@ -363,8 +363,7 @@ const ProductsTableInventoryCheck = ({
                                             data![indexProduct].countedQuantity -= changedQuantity;
                                             if (data![indexProduct].systemQuantity) {
                                                 data![indexProduct].difference =
-                                                    data![indexProduct].countedQuantity -
-                                                    data![indexProduct].systemQuantity;
+                                                    data![indexProduct].systemQuantity - data![indexProduct].countedQuantity;
                                             }
                                             setProducts("inventoryCheckProductDetails", data);
                                         }
