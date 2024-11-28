@@ -67,27 +67,27 @@ function HeaderTaskbar({
 
                 <div className="mt-2 flex gap-4 items-center justify-between w-full">
                     {/* Nhóm Produce */}
-                    <div className="flex flex-col w-1/2">
-                        <span className="font-semibold text-gray-700">Ngày sản xuất:</span>
-                        <div className="flex gap-2 mt-1 items-center">
-                            <span className="text-gray-600">Từ:</span>
-                            <InputDateOne
-                                dataSearch={dataSearch}
-                                setDataSearch={setDataSearch}
-                                dataKey="produceStartDate"
-                            />
-                            <span className="text-gray-600">Đến:</span>
-                            <InputDateOne
-                                dataSearch={dataSearch}
-                                setDataSearch={setDataSearch}
-                                dataKey="produceEndDate"
-                            />
-                        </div>
-                    </div>
+                    {/*<div className="flex flex-col w-1/2">*/}
+                    {/*    <span className="font-semibold text-gray-700">Ngày sản xuất:</span>*/}
+                    {/*    <div className="flex gap-2 mt-1 items-center">*/}
+                    {/*        <span className="text-gray-600">Từ:</span>*/}
+                    {/*        <InputDateOne*/}
+                    {/*            dataSearch={dataSearch}*/}
+                    {/*            setDataSearch={setDataSearch}*/}
+                    {/*            dataKey="produceStartDate"*/}
+                    {/*        />*/}
+                    {/*        <span className="text-gray-600">Đến:</span>*/}
+                    {/*        <InputDateOne*/}
+                    {/*            dataSearch={dataSearch}*/}
+                    {/*            setDataSearch={setDataSearch}*/}
+                    {/*            dataKey="produceEndDate"*/}
+                    {/*        />*/}
+                    {/*    </div>*/}
+                    {/*</div>*/}
 
                     {/* Nhóm Expire */}
-                    <div className="flex flex-col w-1/2">
-                        <span className="font-semibold text-gray-700">Ngày hết hạn:</span>
+                    <div className="flex flex-col w-full">
+                        {/*<span className="font-semibold text-gray-700">Ngày hết hạn:</span>*/}
                         <div className="flex gap-2 mt-1 items-center">
                             <span className="text-gray-600">Từ:</span>
                             <InputDateOne
@@ -105,14 +105,14 @@ function HeaderTaskbar({
                     </div>
                 </div>
             </div>
-            <div className="flex gap-2">
-                <Button
-                    label="Thêm mới"
-                    size="small"
-                    icon={<FaPlus />}
-                    onClick={() => router.push(`/products/batches/${productId}/create`)}
-                />
-            </div>
+            {/*<div className="flex gap-2">*/}
+            {/*    <Button*/}
+            {/*        label="Thêm mới"*/}
+            {/*        size="small"*/}
+            {/*        icon={<FaPlus />}*/}
+            {/*        onClick={() => router.push(`/products/batches/${productId}/create`)}*/}
+            {/*    />*/}
+            {/*</div>*/}
         </div>
     );
 }

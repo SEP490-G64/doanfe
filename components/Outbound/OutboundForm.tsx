@@ -224,36 +224,49 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         }
         setLoading(true);
         try {
-            const response = await getOutboundById(outboundId as string, sessionToken);
+            // Ưu tiên gọi getBranchOpts
+            const fetchBranchOpts = async () => {
+                const response = await getOutboundById(outboundId as string, sessionToken);
 
-            if (response.message === "200 OK") {
-                setValue("outboundId", response.data.id);
-                setValue("outboundCode", response.data.outboundCode);
-                setValue("outboundType", response.data.outboundType);
-                setValue("createdDate", response.data.createdDate);
-                setValue("toBranch.id", response.data.toBranch?.id);
-                setValue("fromBranch.id", response.data.fromBranch?.id);
-                setValue("note", response.data.note);
-                setValue("createdBy.id", response.data.createdBy?.id);
-                setValue("supplier.id", response.data.supplier?.id);
-                setValue("outboundProductDetails", response.data.outboundProductDetails);
-                setValue("approvedBy.id", response.data.approvedBy?.id);
-                setValue("isApproved", response.data.isApproved);
-                setValue("taxable", response.data.taxable);
-                setUser(response.data.createdBy);
-                setBranch(response.data.fromBranch);
-                setOutboundStatus(response.data.status);
-                setOutboundType(response.data.outboundType);
-                setSelectedSupplier(response.data.supplier);
-                setSelectedToBranch(response.data.toBranch);
-                setApprover(response.data.approvedBy);
-                setIsApprove(response.data.isApproved);
+                if (response.message === "200 OK") {
+                    if (response.data.outboundType === "CHUYEN_KHO_NOI_BO") {
+                        await getBranchOpts(response.data.fromBranch?.id); // Ưu tiên chạy
+                    }
+                    return response.data;
+                } else {
+                    router.push("/not-found");
+                    return null;
+                }
+            };
 
-                if (outboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.fromBranch?.id);
+            const outboundData = await fetchBranchOpts();
 
-            } else router.push("/not-found");
+            if (!outboundData) return;
+
+            // Set giá trị sau khi gọi xong getBranchOpts
+            setValue("outboundId", outboundData.id);
+            setValue("outboundCode", outboundData.outboundCode);
+            setValue("outboundType", outboundData.outboundType);
+            setValue("createdDate", outboundData.createdDate);
+            setValue("toBranch.id", outboundData.toBranch?.id);
+            setValue("fromBranch.id", outboundData.fromBranch?.id);
+            setValue("note", outboundData.note);
+            setValue("createdBy.id", outboundData.createdBy?.id);
+            setValue("supplier.id", outboundData.supplier?.id);
+            setValue("outboundProductDetails", outboundData.outboundProductDetails);
+            setValue("approvedBy.id", outboundData.approvedBy?.id);
+            setValue("isApproved", outboundData.isApproved);
+            setValue("taxable", outboundData.taxable);
+            setUser(outboundData.createdBy);
+            setBranch(outboundData.fromBranch);
+            setOutboundStatus(outboundData.status);
+            setOutboundType(outboundData.outboundType);
+            setSelectedSupplier(outboundData.supplier);
+            setSelectedToBranch(outboundData.toBranch);
+            setApprover(outboundData.approvedBy);
+            setIsApprove(outboundData.isApproved);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -302,13 +315,16 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     };
 
     useEffect(() => {
-        getSupplierOpts();
-        getBranchOpts("");
-        if (viewMode === "create") {
-            onOpenChange();
-        } else {
-            getInforOutbound();
-        }
+        const fetchData = async () => {
+            await getSupplierOpts();
+            if (viewMode === "create") {
+                onOpenChange();
+            } else {
+                await getInforOutbound();
+            }
+        };
+
+        fetchData();
     }, []);
 
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
@@ -821,6 +837,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                         className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                         type="submit"
                                         onClick={() => {
+                                            setValue("status", "KIEM_HANG");
                                             setAction("HOAN_THANH");
                                             console.log(errors);
                                         }}
@@ -832,6 +849,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     <button
                                         className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
                                         type="submit"
+                                        onClick={setValue("status", "KIEM_HANG")}
                                     >
                                         Cập nhật và xuất hàng
                                     </button>

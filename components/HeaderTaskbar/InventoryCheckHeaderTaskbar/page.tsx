@@ -24,12 +24,12 @@ function HeaderTaskbar({
     handleSearch?: any;
 }) {
     const router = useRouter();
-    const typeOpts = [
-        { value: "CHUYEN_KHO_NOI_BO", label: "Chuyển kho nội bộ" },
-        { value: "HUY_HANG", label: "Hủy hàng" },
-        { value: "TRA_HANG", label: "Trả hàng" },
-        { value: "BAN_HANG", label: "Bán hàng" },
-    ];
+    // const typeOpts = [
+    //     { value: "KIEM_KHO_DINH_KY", label: "Kiểm kho định kì" },
+    //     { value: "KIEM_KHO_DOT_XUAT", label: "Kiểm kho đột xuất" },
+    //     { value: "KIEM_KHO_TRONG_TAM", label: "Kiểm kho theo nhóm sản phẩm" },
+    //     { value: "KIEM_KHO_VAT_LY_TOAN_PHAN", label: "Kiểm kho theo loại sản phẩm" },
+    // ];
     const statusOpts = [
         { value: "CHUA_LUU", label: "Khởi tạo" },
         { value: "BAN_NHAP", label: "Bản nháp" },
@@ -120,16 +120,16 @@ function HeaderTaskbar({
             {/* Dòng thứ hai */}
             <div className="mt-2 flex items-center gap-2">
                 <span className="flex items-center">Từ</span>
-                {/* <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="startDate" /> */}
+                 <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="startDate" />
                 <span className="flex items-center">đến</span>
                 <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="endDate" />
-                {/*<SelectGroupOne
-                    placeHolder="Chọn kiểu xuất hàng"
+                <SelectGroupOne
+                    placeHolder="Chọn kiểu kiểm hàng"
                     optsData={typeOpts}
                     dataSearch={dataSearch}
                     setDataSearch={setDataSearch}
                     dataKey="type"
-                />*/}
+                />
                 <SelectGroupOne
                     placeHolder="Chọn trạng thái đơn"
                     optsData={statusOpts}

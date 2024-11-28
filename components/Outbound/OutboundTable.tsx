@@ -274,7 +274,7 @@ const OutboundTable = () => {
                     <p className={"font-normal text-black dark:text-white"}>
                         {outbound.totalPrice
                             ? `${outbound.totalPrice.toLocaleString()}đ`
-                            : "Chưa kiểm hàng nhập"}
+                            : (outbound.status == "HOAN_THANH" ? "0đ" : "Chưa kiểm hàng nhập")}
                     </p>
                 );
             case "createdDate":
@@ -315,8 +315,8 @@ const OutboundTable = () => {
                                 <FaPencil />
                             </button>
                         </Tooltip>
-                        <Tooltip color="success" content="Xuất file" hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(outbound.status)}>
-                            <button hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(outbound.status)} className="hover:text-success" onClick={() => handleExport(outbound.id.toString(), outbound.outboundCode)}>
+                        <Tooltip color="success" content="Xuất file" hidden={!["HOAN_THANH"].includes(outbound.status)}>
+                            <button hidden={!["HOAN_THANH"].includes(outbound.status)} className="hover:text-success" onClick={() => handleExport(outbound.id.toString(), outbound.outboundCode)}>
                                 <CiExport />
                             </button>
                         </Tooltip>
