@@ -229,7 +229,7 @@ const ProductsTableInventoryCheck = ({
 
     const handleChangeCountedQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         data![index].countedQuantity = Number(e.target.value);
-        if (data![index].systemQuantity) data![index].difference = Number(e.target.value) - data![index].systemQuantity;
+        if (data![index].systemQuantity) data![index].difference = data![index].systemQuantity - Number(e.target.value);
         if (!e.target.value) data![index].difference = undefined;
         setProducts("inventoryCheckProductDetails", data);
     };
