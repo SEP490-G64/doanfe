@@ -556,7 +556,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 />
                             </div>
 
-                            <div className="flex w-full items-center gap-2 xl:w-1/3">
+                            <div className="flex w-full items-center justify-center gap-2 xl:w-1/3">
                                 <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
                                     Trạng thái duyệt:
                                 </label>
@@ -564,19 +564,19 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     switch (approve) {
                                         case false:
                                             return (
-                                                <p className="inline-flex rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger">
+                                                <p className="text-nowrap rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger">
                                                     Đơn bị từ chối
                                                 </p>
                                             );
                                         case true:
                                             return (
-                                                <p className="inline-flex rounded bg-success/10 px-3 py-1 text-sm font-medium text-success">
+                                                <p className="text-nowrap rounded bg-success/10 px-3 py-1 text-sm font-medium text-success">
                                                     Đơn đã được duyệt
                                                 </p>
                                             );
                                         default:
                                             return (
-                                                <p className="inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning">
+                                                <p className="text-nowrap rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning">
                                                     Đơn chưa được duyệt
                                                 </p>
                                             );
