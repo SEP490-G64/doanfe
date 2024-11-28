@@ -174,7 +174,7 @@ const BatchTable = ({ productId }: { productId?: string }) => {
                     }`}
                 >
                     {batch.inboundPrice
-                        ? `${batch.inboundPrice.toLocaleString()} VND`
+                        ? `${batch.inboundPrice.toLocaleString()}đ`
                         : "Chưa tính giá nhập hàng"}
                 </h5>;
             case "quantity":
@@ -221,16 +221,16 @@ const BatchTable = ({ productId }: { productId?: string }) => {
                                 </svg>
                             </button>
                         </Tooltip>
-                        <Tooltip color="secondary" content="Cập nhật">
-                            <button
+                        <Tooltip color="secondary" content="Cập nhật" hidden>
+                            <button hidden
                                 className="hover:text-secondary"
                                 onClick={() => router.push(`/products/batches/${productId}/update/${batch.id}`)}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
-                        <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(batch.id)}>
+                        <Tooltip color="danger" content="Xóa" hidden>
+                            <button className="hover:text-danger" onClick={() => handleOpenModal(batch.id)} hidden>
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -267,7 +267,7 @@ const BatchTable = ({ productId }: { productId?: string }) => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
+        if (!userInfo?.roles?.some(role => role.type === 'STAFF' || role.type === 'MANAGER')) {
             return (
                 <Unauthorized></Unauthorized>
             );

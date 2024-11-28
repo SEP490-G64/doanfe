@@ -495,7 +495,9 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     {...register("inboundPrice")}
                                                     type="text"
                                                     placeholder="Nhập giá nhập"
-                                                    disabled
+                                                    disabled={
+                                                        viewMode === "details" || userInfo?.roles[0].type !== "MANAGER"
+                                                    }
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                                 />
                                             </div>

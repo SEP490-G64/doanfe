@@ -158,28 +158,22 @@ const ProductsTableOutbound = ({
         const selectedBatchCode = e.target.value;
         const product = data[index];
 
-        // Remove any existing errors for the current row
+        // Xóa các lỗi cũ cho dòng hiện tại
         setBatchErrors((prevErrors) => prevErrors.filter((i) => i !== index));
 
         // Kiểm tra nếu có batch mà chưa chọn mã lô
-        if ((product.batches && product.batches.length > 1 || product.product.batches && product.product.batches.length > 1) && !selectedBatchCode) {
-            // Nếu có nhiều batch mà chưa chọn batchCode, báo lỗi "Chưa chọn mã lô"
-            setBatchErrors((prevErrors) => [...prevErrors, index]);
-        } else {
-            // Kiểm tra trùng mã lô
-            let duplicate = false;
-            if (selectedBatchCode) {
-                data.forEach((d, dindex) => {
-                    if (d.batch.batchCode === selectedBatchCode && dindex !== index) {
-                        duplicate = true;
-                    }
-                });
-            }
+        let duplicate = false;
+        if (selectedBatchCode) {
+            data.forEach((d, dindex) => {
+                if (d.batch?.batchCode === selectedBatchCode && dindex !== index) {
+                    duplicate = true;
+                }
+            });
+        }
 
-            if (duplicate) {
-                // Thêm lỗi trùng mã lô
-                setBatchErrors((prevErrors) => [...prevErrors, index]);
-            }
+        if (duplicate) {
+            // Thêm lỗi trùng mã lô
+            setBatchErrors((prevErrors) => [...prevErrors, index]);
         }
 
         // Cập nhật batch thông tin khi chọn mã lô hợp lệ
@@ -190,6 +184,7 @@ const ProductsTableOutbound = ({
             }
 
             if (batch) {
+                // Cập nhật thông tin batch
                 product.batch.id = batch.id;
                 product.batch.batchCode = batch.batchCode;
                 product.batch.expireDate = batch.expireDate;
@@ -198,7 +193,7 @@ const ProductsTableOutbound = ({
             }
         }
 
-        // Cập nhật lại sản phẩm
+        // Cập nhật lại dữ liệu sản phẩm
         setProducts("outboundProductDetails", data);
     };
 
@@ -417,9 +412,6 @@ const ProductsTableOutbound = ({
                                     ) : (
                                         <span className="text-gray-500">Sản phẩm không có lô</span>
                                     )}
-                                    {batchErrors.includes(key) && !product?.batch?.batchCode && (
-                                        <span className="mt-1 block w-full text-sm text-rose-500">Chưa chọn mã lô</span>
-                                    )}
                                     {batchErrors.includes(key) && product?.batch?.batchCode && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">Trùng mã lô</span>
                                     )}
@@ -504,7 +496,8 @@ const ProductsTableOutbound = ({
                                 <input
                                     type="number"
                                     value={product?.preQuantity || 0}
-                                    disabled={!active || outboundStatus === "KIEM_HANG"}
+                                    disabled={!active || outboundStatus === "KIEM_HANG" ||
+                                        ((product?.batches?.length > 0 || product?.product?.batches?.length > 0) && !product?.batch?.id)}
                                     onChange={(e) => handlePreQuantity(e, key)}
                                     className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
