@@ -700,7 +700,7 @@ const InventoryCheckForm = ({
                                     className="max-w-full"
                                 >
                                     <SelectItem key={"KIEM_KHO_DINH_KY"}>Kiểm kho định kỳ</SelectItem>
-                                    <SelectItem key={"KIEM_KHO_DOT_XUAT"}>Kiểm kho đột xuất</SelectItem>
+                                    {/*<SelectItem key={"KIEM_KHO_DOT_XUAT"}>Kiểm kho đột xuất</SelectItem>*/}
                                     <SelectItem key={"KIEM_KHO_VAT_LY_TOAN_PHAN"}>
                                         Kiểm kho theo nhóm sản phẩm
                                     </SelectItem>
