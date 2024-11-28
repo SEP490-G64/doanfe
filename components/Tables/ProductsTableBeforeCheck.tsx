@@ -13,17 +13,17 @@ interface ProductInboundError {
 }
 
 const ProductsTableBeforeCheck = ({
-                                      data,
-                                      active,
-                                      setProducts,
-                                      errors,
-                                      taxable
-                                  }: {
-    data: ProductInboundType[],
-    active: boolean,
-    setProducts: any,
-    errors: ProductInboundError[],
-    taxable: boolean | undefined
+    data,
+    active,
+    setProducts,
+    errors,
+    taxable,
+}: {
+    data: ProductInboundType[];
+    active: boolean;
+    setProducts: any;
+    errors: ProductInboundError[];
+    taxable: boolean | undefined;
 }) => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [removedItemIndex, setRemovedItemIndex] = useState<number>(-1);
@@ -71,14 +71,12 @@ const ProductsTableBeforeCheck = ({
     const handleDelete = () => {
         data.splice(removedItemIndex, 1); // Xóa sản phẩm trong mảng data
         setProducts("productInbounds", data); // Cập nhật dữ liệu
-        setValidationErrors((prevErrors) =>
-            prevErrors.filter((_, idx) => idx !== removedItemIndex)
-        ); // Xóa lỗi tương ứng
+        setValidationErrors((prevErrors) => prevErrors.filter((_, idx) => idx !== removedItemIndex)); // Xóa lỗi tương ứng
     };
 
     // Xử lý khi thay đổi số lượng
     const handleChangeQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        data![index].requestQuantity = Number(e.target.value);
+        data![index].requestQuantity = Number(e.target.value.replace(/,/g, ""));
         setProducts("productInbounds", data);
     };
 
@@ -89,7 +87,7 @@ const ProductsTableBeforeCheck = ({
 
     // Xử lý khi thay đổi đơn vị
     const handleChangeBaseUnit = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        data![index].productBaseUnit.unitName = e.target.value;
+        data![index]!.productBaseUnit!.unitName = e.target.value;
         setProducts("productInbounds", data);
     };
 
@@ -157,7 +155,7 @@ const ProductsTableBeforeCheck = ({
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
                                     type="text"
-                                    value={product.requestQuantity || ""}
+                                    value={product.requestQuantity?.toLocaleString() || ""}
                                     disabled={!active}
                                     onChange={(e) => handleChangeQuantity(e, key)}
                                     className={`w-24 rounded border-1.5 ${

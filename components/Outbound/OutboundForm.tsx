@@ -135,13 +135,13 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             isApproved: false,
             taxable: false,
             outboundProductDetails: [],
-            totalPrice: undefined
+            totalPrice: undefined,
         },
     });
 
     // Hàm để nhận giá trị totalPrice từ ProductsTableAfterCheck
     const handleTotalPriceChange = (newTotalPrice: number) => {
-        setTotalPrice(newTotalPrice);  // Cập nhật giá trị totalPrice
+        setTotalPrice(newTotalPrice); // Cập nhật giá trị totalPrice
     };
 
     const products = watch("outboundProductDetails");
@@ -303,8 +303,17 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         setIsFetchingProduct(true);
         try {
             let response;
-            if (outboundType === "TRA_HANG" || outboundType === "HUY_HANG") response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
-            else if (outboundType === "BAN_HANG") response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken, undefined, true);
+            if (outboundType === "TRA_HANG" || outboundType === "HUY_HANG")
+                response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
+            else if (outboundType === "BAN_HANG")
+                response = await getProductByBranchId(
+                    branch!.id.toString(),
+                    inputString,
+                    true,
+                    sessionToken,
+                    undefined,
+                    true
+                );
             else response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
@@ -399,7 +408,8 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             }
 
             if (response?.status === "SUCCESS") {
-                if (outboundType !== "BAN_HANG") await changeOutboundStatus(watch("outboundId")!.toString(), "BAN_NHAP", sessionToken);
+                if (outboundType !== "BAN_HANG")
+                    await changeOutboundStatus(watch("outboundId")!.toString(), "BAN_NHAP", sessionToken);
                 else await changeOutboundStatus(watch("outboundId")!.toString(), "HOAN_THANH", sessionToken);
 
                 if (action === "CHO_DUYET") {
@@ -449,13 +459,13 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     const handleDownload = () => {
         if (previewUrl) {
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = previewUrl;
-            link.setAttribute('download', 'outbound-' + watch("outboundCode") + '.pdf');
+            link.setAttribute("download", "outbound-" + watch("outboundCode") + ".pdf");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            toast.success("Xuất phiếu xuất hàng thành công")
+            toast.success("Xuất phiếu xuất hàng thành công");
         }
     };
 
@@ -778,11 +788,12 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                         },
                                     });
                                 }}
-                                onInputChange={handleTypeProduct}
+                                // onInputChange={handleTypeProduct}
                                 options={productOpts.map((option) => ({
                                     value: option.registrationCode,
                                     label: option.productName,
                                 }))}
+                                onMenuOpen={async () => await getProductOpts("")}
                                 placeholder="Tìm kiếm sản phẩm..."
                                 isSearchable
                                 isClearable
@@ -800,7 +811,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             <IconButton
                                 icon={<FaPlus />}
                                 onClick={(e) => {
-                                    e.preventDefault();
+                                    e!.preventDefault();
                                     if (!product) {
                                         // Nếu không có sản phẩm, thông báo lỗi
                                         toast.error("Vui lòng chọn sản phẩm trước khi thêm.");
