@@ -74,26 +74,6 @@ const ProductOutbound = z
     })
     .strict()
     .superRefine((data, ctx) => {
-        // Kiểm tra tất cả các batch có batchCode hay không
-        const batchesWithMissingBatchCode = data.product.batches?.filter((batch) => !batch.batchCode);
-
-        if (batchesWithMissingBatchCode?.length > 0) {
-            ctx.addIssue({
-                path: ["product", "batches"], // Gán lỗi vào trường batches
-                code: z.ZodIssueCode.custom,
-                message: "Vui lòng nhập mã lô cho tất cả sản phẩm có batch",
-            });
-        }
-
-        // Kiểm tra trường hợp không có `batchCode` nhưng vẫn submit form
-        if (!data.batches && !data.product.batches?.length && !data.batch?.id) {
-            ctx.addIssue({
-                path: ["batches"], // Gán lỗi vào trường batches
-                code: z.ZodIssueCode.custom,
-                message: "Vui lòng chọn lô hàng hoặc cung cấp thông tin lô cụ thể",
-            });
-        }
-
         // Kiểm tra trường hợp `preQuantity` phải nhỏ hơn hoặc bằng `batchQuantity`
         if (data.preQuantity && data.batchQuantity !== undefined && data.preQuantity > data.batchQuantity) {
             ctx.addIssue({

@@ -123,13 +123,13 @@ function HeaderTaskbar({
                  <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="startDate" />
                 <span className="flex items-center">đến</span>
                 <InputDateOne dataSearch={dataSearch} setDataSearch={setDataSearch} dataKey="endDate" />
-                <SelectGroupOne
-                    placeHolder="Chọn kiểu kiểm hàng"
-                    optsData={typeOpts}
-                    dataSearch={dataSearch}
-                    setDataSearch={setDataSearch}
-                    dataKey="type"
-                />
+                {/*<SelectGroupOne*/}
+                {/*    placeHolder="Chọn kiểu kiểm hàng"*/}
+                {/*    optsData={typeOpts}*/}
+                {/*    dataSearch={dataSearch}*/}
+                {/*    setDataSearch={setDataSearch}*/}
+                {/*    dataKey="type"*/}
+                {/*/>*/}
                 <SelectGroupOne
                     placeHolder="Chọn trạng thái đơn"
                     optsData={statusOpts}
