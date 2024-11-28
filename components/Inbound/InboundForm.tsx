@@ -149,7 +149,6 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const products = watch("productInbounds");
     const selectedSupId = watch("supplier.id");
     const selectedFromBranchId = watch("fromBranch.id");
-    console.log(watch("taxable"));
 
     // Debounced fetch options
     const debouncedFetchOptions = useCallback(
@@ -294,6 +293,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
             const response = await getInboundById(inboundId as string, sessionToken);
 
             if (response.message === "200 OK") {
+                // Cập nhật form
                 setValue("inboundId", response.data.id);
                 setValue("inboundCode", response.data.inboundCode);
                 setValue("inboundType", response.data.inboundType);
@@ -302,26 +302,33 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 setValue("fromBranch.id", response.data.fromBranch?.id);
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy?.id);
-                setValue("supplier.id", response.data.supplier?.id);
+                setValue("supplier.id", response.data.supplier?.id); // Cập nhật supplier ID
                 setValue("approvedBy.id", response.data.approvedBy?.id);
                 setValue("isApproved", response.data.isApproved);
                 setValue("taxable", response.data.taxable);
                 setValue("productInbounds", response.data.productBatchDetails);
+
+                // Cập nhật state
                 setUser(response.data.createdBy);
                 setApprover(response.data.approvedBy);
                 setBranch(response.data.toBranch);
                 setInboundStatus(response.data.status);
                 setInboundType(response.data.inboundType);
-                setSelectedSupplier(response.data.supplier);
+                setSelectedSupplier(response.data.supplier); // Cập nhật selectedSupplier
                 setSelectedFromBranch(response.data.fromBranch);
                 setIsApprove(response.data.isApproved);
 
-                if (inboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.toBranch.id);
+                // Trigger `getBranchOpts` nếu cần
+                if (response.data.inboundType === "CHUYEN_KHO_NOI_BO") {
+                    await getBranchOpts(response.data.toBranch.id);
+                }
 
                 console.log(response.data);
-            } else router.push("/not-found");
+            } else {
+                router.push("/not-found");
+            }
         } catch (error) {
-            console.log(error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -370,14 +377,25 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     };
 
     useEffect(() => {
-        getSupplierOpts();
-        getBranchOpts("");
-        if (viewMode === "create") {
-            onOpen();
-        } else {
-            getInforInbound();
-        }
-    }, []);
+        const initializeData = async () => {
+            try {
+                // Ưu tiên gọi các API
+                await getSupplierOpts();
+                await getBranchOpts("");
+
+                // Logic tùy thuộc vào viewMode
+                if (viewMode === "create") {
+                    onOpen();
+                } else {
+                    await getInforInbound();
+                }
+            } catch (error) {
+                console.error("Lỗi khi khởi tạo dữ liệu:", error);
+            }
+        };
+
+        initializeData();
+    }, [viewMode]); // Thêm viewMode làm dependency để đảm bảo logic phản ứng đúng
 
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
     const [selectedFromBranch, setSelectedFromBranch] = useState<Branch | undefined>();
@@ -385,16 +403,16 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     useEffect(() => {
         if (selectedSupId) {
             const sup = suppliers.find((item: Supplier) => item.id.toString() === selectedSupId);
-            setSelectedSupplier(sup);
+            setSelectedSupplier(sup); // Đồng bộ supplier theo selectedSupId
         }
-    }, [selectedSupId]);
+    }, [selectedSupId, suppliers]);
 
     useEffect(() => {
         if (selectedFromBranchId) {
             const branch = branches.find((item: Branch) => item.id.toString() === selectedFromBranchId);
             setSelectedFromBranch(branch);
         }
-    }, [selectedFromBranchId]);
+    }, [selectedFromBranchId, branches]);
 
     const onSubmit = async (inbound: InboundBodyType) => {
         if (loading) {

@@ -16,8 +16,22 @@ const BatchProduct = z
         inventoryCheckDetails: z.array(z.object({})).optional(),
         quantity: z.number().optional(),
         preQuantity: z.number().min(1).optional(),
+        batchQuantity: z.number().min(0).optional(),
     })
-    .strict();
+    .strict()
+    .refine(
+        (data) => {
+            if (!data.preQuantity) return true; // Không cần kiểm tra nếu `preQuantity` không có
+            if (data.batchQuantity === undefined || data.batchQuantity === null) {
+                return false; // Nếu không có `batchQuantity`, không hợp lệ
+            }
+            return data.preQuantity <= data.batchQuantity; // Kiểm tra logic
+        },
+        {
+            message: "preQuantity phải nhỏ hơn hoặc bằng batchQuantity và batchQuantity phải có giá trị",
+            path: ["preQuantity"], // Gán lỗi này cho trường `preQuantity`
+        }
+    );
 
 const ProductOutbound = z
     .object({
@@ -46,13 +60,49 @@ const ProductOutbound = z
             .number()
             .min(0, "Số lượng yêu cầu không thể nhỏ hơn 0")
             .max(10000, "Số lượng yêu cầu không thể lớn hơn 10,000")
-            .optional(), // Make the field optional
+            .optional(),
         productQuantity: z.number().optional(),
         taxRate: z.number().optional(),
         batchQuantity: z.number().min(0).optional(),
-        preQuantity: z.number().min(1).optional(),
+        preQuantity: z
+            .number()
+            .min(1, "Số lượng xuất không được nhỏ hơn 1")
+            .optional()
+            .refine((value) => value !== undefined, {
+                message: "Nếu chưa chọn lô thì ô này không sửa được. Số lượng yêu cầu không được để trống",
+            }),
     })
-    .strict();
+    .strict()
+    .superRefine((data, ctx) => {
+        // Kiểm tra tất cả các batch có batchCode hay không
+        const batchesWithMissingBatchCode = data.product.batches?.filter((batch) => !batch.batchCode);
+
+        if (batchesWithMissingBatchCode?.length > 0) {
+            ctx.addIssue({
+                path: ["product", "batches"], // Gán lỗi vào trường batches
+                code: z.ZodIssueCode.custom,
+                message: "Vui lòng nhập mã lô cho tất cả sản phẩm có batch",
+            });
+        }
+
+        // Kiểm tra trường hợp không có `batchCode` nhưng vẫn submit form
+        if (!data.batches && !data.product.batches?.length && !data.batch?.id) {
+            ctx.addIssue({
+                path: ["batches"], // Gán lỗi vào trường batches
+                code: z.ZodIssueCode.custom,
+                message: "Vui lòng chọn lô hàng hoặc cung cấp thông tin lô cụ thể",
+            });
+        }
+
+        // Kiểm tra trường hợp `preQuantity` phải nhỏ hơn hoặc bằng `batchQuantity`
+        if (data.preQuantity && data.batchQuantity !== undefined && data.preQuantity > data.batchQuantity) {
+            ctx.addIssue({
+                path: ["preQuantity"], // Gán lỗi vào trường preQuantity
+                code: z.ZodIssueCode.custom,
+                message: "preQuantity phải nhỏ hơn hoặc bằng batchQuantity",
+            });
+        }
+    });
 
 export const OutboundBody = z
     .object({
@@ -75,9 +125,35 @@ export const OutboundBody = z
         isApproved: z.boolean().optional(),
         taxable: z.boolean().optional(),
         totalPrice: z.string().optional(),
+        status: z.string().optional(),
     })
     .strict()
     .superRefine((data, ctx) => {
+        // Kiểm tra từng ProductOutbound dựa trên status
+        if (data.status === "KIEM_HANG") {
+            data.outboundProductDetails.forEach((product, index) => {
+                if (product.preQuantity && (product.outboundQuantity === undefined || product.outboundQuantity < 0)) {
+                    ctx.addIssue({
+                        path: ["outboundProductDetails", index, "outboundQuantity"], // Gán lỗi vào field cụ thể
+                        code: z.ZodIssueCode.custom,
+                        message: "Số lượng xuất phải >= 0",
+                    });
+                }
+            });
+        }
+
+        if (data.outboundType !== "BAN_HANG") {
+            data.outboundProductDetails.forEach((product, index) => {
+                if (product.preQuantity! < 1) {
+                    ctx.addIssue({
+                        path: ["outboundProductDetails", index, "preQuantity"], // Gán lỗi vào field cụ thể
+                        code: z.ZodIssueCode.custom,
+                        message: "Số lượng xuất phải >= 1",
+                    });
+                }
+            });
+        }
+
         // Nếu outboundType là TRA_HANG thì supplier.id là bắt buộc
         if (data.outboundType === "TRA_HANG" && !data.supplier?.id) {
             ctx.addIssue({
