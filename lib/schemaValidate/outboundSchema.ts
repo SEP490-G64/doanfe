@@ -64,13 +64,7 @@ const ProductOutbound = z
         productQuantity: z.number().optional(),
         taxRate: z.number().optional(),
         batchQuantity: z.number().min(0).optional(),
-        preQuantity: z
-            .number()
-            .min(1, "Số lượng xuất không được nhỏ hơn 1")
-            .optional()
-            .refine((value) => value !== undefined, {
-                message: "Nếu chưa chọn lô thì ô này không sửa được. Số lượng yêu cầu không được để trống",
-            }),
+        preQuantity: z.number().min(1, "Số lượng xuất không được nhỏ hơn 1").optional(),
     })
     .strict()
     .superRefine((data, ctx) => {
@@ -129,6 +123,34 @@ export const OutboundBody = z
                         path: ["outboundProductDetails", index, "preQuantity"], // Gán lỗi vào field cụ thể
                         code: z.ZodIssueCode.custom,
                         message: "Số lượng xuất phải >= 1",
+                    });
+                }
+            });
+            data.outboundProductDetails.forEach((product, index) => {
+                if (product.preQuantity == undefined) {
+                    ctx.addIssue({
+                        path: ["outboundProductDetails", index, "preQuantity"], // Gán lỗi vào field cụ thể
+                        code: z.ZodIssueCode.custom,
+                        message: "Nếu chưa chọn lô thì ô này không sửa được. Số lượng yêu cầu không được để trống",
+                    });
+                }
+            });
+        } else {
+            data.outboundProductDetails.forEach((product, index) => {
+                if (product.outboundQuantity == undefined) {
+                    ctx.addIssue({
+                        path: ["outboundProductDetails", index, "outboundQuantity"], // Gán lỗi vào field cụ thể
+                        code: z.ZodIssueCode.custom,
+                        message: "Nếu chưa chọn đơn vị xuất thì ô này không sửa được. Số lượng bán không được để trống",
+                    });
+                }
+            });
+            data.outboundProductDetails.forEach((product, index) => {
+                if (product.outboundQuantity! <= 0) {
+                    ctx.addIssue({
+                        path: ["outboundProductDetails", index, "outboundQuantity"], // Gán lỗi vào field cụ thể
+                        code: z.ZodIssueCode.custom,
+                        message: "Số lượng bán phải > 0",
                     });
                 }
             });

@@ -194,12 +194,13 @@ export const getProductByBranchId = async (
     keyword: string,
     checkValid: boolean,
     token: string,
-    supplierId?: string
+    supplierId?: string,
+    withSellprice?: boolean
 ) => {
     try {
         const res = await httpRequest.get(`dsd/api/v1/staff/product/branchProducts/${branchId}`, {
             headers: { Authorization: `Bearer ${token}` },
-            params: { keyword, checkValid, supplierId },
+            params: { keyword, checkValid, supplierId, withSellprice },
         });
 
         return res;
