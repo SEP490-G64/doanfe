@@ -396,7 +396,7 @@ const ProductsTableOutbound = ({
                                                 ))}
                                             </select>
                                             {errors[key]?.batches && (
-                                                <p className="mt-1 text-xs text-danger">{errors[key]?.batches}</p>
+                                                <p className="mt-1 text-xs text-danger">{errors[key]?.batches?.message}</p>
                                             )}
                                         </>
                                     ) : (
@@ -498,7 +498,7 @@ const ProductsTableOutbound = ({
                                         </span>
                                     )}
                                 {errors[key]?.preQuantity && (
-                                    <p className="mt-1 text-xs text-danger">{errors[key]?.preQuantity}</p>
+                                    <p className="mt-1 text-xs text-danger">{errors[key]?.preQuantity?.message}</p>
                                 )}
                             </td>
 
@@ -523,7 +523,7 @@ const ProductsTableOutbound = ({
                                     </span>
                                 )}
                                 {errors[key]?.outboundQuantity && (
-                                    <p className="mt-1 text-xs text-danger">{errors[key]?.outboundQuantity}</p>
+                                    <p className="mt-1 text-xs text-danger">{errors[key]?.outboundQuantity?.message}</p>
                                 )}
                             </td>
 
