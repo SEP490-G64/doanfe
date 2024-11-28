@@ -39,15 +39,6 @@ const ProductsTableInventoryCheck = ({
         data![index]!.batch!.id = batch?.id;
         data![index]!.batch!.batchCode = batch?.batchCode;
         data![index]!.batch!.expireDate = batch?.expireDate;
-        if (batch) {
-            data![index]!.systemQuantity = batch?.quantity;
-            if (data![index].countedQuantity && data![index]!.systemQuantity)
-                data![index].difference = data![index].countedQuantity - data![index]!.systemQuantity;
-        } else {
-            data![index]!.systemQuantity = data![index]!.productQuantity;
-            if (data![index].countedQuantity && data![index]!.systemQuantity)
-                data![index].difference = data![index].countedQuantity - data![index]!.systemQuantity;
-        }
         if (data) {
             let duplicate = false;
             data.forEach((d, dindex) => {
@@ -63,16 +54,15 @@ const ProductsTableInventoryCheck = ({
     };
 
     const handleChangeSystemQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        data![index].systemQuantity = Number(e.target.value.replace(/,/g, ""));
+        data![index].systemQuantity = Number(e.target.value);
         if (data![index].countedQuantity)
-            data![index].difference = data![index].countedQuantity - Number(e.target.value.replace(/,/g, ""));
+            data![index].difference =  Number(e.target.value) - data![index].countedQuantity;
         setProducts("inventoryCheckProductDetails", data);
     };
 
     const handleChangeCountedQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        data![index].countedQuantity = Number(e.target.value.replace(/,/g, ""));
-        if (data![index].systemQuantity)
-            data![index].difference = Number(e.target.value.replace(/,/g, "")) - data![index].systemQuantity;
+        data![index].countedQuantity = Number(e.target.value);
+        if (data![index].systemQuantity) data![index].difference = data![index].systemQuantity - Number(e.target.value);
         setProducts("inventoryCheckProductDetails", data);
     };
 
@@ -160,8 +150,8 @@ const ProductsTableInventoryCheck = ({
 
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
-                                    type="text"
-                                    value={product?.systemQuantity?.toLocaleString() || ""}
+                                    type="number"
+                                    value={product?.systemQuantity}
                                     disabled
                                     onChange={(e) => handleChangeSystemQuantity(e, key)}
                                     className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -175,8 +165,8 @@ const ProductsTableInventoryCheck = ({
 
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
-                                    type="text"
-                                    value={product?.countedQuantity?.toLocaleString() || ""}
+                                    type="number"
+                                    value={product?.countedQuantity}
                                     disabled={!active}
                                     onChange={(e) => handleChangeCountedQuantity(e, key)}
                                     className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -201,8 +191,8 @@ const ProductsTableInventoryCheck = ({
 
                             <td className="border-b border-[#eee] px-4 py-5 text-center">
                                 <input
-                                    type="text"
-                                    value={product?.difference?.toLocaleString() || ""}
+                                    type="number"
+                                    value={product?.difference}
                                     disabled
                                     className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
