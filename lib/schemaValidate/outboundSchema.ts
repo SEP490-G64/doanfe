@@ -6,35 +6,32 @@ const BatchProduct = z
         batchCode: z.string().trim().min(1, "Vui lòng nhập mã lô").max(100, "Giới hạn 100 ký tự").optional(),
         produceDate: z.coerce.string().trim().optional(),
         expireDate: z.coerce.string().trim().optional(),
-        outboundPrice: z
-            .number()
-            .min(0, "Giá không thể nhỏ hơn 0")
-            .max(100000000, "Số lượng không được > 100,000,000")
-            .optional(),
-        price: z
-            .number()
-            .min(0, "Giá không thể nhỏ hơn 0")
-            .max(100000000, "Số lượng không được > 100,000,000")
-            .optional(),
-        inboundPrice: z
-            .number()
-            .min(0, "Giá không thể nhỏ hơn 0")
-            .max(100000000, "Số lượng không được > 100,000,000")
-            .optional(),
+        outboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
+        price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
+        inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         outboundBatchQuantity: z.number().optional(),
         outboundDetails: z.array(z.object({})).optional(),
         branchBatches: z.array(z.object({})).optional(),
         outboundBatchDetails: z.array(z.object({})).optional(),
         inventoryCheckDetails: z.array(z.object({})).optional(),
         quantity: z.number().optional(),
-        preQuantity: z.number().min(1, "Số lượng không được < 1").max(10000, "Số lượng không được > 10,000").optional(),
-        batchQuantity: z
-            .number()
-            .min(0, "Số lượng không được < 0")
-            .max(10000, "Số lượng không được > 10,000")
-            .optional(),
+        preQuantity: z.number().min(1).optional(),
+        batchQuantity: z.number().min(0).optional(),
     })
-    .strict();
+    .strict()
+    .refine(
+        (data) => {
+            if (!data.preQuantity) return true; // Không cần kiểm tra nếu `preQuantity` không có
+            if (data.batchQuantity === undefined || data.batchQuantity === null) {
+                return false; // Nếu không có `batchQuantity`, không hợp lệ
+            }
+            return data.preQuantity <= data.batchQuantity; // Kiểm tra logic
+        },
+        {
+            message: "preQuantity phải nhỏ hơn hoặc bằng batchQuantity và batchQuantity phải có giá trị",
+            path: ["preQuantity"], // Gán lỗi này cho trường `preQuantity`
+        }
+    );
 
 const ProductOutbound = z
     .object({
@@ -56,11 +53,7 @@ const ProductOutbound = z
         productUnits: z
             .array(z.object({ id: z.number(), unitName: z.string(), productUnitQuantity: z.number() }))
             .optional(),
-        price: z
-            .number()
-            .min(0, "Giá không thể nhỏ hơn 0")
-            .max(100000000, "Số lượng không được > 100,000,000")
-            .optional(),
+        price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         sellPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         outboundQuantity: z
@@ -70,12 +63,8 @@ const ProductOutbound = z
             .optional(),
         productQuantity: z.number().optional(),
         taxRate: z.number().optional(),
-        batchQuantity: z.number().min(0).max(10000, "Số lượng không được > 10,000").optional(),
-        preQuantity: z
-            .number()
-            .min(1, "Số lượng xuất không được < 1")
-            .max(10000, "Số lượng không được > 10,000")
-            .optional(),
+        batchQuantity: z.number().min(0).optional(),
+        preQuantity: z.number().min(1, "Số lượng xuất không được nhỏ hơn 1").optional(),
     })
     .strict()
     .superRefine((data, ctx) => {
@@ -84,7 +73,7 @@ const ProductOutbound = z
             ctx.addIssue({
                 path: ["preQuantity"], // Gán lỗi vào trường preQuantity
                 code: z.ZodIssueCode.custom,
-                message: "Số lượng xuất phải <= số lượng tồn kho",
+                message: "preQuantity phải nhỏ hơn hoặc bằng batchQuantity",
             });
         }
     });
@@ -153,15 +142,6 @@ export const OutboundBody = z
                         path: ["outboundProductDetails", index, "outboundQuantity"], // Gán lỗi vào field cụ thể
                         code: z.ZodIssueCode.custom,
                         message: "Nếu chưa chọn đơn vị xuất thì ô này không sửa được. Số lượng bán không được để trống",
-                    });
-                }
-            });
-            data.outboundProductDetails.forEach((product, index) => {
-                if (product.outboundQuantity! <= 0) {
-                    ctx.addIssue({
-                        path: ["outboundProductDetails", index, "outboundQuantity"], // Gán lỗi vào field cụ thể
-                        code: z.ZodIssueCode.custom,
-                        message: "Số lượng bán phải > 0",
                     });
                 }
             });
