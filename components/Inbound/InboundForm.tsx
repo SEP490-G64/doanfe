@@ -404,7 +404,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
     const [selectedFromBranch, setSelectedFromBranch] = useState<Branch | undefined>();
 
-    const handleExport = async (id: string, code: string) => {
+    const handleExport = async (id: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
@@ -586,18 +586,15 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                     })()}
                                 </div>
 
-                                <div className="flex w-full items-center gap-2 xl:w-1/6">
+                                {["HOAN_THANH", "KIEM_HANG"].includes(inboundStatus as string) && (
                                     <Button
-                                        hidden={
-                                            !["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inboundStatus as string)
-                                        }
                                         icon={<FaFileImport />}
                                         className="bg-green-500 text-white hover:bg-green-600 hover:text-white"
-                                        onClick={() => handleExport(inboundId as string, watch("inboundCode").toString())}
+                                        onClick={() => handleExport(inboundId as string)}
                                     >
                                         Xuất file
                                     </Button>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>

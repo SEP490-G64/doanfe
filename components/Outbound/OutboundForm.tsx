@@ -418,7 +418,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         }
     };
 
-    const handleExport = async (id: string, code: string) => {
+    const handleExport = async (id: string) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
             return;
@@ -575,18 +575,15 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             </div>
 
                             <div className="flex w-full items-center gap-2 xl:w-1/6">
-                                <Button
-                                    hidden={
-                                        !["HOAN_THANH"].includes(
-                                            outboundStatus as string
-                                        )
-                                    }
-                                    icon={<FaFileImport />}
-                                    className="bg-green-500 text-white hover:bg-green-600 hover:text-white"
-                                    onClick={() => handleExport(outboundId as string, watch("outboundCode").toString())}
-                                >
-                                    Xuất file
-                                </Button>
+                                {outboundStatus === "HOAN_THANH" && (
+                                    <Button
+                                        icon={<FaFileImport />}
+                                        className="bg-green-500 text-white hover:bg-green-600 hover:text-white"
+                                        onClick={() => handleExport(outboundId as string)}
+                                    >
+                                        Xuất file
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>
