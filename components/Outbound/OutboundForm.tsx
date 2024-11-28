@@ -303,9 +303,9 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
         setIsFetchingProduct(true);
         try {
             let response;
-            if (outboundType === "TRA_HANG" || outboundType === "HUY_HANG") {
-                response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
-            } else response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken);
+            if (outboundType === "TRA_HANG" || outboundType === "HUY_HANG") response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
+            else if (outboundType === "BAN_HANG") response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken, undefined, true);
+            else response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
@@ -390,7 +390,13 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             // Tiếp tục nếu không phải KIEM_HANG
             let response;
             if (outboundType !== "BAN_HANG") response = await submitDraft(outbound, sessionToken);
-            else response = await submitDraftForSell(outbound, sessionToken);
+            else {
+                if (products.length === 0) {
+                    toast.error("Vui lòng thêm sản phẩm vào danh sách trước khi xác nhận bán");
+                    return;
+                }
+                response = await submitDraftForSell(outbound, sessionToken);
+            }
 
             if (response?.status === "SUCCESS") {
                 if (outboundType !== "BAN_HANG") await changeOutboundStatus(watch("outboundId")!.toString(), "BAN_NHAP", sessionToken);
@@ -980,7 +986,9 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             <button
                                 className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                 type="submit"
-                                onClick={() => console.log(errors)}
+                                onClick={() => {
+                                    console.log(errors);
+                                }}
                             >
                                 Tạo đơn
                             </button>

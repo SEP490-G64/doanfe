@@ -265,18 +265,8 @@ const ProductsTableOutbound = ({
 
             const newErrors = [];
 
-            // Kiểm tra nếu ô nhập là trống
-            if (newQuantity === "" || newQuantity === undefined) {
-                newErrors.push({ index, message: "Số lượng xuất không được để trống." });
-            }
-
-            // Kiểm tra nếu số lượng nhập là số âm
-            else if (parsedQuantity < 0) {
-                newErrors.push({ index, message: "Số lượng xuất không thể là số âm." });
-            }
-
             // Kiểm tra nếu số lượng xuất vượt quá tồn kho
-            else if (hasBatches && parsedQuantity > currentBatchQuantity) {
+            if (hasBatches && parsedQuantity > currentBatchQuantity) {
                 newErrors.push({ index, message: "Số lượng xuất phải <= số lượng tồn kho trong lô." });
             } else if (!hasBatches && parsedQuantity > currentProductQuantity) {
                 newErrors.push({ index, message: "Số lượng xuất phải <= số lượng tồn kho sản phẩm." });
@@ -523,7 +513,7 @@ const ProductsTableOutbound = ({
                                 <input
                                     type="number"
                                     value={product?.outboundQuantity}
-                                    disabled={!active}
+                                    disabled={!active || (outboundType == "BAN_HANG" && !product?.targetUnit?.id)}
                                     onChange={(e) => handleChangeQuantity(e, key)}
                                     className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
