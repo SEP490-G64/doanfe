@@ -232,8 +232,8 @@ const ProductsTableInventoryCheck = ({
     }, []);
 
     const handleChangeCountedQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        data![index].countedQuantity = Number(e.target.value);
-        if (data![index].systemQuantity) data![index].difference = data![index].systemQuantity - Number(e.target.value);
+        data![index].countedQuantity = Number(e.target.value.replace(/,/g, ""));
+        if (data![index].systemQuantity) data![index].difference = data![index].systemQuantity - Number(e.target.value.replace(/,/g, ""));
         if (!e.target.value) data![index].difference = undefined;
         setProducts("inventoryCheckProductDetails", data);
     };

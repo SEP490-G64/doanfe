@@ -23,7 +23,7 @@ const BatchProduct = z
         branchBatches: z.array(z.object({})).optional(),
         inboundBatchDetails: z.array(z.object({})).optional(),
         inventoryCheckDetails: z.array(z.object({})).optional(),
-        quantity: z.number().optional(),
+        quantity: z.number().max(10000, "Không được quá 10,000").optional(),
     })
     .strict()
     .superRefine((data, ctx) => {
@@ -71,7 +71,7 @@ const ProductInbound = z
                 message: "Số lượng không được bỏ trống", // Thông báo tùy chỉnh khi không điền giá trị
             }),
         quantity: z.number().int().optional(),
-        receiveQuantity: z.number().int().optional(),
+        receiveQuantity: z.number().int().max(10000, "Không được quá 10,000").optional(),
         productQuantity: z.number().int().optional(),
         batches: z.array(BatchProduct).optional(),
         price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
