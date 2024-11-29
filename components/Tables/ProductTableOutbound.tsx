@@ -24,7 +24,7 @@ const ProductsTableOutbound = ({
     taxable,
     totalPrice,
     onTotalPriceChange,
-    outboundStatus
+    outboundStatus,
 }: {
     data: ProductOutboundType[];
     active: boolean;
@@ -48,8 +48,9 @@ const ProductsTableOutbound = ({
             if (data.length > 0) {
                 const newData = data.map((product) => {
                     if (product.batch) {
-                        const batch = product?.batches?.find((b) => b.batchCode === product.batch.batchCode)
-                            || product?.product?.batches?.find((b) => b.batchCode === product.batch.batchCode);
+                        const batch =
+                            product?.batches?.find((b) => b.batchCode === product.batch.batchCode) ||
+                            product?.product?.batches?.find((b) => b.batchCode === product.batch.batchCode);
 
                         if (batch) {
                             product.batch.id = batch.id;
@@ -63,7 +64,7 @@ const ProductsTableOutbound = ({
 
                 setProducts("outboundProductDetails", newData);
             }
-        }, 500);  // Delay 500ms để đảm bảo dữ liệu được tải xong
+        }, 500); // Delay 500ms để đảm bảo dữ liệu được tải xong
 
         return () => clearTimeout(timer); // Dọn dẹp timer khi component unmount
     }, [data, setProducts]);
@@ -93,13 +94,14 @@ const ProductsTableOutbound = ({
                 const productBatches = product.product?.batches || [];
 
                 // Nếu cả batches và product.batches đều rỗng, dùng inboundPrice
-                price = (batches.length === 0 && productBatches.length === 0)
-                    ? product.inboundPrice || 0  // Nếu cả batches và product.batches đều rỗng thì dùng inboundPrice
-                    : product.price || product.sellPrice || 0;  // Nếu có batches, tính theo price hoặc sellPrice
+                price =
+                    batches.length === 0 && productBatches.length === 0
+                        ? product.inboundPrice || 0 // Nếu cả batches và product.batches đều rỗng thì dùng inboundPrice
+                        : product.price || product.sellPrice || 0; // Nếu có batches, tính theo price hoặc sellPrice
             }
 
             const quantity = product.outboundQuantity || 0; // Số lượng xuất (mặc định là 0 nếu không có)
-            const taxRate = taxable ? (product.taxRate || 0) : 0; // Tỷ lệ thuế (%)
+            const taxRate = taxable ? product.taxRate || 0 : 0; // Tỷ lệ thuế (%)
 
             // Tính tổng tiền sản phẩm
             const subtotal = quantity * price; // Tổng tiền trước thuế
@@ -120,25 +122,27 @@ const ProductsTableOutbound = ({
             const productBatches = product.product?.batches || [];
 
             // Nếu cả batches và product.batches đều rỗng, dùng inboundPrice
-            price = (batches.length === 0 && productBatches.length === 0)
-                ? product.sellPrice || product.inboundPrice || 0
-                : product.sellPrice || product.price || 0;  // Ưu tiên sellPrice khi là bán hàng
+            price =
+                batches.length === 0 && productBatches.length === 0
+                    ? product.sellPrice || product.inboundPrice || 0
+                    : product.sellPrice || product.price || 0; // Ưu tiên sellPrice khi là bán hàng
         } else {
             // Nếu không phải bán hàng, kiểm tra cả batches và product.batches
             const batches = product.batches || [];
             const productBatches = product.product?.batches || [];
 
             // Nếu cả batches và product.batches đều rỗng, dùng inboundPrice
-            price = (batches.length === 0 && productBatches.length === 0)
-                ? product.inboundPrice || 0 // Nếu cả batches và product.batches rỗng thì dùng inboundPrice
-                : product.price || product.sellPrice || 0;  // Nếu có batches, tính theo price hoặc sellPrice
+            price =
+                batches.length === 0 && productBatches.length === 0
+                    ? product.inboundPrice || 0 // Nếu cả batches và product.batches rỗng thì dùng inboundPrice
+                    : product.price || product.sellPrice || 0; // Nếu có batches, tính theo price hoặc sellPrice
         }
 
         const quantity = product.outboundQuantity || 0;
-        const taxRate = taxable ? (product.taxRate || 0) : 0;  // Tỷ lệ thuế (%)
+        const taxRate = taxable ? product.taxRate || 0 : 0; // Tỷ lệ thuế (%)
 
-        const total = quantity * price;  // Tổng tiền ban đầu (chưa thuế)
-        const taxAmount = total * (taxRate / 100);  // Số tiền thuế
+        const total = quantity * price; // Tổng tiền ban đầu (chưa thuế)
+        const taxAmount = total * (taxRate / 100); // Số tiền thuế
 
         return total + taxAmount; // Tổng tiền sau thuế
     };
@@ -218,7 +222,7 @@ const ProductsTableOutbound = ({
 
     const handlePreQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         if (outboundStatus !== "KIEM_HANG") {
-            const newQuantity = e.target.value; // Lấy giá trị nhập từ input
+            const newQuantity = e.target.value.replace(/,/g, ""); // Lấy giá trị nhập từ input
             const parsedQuantity = newQuantity === "" ? null : Number(newQuantity); // Chuyển giá trị thành số hoặc null nếu rỗng
 
             const updatedData = [...data];
@@ -227,7 +231,8 @@ const ProductsTableOutbound = ({
             const currentBatchQuantity = updatedData[index]?.batchQuantity || 0;
             const currentProductQuantity = updatedData[index]?.productQuantity || 0;
 
-            const hasBatches = updatedData[index]?.batches?.length > 0 || updatedData[index]?.product?.batches?.length > 0;
+            const hasBatches =
+                updatedData[index]?.batches?.length > 0 || updatedData[index]?.product?.batches?.length > 0;
 
             // Danh sách lỗi mới
             const newErrors = [];
@@ -252,7 +257,7 @@ const ProductsTableOutbound = ({
 
     const handleChangeQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         if (outboundStatus === "KIEM_HANG" || outboundType === "BAN_HANG") {
-            const newQuantity = e.target.value; // Lấy giá trị nhập từ input
+            const newQuantity = e.target.value.replace(/,/g, ""); // Lấy giá trị nhập từ input
             const parsedQuantity = newQuantity === "" ? null : Number(newQuantity); // Chuyển giá trị thành số hoặc null nếu rỗng
 
             const updatedData = [...data];
@@ -261,7 +266,8 @@ const ProductsTableOutbound = ({
             const currentBatchQuantity = updatedData[index]?.batchQuantity || 0;
             const currentProductQuantity = updatedData[index]?.productQuantity || 0;
 
-            const hasBatches = updatedData[index]?.batches?.length > 0 || updatedData[index]?.product?.batches?.length > 0;
+            const hasBatches =
+                updatedData[index]?.batches?.length > 0 || updatedData[index]?.product?.batches?.length > 0;
 
             const newErrors = [];
 
@@ -304,9 +310,7 @@ const ProductsTableOutbound = ({
                         )}
                         <th
                             className="p-4 text-center font-medium text-black"
-                            hidden={
-                                ["CHO_DUYET", "HOAN_THANH"].includes(outboundStatus as string)
-                            }
+                            hidden={["CHO_DUYET", "HOAN_THANH"].includes(outboundStatus as string)}
                         >
                             Số lượng tồn kho
                         </th>
@@ -322,12 +326,7 @@ const ProductsTableOutbound = ({
                         >
                             Số lượng thực tế
                         </th>
-                        <th
-                            className="p-4 text-center font-medium text-black"
-                            hidden={
-                                outboundType !== "BAN_HANG"
-                            }
-                        >
+                        <th className="p-4 text-center font-medium text-black" hidden={outboundType !== "BAN_HANG"}>
                             Số lượng bán
                         </th>
                         <th className="p-4 text-center font-medium text-black">Đơn giá</th>
@@ -456,23 +455,21 @@ const ProductsTableOutbound = ({
 
                             <td
                                 className="border-b border-[#eee] px-4 py-5 text-center"
-                                hidden={
-                                    ["CHO_DUYET", "HOAN_THANH"].includes(outboundStatus as string)
-                                }
+                                hidden={["CHO_DUYET", "HOAN_THANH"].includes(outboundStatus as string)}
                             >
                                 {product?.batches?.length === 0 || product?.product?.batches?.length === 0 ? (
                                     // Hiển thị productQuantity khi không có batches
                                     <input
-                                        type="number"
-                                        value={product?.productQuantity || 0}
+                                        type="text"
+                                        value={product?.productQuantity?.toLocaleString() || 0}
                                         disabled
                                         className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                     />
                                 ) : (
                                     // Hiển thị batchQuantity nếu có, nếu không thì 0
                                     <input
-                                        type="number"
-                                        value={product?.batchQuantity || 0}
+                                        type="text"
+                                        value={product?.batchQuantity?.toLocaleString() || 0}
                                         disabled
                                         className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                     />
@@ -484,10 +481,14 @@ const ProductsTableOutbound = ({
                                 hidden={outboundType === "BAN_HANG"}
                             >
                                 <input
-                                    type="number"
-                                    value={product?.preQuantity || 0}
-                                    disabled={!active || outboundStatus === "KIEM_HANG" ||
-                                        ((product?.batches?.length > 0 || product?.product?.batches?.length > 0) && !product?.batch?.id)}
+                                    type="text"
+                                    value={product?.preQuantity?.toLocaleString() || ""}
+                                    disabled={
+                                        !active ||
+                                        outboundStatus === "KIEM_HANG" ||
+                                        ((product?.batches?.length > 0 || product?.product?.batches?.length > 0) &&
+                                            !product?.batch?.id)
+                                    }
                                     onChange={(e) => handlePreQuantity(e, key)}
                                     className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                 />
@@ -511,8 +512,8 @@ const ProductsTableOutbound = ({
                                 }
                             >
                                 <input
-                                    type="number"
-                                    value={product?.outboundQuantity}
+                                    type="text"
+                                    value={product?.outboundQuantity?.toLocaleString() || "0"}
                                     disabled={!active || (outboundType == "BAN_HANG" && !product?.targetUnit?.id)}
                                     onChange={(e) => handleChangeQuantity(e, key)}
                                     className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -600,8 +601,14 @@ const ProductsTableOutbound = ({
                         </tr>
                     ))}
                     <tr>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center" hidden={["HOAN_THANH"].includes(outboundStatus as string) && outboundType != "BAN_HANG"}></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center" hidden={["HOAN_THANH"].includes(outboundStatus as string) && outboundType != "BAN_HANG"}></td>
+                        <td
+                            className="border-b border-[#eee] px-4 py-5 text-center"
+                            hidden={["HOAN_THANH"].includes(outboundStatus as string) && outboundType != "BAN_HANG"}
+                        ></td>
+                        <td
+                            className="border-b border-[#eee] px-4 py-5 text-center"
+                            hidden={["HOAN_THANH"].includes(outboundStatus as string) && outboundType != "BAN_HANG"}
+                        ></td>
                         <td
                             className="border-b border-[#eee] px-4 py-5 text-center"
                             hidden={outboundType === "BAN_HANG"}

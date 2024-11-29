@@ -284,9 +284,9 @@ export const getProductsChangedHistory = async (startDate: string | Date, produc
         const endDate = new Date();
 
         const res = await httpRequest.get(
-            `dsd/api/v1/staff/product/${productId}/audit-history?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59`,
+            // `dsd/api/v1/staff/product/${productId}/audit-history?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59`,
             // `dsd/api/v1/staff/product/1/audit-history?startDate=${startDate}&endDate=2024-12-31T23:59:59`,
-            // `dsd/api/v1/staff/product/1/audit-history?startDate=${startDate}&endDate=${endDate.toISOString().slice(0, -1)}`,
+            `dsd/api/v1/staff/product/${productId}/audit-history?startDate=${startDate}&endDate=${endDate.toISOString().slice(0, -1)}`,
             {
                 headers: { Authorization: `Bearer ${token}` },
             }
