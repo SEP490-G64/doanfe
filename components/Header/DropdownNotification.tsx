@@ -21,21 +21,21 @@ const DropdownNotification = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [quantityUnread, setQuantityUnread] = useState<number>(0);
 
-    const getAllNotificationsByUserId = async () => {
-        try {
-            const response = await getAllNotifications(userInfo!.id.toString(), sessionToken);
-
-            if (response) {
-                setNotifications(response);
-                if (response.some((noti: Notification) => noti.read === false)) setNotifying(true);
-                else setNotifying(false);
-            }
-        } catch (error: any) {
-            console.log(error);
-        }
-    };
-
     useEffect(() => {
+        const getAllNotificationsByUserId = async () => {
+            try {
+                const response = await getAllNotifications(userInfo!.id.toString(), sessionToken);
+
+                if (response) {
+                    setNotifications(response);
+                    if (response.some((noti: Notification) => noti.read === false)) setNotifying(true);
+                    else setNotifying(false);
+                }
+            } catch (error: any) {
+                console.log(error);
+            }
+        };
+
         const getQuantityUnread = async () => {
             try {
                 const response = await getQuantityUnreadNoti(userInfo!.id.toString(), sessionToken);
@@ -55,7 +55,7 @@ const DropdownNotification = () => {
     useEffect(() => {
         // Kết nối tới SSE API
         const eventSource = new EventSource(
-            `https://warehouse.longtam.store/dsd/api/v1/staff/notification/${userInfo!.id}/stream?authToken=${sessionToken}`
+            `https://warehouse.longtam.store/dsd/api/v1/staff/notification/${userInfo!.id}/stream`
         );
 
         // Lắng nghe sự kiện "message" từ server
@@ -66,7 +66,7 @@ const DropdownNotification = () => {
             toast.info(data.notification.message);
 
             // Gọi API để đồng bộ danh sách thông báo
-            await g(userInfo!.id.toString(), sessionToken);
+            await getAllNotifications(userInfo!.id.toString(), sessionToken);
         };
 
         // Xử lý lỗi nếu xảy ra
@@ -84,7 +84,6 @@ const DropdownNotification = () => {
     const handleClickNoti = async (notiId: string, notiType: string) => {
         try {
             await markAsRead(userInfo!.id.toString(), notiId, sessionToken);
-            await getAllNotificationsByUserId();
 
             if (["CANH_BAO_SAN_PHAM", "DUOI_DINH_MUC", "VUOT_DINH_MUC", "HET_HAN", "GAN_HET_HAN"].includes(notiType))
                 router.push("/inventory-check");
