@@ -124,17 +124,15 @@ const ProductsTableInventoryCheck = ({
                 case "systemQuantity":
                     return (
                         <div className="flex flex-col items-center justify-center">
-                            <p className="text-bold text-sm capitalize text-default-400">
-                                {product?.systemQuantity?.toLocaleString()}
-                            </p>
+                            <p className="text-bold text-sm capitalize text-default-400">{product?.systemQuantity}</p>
                         </div>
                     );
                 case "countedQuantity":
                     return (
                         <div className="flex items-center justify-center">
                             <input
-                                type="text"
-                                value={product?.countedQuantity?.toLocaleString("en-US") || ""}
+                                type="number"
+                                value={product?.countedQuantity || ""}
                                 disabled={!active}
                                 onChange={(e) => handleChangeCountedQuantity(e, index)}
                                 className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
@@ -144,9 +142,7 @@ const ProductsTableInventoryCheck = ({
                 case "difference":
                     return (
                         <div className="flex flex-col items-center justify-center">
-                            <p className="text-bold text-sm capitalize text-default-400">
-                                {product?.difference?.toLocaleString()}
-                            </p>
+                            <p className="text-bold text-sm capitalize text-default-400">{product?.difference}</p>
                         </div>
                     );
                 case "reason":
