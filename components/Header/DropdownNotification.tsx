@@ -21,21 +21,21 @@ const DropdownNotification = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [quantityUnread, setQuantityUnread] = useState<number>(0);
 
-    const getAllNotificationsByUserId = async () => {
-        try {
-            const response = await getAllNotifications(userInfo!.id.toString(), sessionToken);
-
-            if (response) {
-                setNotifications(response);
-                if (response.some((noti: Notification) => noti.read === false)) setNotifying(true);
-                else setNotifying(false);
-            }
-        } catch (error: any) {
-            console.log(error);
-        }
-    };
-
     useEffect(() => {
+        const getAllNotificationsByUserId = async () => {
+            try {
+                const response = await getAllNotifications(userInfo!.id.toString(), sessionToken);
+
+                if (response) {
+                    setNotifications(response);
+                    if (response.some((noti: Notification) => noti.read === false)) setNotifying(true);
+                    else setNotifying(false);
+                }
+            } catch (error: any) {
+                console.log(error);
+            }
+        };
+
         const getQuantityUnread = async () => {
             try {
                 const response = await getQuantityUnreadNoti(userInfo!.id.toString(), sessionToken);
@@ -85,7 +85,6 @@ const DropdownNotification = () => {
     const handleClickNoti = async (notiId: string, notiType: string) => {
         try {
             await markAsRead(userInfo!.id.toString(), notiId, sessionToken);
-            await getAllNotificationsByUserId();
 
             if (["CANH_BAO_SAN_PHAM", "DUOI_DINH_MUC", "VUOT_DINH_MUC", "HET_HAN", "GAN_HET_HAN"].includes(notiType))
                 router.push("/inventory-check");

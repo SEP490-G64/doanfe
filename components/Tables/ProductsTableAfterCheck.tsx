@@ -9,14 +9,14 @@ import { ProductInboundType } from "@/lib/schemaValidate/inboundSchema";
 import { formatDateTimeYYYYMMDD } from "@/utils/methods";
 
 const ProductsTableAfterCheck = ({
-    data,
-    active,
-    setProducts,
-    errors,
-    taxable,
-    totalPrice,
-    onTotalPriceChange,
-}: {
+                                     data,
+                                     active,
+                                     setProducts,
+                                     errors,
+                                     taxable,
+                                     totalPrice,
+                                     onTotalPriceChange,
+                                 }: {
     data: ProductInboundType[];
     active: boolean;
     errors: any;
@@ -31,18 +31,17 @@ const ProductsTableAfterCheck = ({
     const [totalPricing, setTotalPrice] = useState<number>(0);
 
     useEffect(() => {
-        const total = calculateTotalPrice(data); // Tính tổng tiền khi dữ liệu thay đổi
+        const total = calculateTotalPrice(data);  // Tính tổng tiền khi dữ liệu thay đổi
         setTotalPrice(total);
-        onTotalPriceChange(total); // Gửi giá trị tổng tiền về parent component
+        onTotalPriceChange(total);  // Gửi giá trị tổng tiền về parent component
     }, [data, onTotalPriceChange]);
 
     // Tính tổng tiền sau chiết khấu và thuế
     const calculateTotalPrice = (products: ProductInboundType[]) => {
         return products.reduce((total, product) => {
-            const productTotal =
-                product.batches?.reduce((batchTotal, batch) => {
-                    return batchTotal + calculateTotalWithDiscount(batch, product);
-                }, 0) || 0;
+            const productTotal = product.batches?.reduce((batchTotal, batch) => {
+                return batchTotal + calculateTotalWithDiscount(batch, product);
+            }, 0) || 0;
             return total + productTotal;
         }, 0);
     };
@@ -51,14 +50,14 @@ const ProductsTableAfterCheck = ({
     const calculateTotalWithDiscount = (batch: any, product: any) => {
         const quantity = batch.inboundBatchQuantity || product.receiveQuantity;
         const price = batch.inboundPrice || product.price;
-        const taxRate = product.taxRate || 0; // Tỷ lệ thuế (%)
-        const discount = product.discount || 0; // Chiết khấu (%)
+        const taxRate = product.taxRate || 0;  // Tỷ lệ thuế (%)
+        const discount = product.discount || 0;  // Chiết khấu (%)
 
-        const total = quantity * price || 0; // Tổng tiền ban đầu (chưa chiết khấu, chưa thuế)
-        const totalAfterDiscount = total * (1 - discount / 100); // Tổng tiền sau chiết khấu
-        const taxAmount = taxable ? totalAfterDiscount * (taxRate / 100) : 0; // Số tiền thuế
+        const total = quantity * price || 0;  // Tổng tiền ban đầu (chưa chiết khấu, chưa thuế)
+        const totalAfterDiscount = total * (1 - discount / 100);  // Tổng tiền sau chiết khấu
+        const taxAmount = taxable ? totalAfterDiscount * (taxRate / 100) : 0;  // Số tiền thuế
 
-        return totalAfterDiscount + taxAmount; // Tổng tiền sau chiết khấu và bao gồm thuế
+        return totalAfterDiscount + taxAmount;  // Tổng tiền sau chiết khấu và bao gồm thuế
     };
 
     const removeItem = (index: number, bIndex: number, e?: React.MouseEvent) => {
@@ -101,13 +100,10 @@ const ProductsTableAfterCheck = ({
             const emptyExpireDate = batchCode && !batch.expireDate; // Lỗi nếu không có ngày hết hạn và batchCode không trống
 
             // Kiểm tra trùng lặp batchCode chỉ khi batchCode không trống
-            duplicate =
-                batchCode &&
-                batches.some(
-                    (b, otherIndex) =>
-                        otherIndex !== batchIndex && // Không so với chính batch này
-                        b.batchCode?.trim().toLowerCase() === batchCode.toLowerCase() // Kiểm tra trùng lặp batchCode
-                );
+            duplicate = batchCode && batches.some((b, otherIndex) => (
+                otherIndex !== batchIndex && // Không so với chính batch này
+                b.batchCode?.trim().toLowerCase() === batchCode.toLowerCase() // Kiểm tra trùng lặp batchCode
+            ));
 
             // Cập nhật lỗi cho batch
             updatedBatchErrors[index] = updatedBatchErrors[index] || {};
@@ -202,11 +198,7 @@ const ProductsTableAfterCheck = ({
         // Kiểm tra nếu số lượng batch nhỏ hơn 1
         if (!data[index].batches || data[index].batches.length <= 1) {
             // Kiểm tra nếu nhập batchCode mà không có ngày hết hạn
-            if (
-                newBatchCode !== "" &&
-                (!data[index].batches![batchIndex].expireDate ||
-                    data[index].batches![batchIndex].expireDate === undefined)
-            ) {
+            if (newBatchCode !== "" && (!data[index].batches![batchIndex].expireDate || data[index].batches![batchIndex].expireDate === undefined)) {
                 emptyExpireDate = true;
             }
 
@@ -236,12 +228,7 @@ const ProductsTableAfterCheck = ({
         if (data[index].batches) {
             data[index].batches.forEach((b, i) => {
                 // Kiểm tra trùng mã lô với các batch khác (không tính batch hiện tại)
-                if (
-                    b.batchCode &&
-                    b.batchCode.trim() !== "" &&
-                    b.batchCode.toLowerCase() === newBatchCode.toLowerCase() &&
-                    batchIndex !== i
-                ) {
+                if (b.batchCode && b.batchCode.trim() !== "" && b.batchCode.toLowerCase() === newBatchCode.toLowerCase() && batchIndex !== i) {
                     duplicate = true;
                 }
 
@@ -284,12 +271,12 @@ const ProductsTableAfterCheck = ({
     };
 
     const handleChangeInboundPrice = (e: React.ChangeEvent<HTMLInputElement>, index: number, batchIndex: number) => {
-        data![index].batches![batchIndex]!.inboundPrice = Number(e.target.value.replace(/,/g, ""));
+        data![index].batches![batchIndex]!.inboundPrice = Number(e.target.value);
         setProducts("productInbounds", data);
     };
 
     const handleChangeQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number, batchIndex: number) => {
-        data![index].batches![batchIndex]!.inboundBatchQuantity = Number(e.target.value.replace(/,/g, ""));
+        data![index].batches![batchIndex]!.inboundBatchQuantity = Number(e.target.value);
         setProducts("productInbounds", data);
     };
 
@@ -302,11 +289,7 @@ const ProductsTableAfterCheck = ({
         let invalidExpireDate = false; // Cờ kiểm tra ngày hết hạn không hợp lệ
 
         // Kiểm tra nếu mã lô có giá trị mà ngày hết hạn trống
-        if (
-            data![index].batches![batchIndex].batchCode &&
-            (!data![index].batches![batchIndex].expireDate ||
-                data![index].batches![batchIndex].expireDate === undefined)
-        ) {
+        if (data![index].batches![batchIndex].batchCode && (!data![index].batches![batchIndex].expireDate || data![index].batches![batchIndex].expireDate === undefined)) {
             emptyExpireDate = true;
         }
 
@@ -353,217 +336,211 @@ const ProductsTableAfterCheck = ({
         <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
             <table className="w-full table-auto">
                 <thead className="rounded-sm bg-gray-2 text-left">
-                    <tr>
-                        <th className="p-4 text-center font-medium text-black">STT</th>
-                        {/*<th className="p-4 text-center font-medium text-black">Ảnh</th>*/}
-                        <th className="p-4 text-center font-medium text-black">Tên sản phẩm</th>
-                        <th className="p-4 text-center font-medium text-black">Đơn vị</th>
-                        <th className="p-4 text-center font-medium text-black">Số lượng đặt</th>
-                        <th className="p-4 text-center font-medium text-black">Mã lô</th>
-                        <th className="p-4 text-center font-medium text-black">Số lượng nhập</th>
-                        <th className="p-4 text-center font-medium text-black">Đơn giá</th>
-                        <th className="p-4 text-center font-medium text-black" hidden={!taxable}>
-                            Thuế
-                        </th>
-                        <th className="p-4 text-center font-medium text-black">Chiết khấu</th>
-                        <th className="p-4 text-center font-medium text-black">Hạn sử dụng</th>
-                        <th className="p-4 text-center font-medium text-black">Thành tiền</th>
-                    </tr>
+                <tr>
+                    <th className="p-4 text-center font-medium text-black">STT</th>
+                    {/*<th className="p-4 text-center font-medium text-black">Ảnh</th>*/}
+                    <th className="p-4 text-center font-medium text-black">Tên sản phẩm</th>
+                    <th className="p-4 text-center font-medium text-black">Đơn vị</th>
+                    <th className="p-4 text-center font-medium text-black">Số lượng đặt</th>
+                    <th className="p-4 text-center font-medium text-black">Mã lô</th>
+                    <th className="p-4 text-center font-medium text-black">Số lượng nhập</th>
+                    <th className="p-4 text-center font-medium text-black">Đơn giá</th>
+                    <th className="p-4 text-center font-medium text-black" hidden={!taxable}>
+                        Thuế
+                    </th>
+                    <th className="p-4 text-center font-medium text-black">Chiết khấu</th>
+                    <th className="p-4 text-center font-medium text-black">Hạn sử dụng</th>
+                    <th className="p-4 text-center font-medium text-black">Thành tiền</th>
+                </tr>
                 </thead>
 
                 <tbody>
-                    {data.map(
-                        (product, key) =>
-                            product.batches &&
-                            product.batches.map((batch, bIndex) => (
-                                <tr key={`${key}.${bIndex}`} className="text-left">
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                        <p className="text-meta-5">{`${key + 1}.${bIndex + 1}`}</p>
-                                    </td>
+                {data.map(
+                    (product, key) =>
+                        product.batches &&
+                        product.batches.map((batch, bIndex) => (
+                            <tr key={`${key}.${bIndex}`} className="text-left">
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <p className="text-meta-5">{`${key + 1}.${bIndex + 1}`}</p>
+                                </td>
 
-                                    {/*<td className="border-b border-[#eee] px-4 py-5 text-center">*/}
-                                    {/*    <div className="flex items-center justify-center">*/}
-                                    {/*        <Image src={product.image} alt="product-image" width={48} height={48} />*/}
-                                    {/*    </div>*/}
-                                    {/*</td>*/}
+                                {/*<td className="border-b border-[#eee] px-4 py-5 text-center">*/}
+                                {/*    <div className="flex items-center justify-center">*/}
+                                {/*        <Image src={product.image} alt="product-image" width={48} height={48} />*/}
+                                {/*    </div>*/}
+                                {/*</td>*/}
 
-                                    <td className="border-b border-[#eee] px-4 py-5 text-left">
-                                        <p className="text-black dark:text-white">
-                                            {product.productName && bIndex === 0 ? product.productName : ""}
-                                        </p>
-                                    </td>
+                                <td className="border-b border-[#eee] px-4 py-5 text-left">
+                                    <p className="text-black dark:text-white">
+                                        {product.productName && bIndex === 0 ? product.productName : ""}
+                                    </p>
+                                </td>
 
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center text-black-2">
-                                        {product.baseUnit?.unitName && bIndex === 0 ? product.baseUnit?.unitName : ""}
-                                    </td>
+                                <td className="border-b border-[#eee] px-4 py-5 text-center text-black-2">
+                                    {product.baseUnit?.unitName && bIndex === 0 ? product.baseUnit?.unitName : ""}
+                                </td>
 
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center text-black-2">
-                                        {product.requestQuantity && bIndex === 0
-                                            ? product.requestQuantity?.toLocaleString()
-                                            : ""}
-                                    </td>
+                                <td className="border-b border-[#eee] px-4 py-5 text-center text-black-2">
+                                    {product.requestQuantity && bIndex === 0 ? product.requestQuantity : ""}
+                                </td>
 
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                        <input
-                                            type="text"
-                                            value={batch.batchCode}
-                                            disabled={!active}
-                                            onChange={(e) => handleChangeBatchCode(e, key, bIndex)}
-                                            className="w-[120px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                        />
-                                        {/* Hiển thị lỗi nếu có */}
-                                        {batchErrors[key]?.[bIndex]?.emptyBatchCode && (
-                                            <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
-                                                Không được để trống
-                                            </div>
-                                        )}
-                                        {batchErrors[key]?.[bIndex]?.duplicate && (
-                                            <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
-                                                Trùng mã lô
-                                            </div>
-                                        )}
-                                        {batchErrors[key]?.[bIndex]?.lengthExceeded && (
-                                            <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
-                                                Tối đa 100 kí tự
-                                            </div>
-                                        )}
-                                    </td>
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="text"
+                                        value={batch.batchCode}
+                                        disabled={!active}
+                                        onChange={(e) => handleChangeBatchCode(e, key, bIndex)}
+                                        className="w-[120px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                    {/* Hiển thị lỗi nếu có */}
+                                    {batchErrors[key]?.[bIndex]?.emptyBatchCode && (
+                                        <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
+                                            Không được để trống
+                                        </div>
+                                    )}
+                                    {batchErrors[key]?.[bIndex]?.duplicate && (
+                                        <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
+                                            Trùng mã lô
+                                        </div>
+                                    )}
+                                    {batchErrors[key]?.[bIndex]?.lengthExceeded && (
+                                        <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
+                                            Tối đa 100 kí tự
+                                        </div>
+                                    )}
+                                </td>
 
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                        <input
-                                            type="text"
-                                            value={
-                                                bIndex === 0
-                                                    ? batch.inboundBatchQuantity?.toLocaleString() ||
-                                                      product.receiveQuantity?.toLocaleString()
-                                                    : batch.inboundBatchQuantity?.toLocaleString()
-                                            }
-                                            disabled={!active}
-                                            onChange={(e) => handleChangeQuantity(e, key, bIndex)}
-                                            className="w-[60px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                        />
-                                        {errors.productInbounds?.[key]?.batches?.[bIndex]?.inboundBatchQuantity && (
-                                            <span className="mt-1 block w-full text-sm text-rose-500">
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="number"
+                                        value={
+                                            bIndex === 0
+                                                ? batch.inboundBatchQuantity || product.receiveQuantity
+                                                : batch.inboundBatchQuantity
+                                        }
+                                        disabled={!active}
+                                        onChange={(e) => handleChangeQuantity(e, key, bIndex)}
+                                        className="w-[60px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                    {errors.productInbounds?.[key]?.batches?.[bIndex]?.inboundBatchQuantity && (
+                                        <span className="mt-1 block w-full text-sm text-rose-500">
                                                 {
                                                     errors.productInbounds?.[key]?.batches?.[bIndex]
                                                         ?.inboundBatchQuantity.message
                                                 }
                                             </span>
-                                        )}
-                                    </td>
+                                    )}
+                                </td>
 
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                        <input
-                                            type="text"
-                                            value={
-                                                bIndex === 0
-                                                    ? batch.inboundPrice?.toLocaleString() ||
-                                                      product.price?.toLocaleString()
-                                                    : batch.inboundPrice?.toLocaleString()
-                                            }
-                                            disabled={!active}
-                                            onChange={(e) => handleChangeInboundPrice(e, key, bIndex)}
-                                            className="w-[80px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                        />
-                                        {errors.productInbounds?.[key]?.batches?.[bIndex]?.inboundPrice && (
-                                            <span className="mt-1 block w-full text-sm text-rose-500">
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="string"
+                                        value={
+                                            bIndex === 0 ? batch.inboundPrice || product.price : batch.inboundPrice
+                                        }
+                                        disabled={!active}
+                                        onChange={(e) => handleChangeInboundPrice(e, key, bIndex)}
+                                        className="w-[80px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                    {errors.productInbounds?.[key]?.batches?.[bIndex]?.inboundPrice && (
+                                        <span className="mt-1 block w-full text-sm text-rose-500">
                                                 {errors.productInbounds?.[key]?.batches?.[bIndex]?.inboundPrice.message}
                                             </span>
-                                        )}
-                                    </td>
+                                    )}
+                                </td>
 
-                                    <td
-                                        className="border-b border-[#eee] px-4 py-5 text-center text-black-2"
-                                        hidden={!taxable}
-                                    >
-                                        {taxable ? product.taxRate || "0" : "0"}%
-                                    </td>
+                                <td
+                                    className="border-b border-[#eee] px-4 py-5 text-center text-black-2"
+                                    hidden={!taxable}
+                                >
+                                    {taxable ? product.taxRate || "0" : "0"}%
+                                </td>
 
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                        <div style={{ display: "inline-flex", alignItems: "center" }}>
-                                            <input
-                                                type="number"
-                                                value={product.discount}
-                                                disabled={!active}
-                                                onChange={(e) => handleChangeDiscount(e, key)}
-                                                className="w-8 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                            />
-                                            <p
-                                                className="inline text-meta-5"
-                                                style={{ whiteSpace: "nowrap", margin: 0 }}
-                                            >
-                                                %
-                                            </p>
-                                        </div>
-                                    </td>
-
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <div style={{ display: "inline-flex", alignItems: "center" }}>
                                         <input
-                                            type="date"
-                                            value={formatDateTimeYYYYMMDD(batch.expireDate)}
+                                            type="number"
+                                            value={product.discount}
                                             disabled={!active}
-                                            onChange={(e) => handleChangeExpiredDate(e, key, bIndex)}
-                                            className="w-[130px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                            onChange={(e) => handleChangeDiscount(e, key)}
+                                            className="w-8 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                         />
-                                        {/* Hiển thị lỗi nếu có */}
-                                        {batchErrors[key]?.[bIndex]?.emptyExpireDate && (
-                                            <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
-                                                Không được để trống
-                                            </div>
-                                        )}
-                                        {batchErrors[key]?.[bIndex]?.invalidExpireDate && (
-                                            <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
-                                                Lô hết hạn
-                                            </div>
-                                        )}
-                                    </td>
-
-                                    <td className="border-b border-[#eee] px-4 py-5 text-center">
-                                        <p className="text-emerald-600">
-                                            {calculateTotalWithDiscount(batch, product).toLocaleString()}
-                                            {"đ "}
-                                            {/* Hiển thị thành tiền đã có chiết khấu */}
+                                        <p
+                                            className="inline text-meta-5"
+                                            style={{ whiteSpace: "nowrap", margin: 0 }}
+                                        >
+                                            %
                                         </p>
-                                    </td>
+                                    </div>
+                                </td>
 
-                                    {active && data[key].batches!.length > 1 && (
-                                        <td>
-                                            <IconButton
-                                                icon={<IoTrashBinOutline />}
-                                                size="small"
-                                                type="danger"
-                                                onClick={(e) => removeItem(key, bIndex, e)}
-                                            />
-                                        </td>
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <input
+                                        type="date"
+                                        value={formatDateTimeYYYYMMDD(batch.expireDate)}
+                                        disabled={!active}
+                                        onChange={(e) => handleChangeExpiredDate(e, key, bIndex)}
+                                        className="w-[130px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                    {/* Hiển thị lỗi nếu có */}
+                                    {batchErrors[key]?.[bIndex]?.emptyExpireDate && (
+                                        <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
+                                            Không được để trống
+                                        </div>
                                     )}
-                                    {active && (
-                                        <td>
-                                            <IconButton
-                                                icon={<FaPlus />}
-                                                size="small"
-                                                type="primary"
-                                                onClick={(e) => addBatch(key, e)}
-                                            />
-                                        </td>
+                                    {batchErrors[key]?.[bIndex]?.invalidExpireDate && (
+                                        <div className="mt-1 flex items-center gap-1 text-sm text-rose-500">
+                                            Lô hết hạn
+                                        </div>
                                     )}
-                                </tr>
-                            ))
-                    )}
-                    <tr>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center" hidden={!taxable}></td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-right text-danger">Tổng</td>
-                        <td className="border-b border-[#eee] px-4 py-5 text-center text-danger">
-                            {totalPricing.toLocaleString()}đ
-                        </td>
-                    </tr>
+                                </td>
+
+                                <td className="border-b border-[#eee] px-4 py-5 text-center">
+                                    <p className="text-emerald-600">
+                                        {calculateTotalWithDiscount(batch, product).toLocaleString()}
+                                        {"đ "}
+                                        {/* Hiển thị thành tiền đã có chiết khấu */}
+                                    </p>
+                                </td>
+
+                                {active && data[key].batches!.length > 1 && (
+                                    <td>
+                                        <IconButton
+                                            icon={<IoTrashBinOutline />}
+                                            size="small"
+                                            type="danger"
+                                            onClick={(e) => removeItem(key, bIndex, e)}
+                                        />
+                                    </td>
+                                )}
+                                {active && (
+                                    <td>
+                                        <IconButton
+                                            icon={<FaPlus />}
+                                            size="small"
+                                            type="primary"
+                                            onClick={(e) => addBatch(key, e)}
+                                        />
+                                    </td>
+                                )}
+                            </tr>
+                        ))
+                )}
+                <tr>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center"></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center" hidden={!taxable}></td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-right text-danger">Tổng</td>
+                    <td className="border-b border-[#eee] px-4 py-5 text-center text-danger">
+                        {totalPricing.toLocaleString()}đ
+                    </td>
+                </tr>
                 </tbody>
             </table>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>

@@ -16,7 +16,6 @@ export type Product = {
     manufacturerName: string;
     quantity: number;
     unitConversions?: Array<UnitConversion>;
-    expireDate?: string;
 };
 
 export type UnitConversion = {
