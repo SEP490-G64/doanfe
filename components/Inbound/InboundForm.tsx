@@ -478,7 +478,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                         handleOpenModal(action);
                         return;
                     }
-                    toast.success("Lưu đơn và nhập hàng thành công!")
+                    toast.success("Lưu đơn và nhập hàng thành công!");
                     router.push("/inbound/list");
                     router.refresh();
                 } else {
@@ -496,7 +496,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                     handleOpenModal(action);
                     return;
                 }
-                toast.success("Lưu đơn nhập hàng thành công!")
+                toast.success("Lưu đơn nhập hàng thành công!");
                 router.push("/inbound/list");
                 router.refresh();
             }
@@ -869,7 +869,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                 <IconButton
                                     icon={<FaPlus />}
                                     onClick={(e) => {
-                                        e.preventDefault();
+                                        e!.preventDefault();
                                         if (!product) {
                                             // Nếu không có sản phẩm, thông báo lỗi
                                             toast.error("Vui lòng chọn sản phẩm trước khi thêm.");

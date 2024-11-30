@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Table,
     TableHeader,
@@ -21,6 +21,8 @@ import Unauthorized from "@/components/common/Unauthorized";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import { Product } from "@/types/product";
+import { formatDateTimeDDMMYYYY } from "@/utils/methods";
+import { getListProductByCheckQuantity } from "@/services/productServices";
 
 const InventoryCheckTable = () => {
     const router = useRouter();
@@ -35,7 +37,7 @@ const InventoryCheckTable = () => {
     const [filterMode, setFilterMode] = useState<"quantity" | "price" | "expireDate">("quantity");
     const [selectedOptions, setSelectedOptions] = useState({
         lowQuantity: false,
-        warningQuantity: false,
+        warningQuantity: true,
         outOfStock: false,
         lostPrice: false,
         warningPrice: false,
@@ -69,9 +71,49 @@ const InventoryCheckTable = () => {
                         {product.sellPrice ? `${product.sellPrice.toLocaleString()} VND` : "Chưa có thông tin"}
                     </h5>
                 );
+            case "expireDate":
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {formatDateTimeDDMMYYYY(product.expireDate)}
+                    </h5>
+                );
             default:
                 return cellValue;
         }
+    }, []);
+
+    useEffect(() => {
+        const getListWarningProducts = async () => {
+            if (loading) return;
+            setLoading(true);
+            try {
+                const response = await getListProductByCheckQuantity(
+                    page.toString(),
+                    rowsPerPage.toString(),
+                    selectedOptions.lowQuantity,
+                    lowQuantity,
+                    selectedOptions.warningQuantity,
+                    selectedOptions.outOfStock,
+                    sessionToken
+                );
+
+                if (response.message === "200 OK") {
+                    setInventoryCheckData(
+                        response.data.map((item: Product, index: number) => ({
+                            ...item,
+                            index: index + 1 + (page - 1) * rowsPerPage,
+                        }))
+                    );
+                    setTotal(response.total);
+                }
+            } catch (error) {
+                console.log(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        getListWarningProducts();
     }, []);
 
     if (loading) return <Loader />;

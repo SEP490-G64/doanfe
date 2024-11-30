@@ -184,7 +184,7 @@ const InventoryCheckForm = ({
                 setBranch(response.data.branch);
                 setInventoryCheckStatus(response.data.status);
 
-                await getProductOpts(response.data.branch.id);
+                if (inventoryCheckType !== "KIEM_KHO_DOT_XUAT") await getProductOpts(response.data.branch.id);
             }
         } catch (error) {
             console.log(error);
@@ -233,7 +233,7 @@ const InventoryCheckForm = ({
             else response = await getProductInventoryCheck(branchId, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
-                setValue("inventoryCheckProductDetails", response.data);
+                if (inventoryCheckType !== "KIEM_KHO_DOT_XUAT") setValue("inventoryCheckProductDetails", response.data);
             }
         } catch (error) {
             console.log(error);
@@ -246,7 +246,7 @@ const InventoryCheckForm = ({
         if (isFetchingProduct) return;
         setIsFetchingProduct(true);
         try {
-            const response = await getProductByBranchId(branch!.id.toString(), inputString, true, sessionToken);
+            const response = await getProductByBranchId(branch!.id.toString(), inputString, false, sessionToken);
             if (response.message === "200 OK") {
                 setProductOpts(response.data);
             }
@@ -304,6 +304,22 @@ const InventoryCheckForm = ({
             return;
         }
         console.log(inventoryCheck);
+        if (
+            !saveDraft &&
+            inventoryCheck.inventoryCheckProductDetails.some(
+                (product) => product.difference === undefined || product.countedQuantity === undefined
+            )
+        ) {
+            toast.error("Vui lòng nhập số lượng kiểm của tất cả sản phẩm");
+            return;
+        }
+
+        inventoryCheck.inventoryCheckProductDetails.forEach((product) => {
+            if (product.batch?.batchCode === undefined) {
+                delete product.batch;
+            }
+        });
+
         setLoading(true);
         try {
             const response = await submitDraft(inventoryCheck, sessionToken);
@@ -534,13 +550,14 @@ const InventoryCheckForm = ({
                                             batchCode: undefined,
                                             expireDate: undefined,
                                         },
-                                        systemQuantity: 0,
+                                        systemQuantity: option?.productQuantity,
                                         countedQuantity: 0,
                                         difference: 0,
                                         reason: undefined,
                                     });
                                 }}
-                                onInputChange={handleTypeProduct}
+                                // onInputChange={handleTypeProduct}
+                                onMenuOpen={async () => await getProductOptsTwo("")}
                                 options={productOpts.map((option) => ({
                                     value: option.registrationCode,
                                     label: option.productName,
@@ -616,13 +633,23 @@ const InventoryCheckForm = ({
                         ["CHO_DUYET", "BAN_NHAP"].includes(inventoryCheckStatus as string) &&
                         (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") && (
                             <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                    onClick={(e) => handleSubmitInventoryCheck(e)}
-                                >
-                                    Duyệt Đơn
-                                </button>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={(e) => handleSubmitInventoryCheck(e)}
+                                    >
+                                        Duyệt Đơn
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        onClick={(e) => handleChangeStatus(e, "DANG_KIEM")}
+                                    >
+                                        Từ chối duyệt
+                                    </button>
+                                </div>
                             </div>
                         )}
 

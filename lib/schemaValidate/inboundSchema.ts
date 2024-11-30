@@ -23,7 +23,7 @@ const BatchProduct = z
         branchBatches: z.array(z.object({})).optional(),
         inboundBatchDetails: z.array(z.object({})).optional(),
         inventoryCheckDetails: z.array(z.object({})).optional(),
-        quantity: z.number().max(10000, "Không được quá 10,000").optional(),
+        quantity: z.number().optional(),
     })
     .strict()
     .superRefine((data, ctx) => {
@@ -63,7 +63,7 @@ const ProductInbound = z
         productBaseUnit: z.object({ id: z.number(), unitName: z.string() }).optional(),
         baseUnit: z.object({ id: z.number(), unitName: z.string() }).optional(),
         requestQuantity: z
-            .number()
+            .number({ message: "Số lượng yêu cầu không hợp lệ" })
             .min(1, "Số lượng yêu cầu không thể nhỏ hơn 1")
             .max(10000, "Số lượng yêu cầu không thể lớn hơn 10,000")
             .optional() // Make the field optional
@@ -71,13 +71,12 @@ const ProductInbound = z
                 message: "Số lượng không được bỏ trống", // Thông báo tùy chỉnh khi không điền giá trị
             }),
         quantity: z.number().int().optional(),
-        receiveQuantity: z.number().int().max(10000, "Không được quá 10,000").optional(),
+        receiveQuantity: z.number().int().optional(),
         productQuantity: z.number().int().optional(),
         batches: z.array(BatchProduct).optional(),
         price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
         inboundPrice: z.number().optional(),
         sellPrice: z.number().optional(),
-        productQuantity: z.number().optional(),
         productUnits: z.array(z.object({ id: z.number(), unitName: z.string() })).optional(),
     })
     .strict()
