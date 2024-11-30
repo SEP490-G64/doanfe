@@ -55,7 +55,8 @@ const DropdownNotification = () => {
     useEffect(() => {
         // Kết nối tới SSE API
         const eventSource = new EventSource(
-            `https://warehouse.longtam.store/dsd/api/v1/staff/notification/${userInfo!.id}/stream?authToken=${sessionToken}`
+            `https://warehouse.longtam.store/dsd/api/v1/staff/notification/${userInfo!.id}/stream`
+            // `localhost:8081/dsd/api/v1/staff/notification/${userInfo!.id}/stream`
         );
 
         // Lắng nghe sự kiện "message" từ server
@@ -66,7 +67,7 @@ const DropdownNotification = () => {
             toast.info(data.notification.message);
 
             // Gọi API để đồng bộ danh sách thông báo
-            await g(userInfo!.id.toString(), sessionToken);
+            await getAllNotifications(userInfo!.id.toString(), sessionToken);
         };
 
         // Xử lý lỗi nếu xảy ra

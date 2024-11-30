@@ -232,8 +232,9 @@ const ProductsTableInventoryCheck = ({
     }, []);
 
     const handleChangeCountedQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        data![index].countedQuantity = Number(e.target.value);
-        if (data![index].systemQuantity) data![index].difference = data![index].systemQuantity - Number(e.target.value);
+        data![index].countedQuantity = Number(e.target.value.replace(/,/g, ""));
+        if (data![index].systemQuantity)
+            data![index].difference = data![index].systemQuantity - Number(e.target.value.replace(/,/g, ""));
         if (!e.target.value) data![index].difference = undefined;
         setProducts("inventoryCheckProductDetails", data);
     };
@@ -367,7 +368,8 @@ const ProductsTableInventoryCheck = ({
                                             data![indexProduct].countedQuantity -= changedQuantity;
                                             if (data![indexProduct].systemQuantity) {
                                                 data![indexProduct].difference =
-                                                    data![indexProduct].systemQuantity - data![indexProduct].countedQuantity;
+                                                    data![indexProduct].systemQuantity -
+                                                    data![indexProduct].countedQuantity;
                                             }
                                             setProducts("inventoryCheckProductDetails", data);
                                         }
