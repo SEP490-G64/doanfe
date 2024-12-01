@@ -279,14 +279,22 @@ export const getAllowedProducts = async (keyword: string, token: string) => {
     }
 };
 
+function toVietnamISOString() {
+    const now = new Date();
+    const vietnamOffset = 7 * 60 * 60 * 1000; // 7 giờ (ms)
+    const vietnamTime = new Date(now.getTime() + vietnamOffset);
+
+    return vietnamTime.toISOString();
+}
+
 export const getProductsChangedHistory = async (startDate: string | Date, productId: number, token: string) => {
     try {
-        const endDate = new Date();
+        const endDate = toVietnamISOString();
 
         const res = await httpRequest.get(
             // `dsd/api/v1/staff/product/${productId}/audit-history?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59`,
             // `dsd/api/v1/staff/product/1/audit-history?startDate=${startDate}&endDate=2024-12-31T23:59:59`,
-            `dsd/api/v1/staff/product/${productId}/audit-history?startDate=${startDate}&endDate=${endDate.toISOString().slice(0, -1)}`,
+            `dsd/api/v1/staff/product/${productId}/audit-history?startDate=${startDate}&endDate=${endDate.slice(0, -1)}`,
             {
                 headers: { Authorization: `Bearer ${token}` },
             }
