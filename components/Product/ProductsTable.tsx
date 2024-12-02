@@ -22,7 +22,7 @@ import {
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import ProductHeaderTaskbar from "@/components/HeaderTaskbar/ProductHeaderTaskbar/page";
@@ -37,16 +37,17 @@ import { FiPackage } from "react-icons/fi";
 
 const ProductsTable = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [productData, setProductData] = useState<Product[]>([]);
     const [dataSearch, setDataSearch] = useState<DataSearch>({
-        keyword: "",
-        typeId: "",
-        categoryId: "",
-        manufacturerId: "",
-        status: "",
+        keyword: searchParams.get("keyword") || "",
+        typeId: searchParams.get("typeId") || "",
+        categoryId: searchParams.get("categoryId") || "",
+        manufacturerId: searchParams.get("manufacturerId") || "",
+        status: searchParams.get("status") || "",
     });
 
     const [total, setTotal] = useState(0);
@@ -122,6 +123,17 @@ const ProductsTable = () => {
     useEffect(() => {
         getListProductByPage();
     }, [page, rowsPerPage]);
+
+    useEffect(() => {
+        //Tạo query string từ object dataSearch
+        const queryParams = new URLSearchParams({
+            ...dataSearch,
+            page: page.toString(),
+            size: rowsPerPage.toString(),
+        }).toString();
+        // Chuyển hướng đến đường dẫn mới với query string
+        router.push(`/products/list?${queryParams}`);
+    }, [dataSearch, page, rowsPerPage, router]);
 
     const renderCell = useCallback((product: Product, columnKey: React.Key) => {
         const cellValue = product[columnKey as "id"];

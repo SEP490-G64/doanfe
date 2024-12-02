@@ -21,7 +21,7 @@ import {
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CiExport } from "react-icons/ci";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
@@ -37,6 +37,7 @@ import { DataSearch } from "@/types/inbound";
 
 const InboundTable = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [action, setAction] = useState<string>("");
@@ -44,19 +45,19 @@ const InboundTable = () => {
     const [loading, setLoading] = useState(false);
     const [inboundData, setInboundData] = useState<Inbound[]>([]);
     const [total, setTotal] = useState(0);
-    const [page, setPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
+    const [rowsPerPage, setRowsPerPage] = useState(Number(searchParams.get("size")) || 10);
     const { sessionToken } = useAppContext();
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
     const [dataSearch, setDataSearch] = useState<DataSearch>({
-        keyword: "",
-        branchId: userInfo?.branch.id,
-        startDate: "",
-        endDate: "",
-        status: "",
-        type: "",
+        keyword: searchParams.get("keyword") || "",
+        branchId: searchParams.get("branchId") || userInfo?.branch.id,
+        startDate: searchParams.get("startDate") || "",
+        endDate: searchParams.get("endDate") || "",
+        status: searchParams.get("status") || "",
+        type: searchParams.get("type") || "",
     });
 
     const totalPages = useMemo(() => {
@@ -70,7 +71,12 @@ const InboundTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListInbound((page - 1).toString(), rowsPerPage.toString(), dataSearch, sessionToken);
+            const response = await getListInbound(
+                (page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setInboundData(
@@ -153,13 +159,13 @@ const InboundTable = () => {
 
     const handleDownload = () => {
         if (previewUrl) {
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = previewUrl;
-            link.setAttribute('download', 'inbound-' + code + '.pdf');
+            link.setAttribute("download", "inbound-" + code + ".pdf");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            toast.success("Xuất phiếu nhập hàng thành công")
+            toast.success("Xuất phiếu nhập hàng thành công");
         }
     };
 
@@ -221,7 +227,7 @@ const InboundTable = () => {
                     | "inboundDetails"
                     | "status"
                     | "totalPrice"
-                ];
+            ];
 
         switch (columnKey) {
             case "no.":
@@ -249,9 +255,7 @@ const InboundTable = () => {
             case "totalPrice":
                 return (
                     <p className={"font-normal text-black dark:text-white"}>
-                        {inbound.totalPrice
-                            ? `${inbound.totalPrice.toLocaleString()}đ`
-                            : "Chưa kiểm hàng nhập"}
+                        {inbound.totalPrice ? `${inbound.totalPrice.toLocaleString()}đ` : "Chưa kiểm hàng nhập"}
                     </p>
                 );
             case "createdDate":
@@ -292,13 +296,25 @@ const InboundTable = () => {
                                 <FaPencil />
                             </button>
                         </Tooltip>
-                        <Tooltip color="success" content="Xuất file" hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inbound.status)}>
-                            <button hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inbound.status)} className="hover:text-success" onClick={() => handleExport(inbound.id.toString(), inbound.inboundCode)}>
+                        <Tooltip
+                            color="success"
+                            content="Xuất file"
+                            hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inbound.status)}
+                        >
+                            <button
+                                hidden={!["KIEM_HANG", "DANG_THANH_TOAN", "HOAN_THANH"].includes(inbound.status)}
+                                className="hover:text-success"
+                                onClick={() => handleExport(inbound.id.toString(), inbound.inboundCode)}
+                            >
                                 <CiExport />
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(inbound.id.toString(), "DELETE")} hidden={!["CHUA_LUU", "BAN_NHAP", "CHO_DUYET"].includes(inbound.status)}>
+                            <button
+                                className="hover:text-danger"
+                                onClick={() => handleOpenModal(inbound.id.toString(), "DELETE")}
+                                hidden={!["CHUA_LUU", "BAN_NHAP", "CHO_DUYET"].includes(inbound.status)}
+                            >
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -333,12 +349,21 @@ const InboundTable = () => {
         }
     }, []);
 
+    useEffect(() => {
+        //Tạo query string từ object dataSearch
+        const queryParams = new URLSearchParams({
+            ...dataSearch,
+            page: page.toString(),
+            size: rowsPerPage.toString(),
+        }).toString();
+        // Chuyển hướng đến đường dẫn mới với query string
+        router.push(`/inbound/list?${queryParams}`);
+    }, [dataSearch, page, rowsPerPage, router]);
+
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <>
@@ -460,10 +485,11 @@ const InboundTable = () => {
                                                 <Button color="default" onPress={onClose}>
                                                     Đóng
                                                 </Button>
-                                                <Button color="success" onPress={handleDownload}>Tải xuống</Button>
+                                                <Button color="success" onPress={handleDownload}>
+                                                    Tải xuống
+                                                </Button>
                                             </>
                                         )}
-
                                     </ModalFooter>
                                 </>
                             )}
