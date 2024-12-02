@@ -11,12 +11,12 @@ import { getStaffBranches } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
 
 function HeaderTaskbar({
-                           sessionToken,
-                           buttons,
-                           dataSearch,
-                           setDataSearch,
-                           handleSearch,
-                       }: {
+    sessionToken,
+    buttons,
+    dataSearch,
+    setDataSearch,
+    handleSearch,
+}: {
     sessionToken: string;
     buttons?: string;
     dataSearch?: DataSearch;
@@ -41,9 +41,7 @@ function HeaderTaskbar({
 
     const getDataOptions = async () => {
         try {
-            const response = await Promise.all([
-                getStaffBranches(sessionToken),
-            ]);
+            const response = await Promise.all([getStaffBranches(sessionToken)]);
 
             if (response) {
                 setBranchOpts(response[0].data.map((c: Branch) => ({ value: c.id, label: c.location })));

@@ -21,7 +21,7 @@ import {
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import Loader from "@/components/common/Loader";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
@@ -37,6 +37,7 @@ import { jwtDecode } from "jwt-decode";
 
 const InventoryCheckTable = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
@@ -48,12 +49,12 @@ const InventoryCheckTable = () => {
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
     const [dataSearch, setDataSearch] = useState<DataSearch>({
-        keyword: "",
-        branchId: userInfo?.branch.id,
-        startDate: "",
-        endDate: "",
-        status: "",
-        type: "",
+        keyword: searchParams.get("keyword") || "",
+        branchId: searchParams.get("branchId") || userInfo?.branch.id,
+        startDate: searchParams.get("startDate") || "",
+        endDate: searchParams.get("endDate") || "",
+        status: searchParams.get("status") || "",
+        type: searchParams.get("type") || "",
     });
 
     const totalPages = useMemo(() => {
@@ -67,7 +68,12 @@ const InventoryCheckTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListInventoryCheck((page - 1).toString(), rowsPerPage.toString(), dataSearch, sessionToken);
+            const response = await getListInventoryCheck(
+                (page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setInventoryCheckData(
@@ -116,6 +122,17 @@ const InventoryCheckTable = () => {
     useEffect(() => {
         getListInventoryCheckByPage();
     }, [page, rowsPerPage]);
+
+    useEffect(() => {
+        //Tạo query string từ object dataSearch
+        const queryParams = new URLSearchParams({
+            ...dataSearch,
+            page: page.toString(),
+            size: rowsPerPage.toString(),
+        }).toString();
+        // Chuyển hướng đến đường dẫn mới với query string
+        router.push(`/inventory-check-note/list?${queryParams}`);
+    }, [dataSearch, page, rowsPerPage, router]);
 
     const renderOutboundStatus = useCallback((status: string) => {
         switch (status) {
@@ -249,10 +266,8 @@ const InventoryCheckTable = () => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         } else {
             return (
                 <>
@@ -262,8 +277,7 @@ const InventoryCheckTable = () => {
                         setDataSearch={setDataSearch}
                         handleSearch={handleSearch}
                     />
-                    <div
-                        className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                    <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                         <div className="max-w-full overflow-x-auto">
                             <Table
                                 bottomContent={
@@ -339,12 +353,8 @@ const InventoryCheckTable = () => {
                             <ModalContent>
                                 {(onClose) => (
                                     <>
-                                        <ModalHeader className="flex flex-col gap-1">
-                                            Xác nhận
-                                        </ModalHeader>
-                                        <ModalBody>
-                                            Bạn có chắc muốn xóa phiếu xuất hàng này không?
-                                        </ModalBody>
+                                        <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                        <ModalBody>Bạn có chắc muốn xóa phiếu xuất hàng này không?</ModalBody>
                                         <ModalFooter>
                                             <Button color="default" variant="light" onPress={onClose}>
                                                 Hủy

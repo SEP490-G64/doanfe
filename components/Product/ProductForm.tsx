@@ -32,6 +32,7 @@ import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import Unauthorized from "@/components/common/Unauthorized";
 import { number } from "zod";
+import HeaderTaskbar from "../HeaderTaskbar/GoBackHeaderTaskbar/page";
 
 const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" | "create"; productId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -311,6 +312,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
         }
         return (
             <>
+                <HeaderTaskbar />
                 <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                     <div className="grid grid-cols-1 gap-9 sm:grid-cols-[2fr_1fr]">
                         <div className="flex flex-col gap-9">

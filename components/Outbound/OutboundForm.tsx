@@ -46,6 +46,7 @@ import {
 import SelectGroupTwo from "../SelectGroup/SelectGroupTwo";
 import ProductsTableOutbound from "../Tables/ProductTableOutbound";
 import { exportOutbound } from "@/services/outboundServices";
+import HeaderTaskbar from "../HeaderTaskbar/GoBackHeaderTaskbar/page";
 
 const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update" | "create"; outboundId?: string }) => {
     const [loading, setLoading] = useState(false);
@@ -537,614 +538,617 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
 
     if (loading) return <Loader />;
     return (
-        <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate>
-            {/* <!--  Thông tin người duyệt --> */}
-            {viewMode !== "create" && outboundType != "BAN_HANG" && (
-                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <>
+            <HeaderTaskbar />
+            <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate>
+                {/* <!--  Thông tin người duyệt --> */}
+                {viewMode !== "create" && outboundType != "BAN_HANG" && (
+                    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                        <div className="p-6.5">
+                            <div className="flex flex-col gap-6 xl:flex-row">
+                                <div className="flex w-full items-center gap-2 xl:w-1/2">
+                                    <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                        Người duyệt:
+                                    </label>
+                                    <input
+                                        defaultValue={approver ? `${approver?.firstName} ${approver?.lastName}` : ""}
+                                        type="text"
+                                        placeholder="Chưa được duyệt"
+                                        disabled
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    />
+                                </div>
+
+                                <div className="flex w-full items-center justify-center gap-2 xl:w-1/3">
+                                    <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                        Trạng thái duyệt:
+                                    </label>
+                                    {(() => {
+                                        switch (approve) {
+                                            case false:
+                                                return (
+                                                    <p className="text-nowrap rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger">
+                                                        Đơn bị từ chối
+                                                    </p>
+                                                );
+                                            case true:
+                                                return (
+                                                    <p className="text-nowrap rounded bg-success/10 px-3 py-1 text-sm font-medium text-success">
+                                                        Đơn đã được duyệt
+                                                    </p>
+                                                );
+                                            default:
+                                                return (
+                                                    <p className="text-nowrap rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning">
+                                                        Đơn chưa được duyệt
+                                                    </p>
+                                                );
+                                        }
+                                    })()}
+                                </div>
+
+                                <div className="flex w-full items-center gap-2 xl:w-1/6">
+                                    {outboundStatus === "HOAN_THANH" && (
+                                        <Button
+                                            icon={<FaFileImport />}
+                                            className="bg-green-500 text-white hover:bg-green-600 hover:text-white"
+                                            onClick={() => handleExport(outboundId as string)}
+                                        >
+                                            Xuất file
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* <!-- Thông tin xuất hàng --> */}
+                <div className="w-full rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                        <h3 className="font-medium text-black dark:text-white">Thông tin xuất hàng</h3>
+                    </div>
                     <div className="p-6.5">
-                        <div className="flex flex-col gap-6 xl:flex-row">
-                            <div className="flex w-full items-center gap-2 xl:w-1/2">
-                                <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                    Người duyệt:
+                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                            <div className="w-full xl:w-1/2">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Người tạo <span className="text-meta-1">*</span>
                                 </label>
                                 <input
-                                    defaultValue={approver ? `${approver?.firstName} ${approver?.lastName}` : ""}
+                                    defaultValue={user ? `${user?.firstName} ${user?.lastName}` : ""}
                                     type="text"
-                                    placeholder="Chưa được duyệt"
+                                    placeholder="Nhập người tạo"
                                     disabled
                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                 />
                             </div>
 
-                            <div className="flex w-full items-center justify-center gap-2 xl:w-1/3">
-                                <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                    Trạng thái duyệt:
-                                </label>
-                                {(() => {
-                                    switch (approve) {
-                                        case false:
-                                            return (
-                                                <p className="text-nowrap rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger">
-                                                    Đơn bị từ chối
-                                                </p>
-                                            );
-                                        case true:
-                                            return (
-                                                <p className="text-nowrap rounded bg-success/10 px-3 py-1 text-sm font-medium text-success">
-                                                    Đơn đã được duyệt
-                                                </p>
-                                            );
-                                        default:
-                                            return (
-                                                <p className="text-nowrap rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning">
-                                                    Đơn chưa được duyệt
-                                                </p>
-                                            );
-                                    }
-                                })()}
-                            </div>
-
-                            <div className="flex w-full items-center gap-2 xl:w-1/6">
-                                {outboundStatus === "HOAN_THANH" && (
-                                    <Button
-                                        icon={<FaFileImport />}
-                                        className="bg-green-500 text-white hover:bg-green-600 hover:text-white"
-                                        onClick={() => handleExport(outboundId as string)}
-                                    >
-                                        Xuất file
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* <!-- Thông tin xuất hàng --> */}
-            <div className="w-full rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-                    <h3 className="font-medium text-black dark:text-white">Thông tin xuất hàng</h3>
-                </div>
-                <div className="p-6.5">
-                    <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                        <div className="w-full xl:w-1/2">
-                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                Người tạo <span className="text-meta-1">*</span>
-                            </label>
-                            <input
-                                defaultValue={user ? `${user?.firstName} ${user?.lastName}` : ""}
-                                type="text"
-                                placeholder="Nhập người tạo"
-                                disabled
-                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                            />
-                        </div>
-
-                        <div className="w-full xl:w-1/2">
-                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                Ngày xuất
-                            </label>
-                            <DatePickerOne dateValue={watch("createdDate")} disabled={true} />
-                        </div>
-                    </div>
-
-                    {outboundType === "CHUYEN_KHO_NOI_BO" && (
-                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                             <div className="w-full xl:w-1/2">
                                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Xuất hàng cho <span className="text-meta-1">*</span>
+                                    Ngày xuất
                                 </label>
-                                <SelectGroupTwo
-                                    register={{ ...register("toBranch.id") }}
-                                    watch={watch("toBranch.id")}
-                                    icon={<AiOutlineShop />}
-                                    placeholder="Chọn chi nhánh nhận hàng"
-                                    disabled={
-                                        viewMode === "details" ||
-                                        !["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string)
-                                    }
-                                    data={branches.map((branch: Branch) => ({
-                                        label: branch.branchName,
-                                        value: branch.id,
-                                    }))}
-                                />
-                                {errors.toBranch?.id && (
-                                    <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.toBranch.id.message}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="w-full xl:w-1/2">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Địa chỉ xuất hàng đến <span className="text-meta-1">*</span>
-                                </label>
-                                <input
-                                    defaultValue={selectedToBranch?.location ? selectedToBranch?.location : ""}
-                                    type="text"
-                                    placeholder="Nhập địa chỉ xuất hàng đến"
-                                    disabled
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                />
+                                <DatePickerOne dateValue={watch("createdDate")} disabled={true} />
                             </div>
                         </div>
-                    )}
-                    {outboundType === "TRA_HANG" && (
-                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                            <div className="w-full xl:w-1/2">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Xuất hàng cho <span className="text-meta-1">*</span>
-                                </label>
-                                <SelectGroupTwo
-                                    register={{ ...register("supplier.id") }}
-                                    watch={watch("supplier.id")}
-                                    icon={<TfiSupport />}
-                                    placeholder="Chọn nhà cung cấp"
-                                    disabled={
-                                        viewMode === "details" ||
-                                        !["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string)
-                                    }
-                                    data={suppliers.map((supplier: Supplier) => ({
-                                        label: supplier.supplierName,
-                                        value: supplier.id,
-                                    }))}
-                                />
-                                {errors.supplier?.id && (
-                                    <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.supplier.id.message}
-                                    </span>
-                                )}
-                            </div>
 
-                            <div className="w-full xl:w-1/2">
-                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                    Địa chỉ xuất hàng <span className="text-meta-1">*</span>
-                                </label>
-                                <input
-                                    defaultValue={selectedSupplier?.address ? selectedSupplier?.address : ""}
-                                    type="text"
-                                    placeholder="Nhập địa chỉ xuất hàng"
-                                    disabled
-                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                />
-                            </div>
-                        </div>
-                    )}
-                    <div className="mb-4.5 flex flex-row gap-6">
-                        <div className="w-1/2">
-                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                Lí do xuất hàng
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="Nhập lí do xuất hàng"
-                                disabled={
-                                    viewMode === "details" ||
-                                    ["CHO_DUYET", "KIEM_HANG", "HOAN_THANH"].includes(outboundStatus as string)
-                                }
-                                className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                            />
-                        </div>
-                        <div className="w-1/2">
-                            {/* Dòng đầu tiên */}
-                            <div className="mb-4 flex items-center">
-                                <label className="mr-3 text-sm font-medium text-black dark:text-white">
-                                    Có tính thuế nhập hàng:{" "}
-                                </label>
-                                <input
-                                    type="checkbox"
-                                    {...register("taxable")} // Kế thừa đăng ký từ React Hook Form
-                                    checked={watch("taxable")} // Đồng bộ hóa với giá trị từ React Hook Form
-                                    onChange={(e) => setValue("taxable", e.target.checked)} // Cập nhật giá trị
-                                    disabled={viewMode === "details" || outboundStatus === "KIEM_HANG"} // Vô hiệu hóa theo điều kiện
-                                    className="border-gray-300 rounded text-primary focus:ring-primary disabled:cursor-not-allowed"
-                                />
-                            </div>
-
-                            {/* Dòng thứ hai */}
-                            <div className="flex items-center">
-                                <label className="mr-3 text-sm font-medium text-black dark:text-white">
-                                    Trạng thái đơn:
-                                </label>
-                                {renderOutboundStatus(outboundStatus)}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-                    <h3 className="font-medium text-black dark:text-white">Danh sách sản phẩm</h3>
-                </div>
-                <div className="p-6.5">
-                    {viewMode !== "details" && ["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string) && (
-                        <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                            <label className="mb-3 block self-center whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                Tên sản phẩm <span className="text-meta-1">*</span>
-                            </label>
-                            <ReactSelect
-                                defaultValue={product ? product.registrationCode : ""}
-                                onChange={(optionValue) => {
-                                    if (!optionValue) return;
-                                    const option = productOpts.find(
-                                        (opt) => opt.registrationCode === optionValue.value
-                                    );
-                                    setProduct({
-                                        ...option,
-                                        baseUnit: option?.productBaseUnit,
-                                        product: {
-                                            id: option?.id,
-                                            productName: option?.productName,
-                                            productCode: option?.registrationCode,
-                                        },
-                                        batch: {
-                                            id: undefined,
-                                            batchCode: undefined,
-                                            expireDate: undefined,
-                                        },
-                                        targetUnit: {
-                                            id: undefined,
-                                        },
-                                    });
-                                }}
-                                // onInputChange={handleTypeProduct}
-                                options={productOpts.map((option) => ({
-                                    value: option.registrationCode,
-                                    label: option.productName,
-                                }))}
-                                onMenuOpen={async () => await getProductOpts("")}
-                                placeholder="Tìm kiếm sản phẩm..."
-                                isSearchable
-                                isClearable
-                                isLoading={isFetchingProduct}
-                                styles={{
-                                    control: (baseStyles, state) => ({
-                                        ...baseStyles,
-                                        width: "100%",
-                                        padding: "0.75rem 1.25rem",
-                                        cursor: "text",
-                                    }),
-                                }}
-                                className={"w-full"}
-                            />
-                            <IconButton
-                                icon={<FaPlus />}
-                                onClick={(e) => {
-                                    e!.preventDefault();
-                                    if (!product) {
-                                        // Nếu không có sản phẩm, thông báo lỗi
-                                        toast.error("Vui lòng chọn sản phẩm trước khi thêm.");
-                                        return;
-                                    }
-                                    addItem(e);
-                                }}
-                            />
-                        </div>
-                    )}
-                    <ProductsTableOutbound
-                        data={products || []}
-                        active={
-                            viewMode !== "details" &&
-                            ["BAN_NHAP", "CHUA_LUU", "KIEM_HANG"].includes(outboundStatus as string)
-                        }
-                        errors={errors.outboundProductDetails || []} // Truyền lỗi vào đây
-                        outboundType={outboundType}
-                        setProducts={setValue}
-                        outboundStatus={outboundStatus}
-                        taxable={watch("taxable")}
-                        totalPrice={watch("totalPrice")}
-                        onTotalPriceChange={handleTotalPriceChange}
-                    />
-
-                    {viewMode === "details" &&
-                        ["CHO_DUYET"].includes(outboundStatus as string) &&
-                        userInfo?.roles[0].type === "STAFF" &&
-                        ["CHO_DUYET"].includes(outboundStatus as string) && (
-                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                                <div className="w-1/2">
-                                    <button
-                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                        onClick={() => handleOpenModal("BỎ_DUYỆT")}
-                                        type={"button"}
-                                    >
-                                        Hủy yêu cầu chờ duyệt
-                                    </button>
+                        {outboundType === "CHUYEN_KHO_NOI_BO" && (
+                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Xuất hàng cho <span className="text-meta-1">*</span>
+                                    </label>
+                                    <SelectGroupTwo
+                                        register={{ ...register("toBranch.id") }}
+                                        watch={watch("toBranch.id")}
+                                        icon={<AiOutlineShop />}
+                                        placeholder="Chọn chi nhánh nhận hàng"
+                                        disabled={
+                                            viewMode === "details" ||
+                                            !["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string)
+                                        }
+                                        data={branches.map((branch: Branch) => ({
+                                            label: branch.branchName,
+                                            value: branch.id,
+                                        }))}
+                                    />
+                                    {errors.toBranch?.id && (
+                                        <span className="mt-1 block w-full text-sm text-rose-500">
+                                            {errors.toBranch.id.message}
+                                        </span>
+                                    )}
                                 </div>
-                                <div className="w-1/2">
-                                    <button
-                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                        onClick={() => router.push(`/outbound/list`)}
-                                        type={"button"}
-                                    >
-                                        Quay lại danh sách
-                                    </button>
+
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Địa chỉ xuất hàng đến <span className="text-meta-1">*</span>
+                                    </label>
+                                    <input
+                                        defaultValue={selectedToBranch?.location ? selectedToBranch?.location : ""}
+                                        type="text"
+                                        placeholder="Nhập địa chỉ xuất hàng đến"
+                                        disabled
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    />
                                 </div>
                             </div>
                         )}
+                        {outboundType === "TRA_HANG" && (
+                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Xuất hàng cho <span className="text-meta-1">*</span>
+                                    </label>
+                                    <SelectGroupTwo
+                                        register={{ ...register("supplier.id") }}
+                                        watch={watch("supplier.id")}
+                                        icon={<TfiSupport />}
+                                        placeholder="Chọn nhà cung cấp"
+                                        disabled={
+                                            viewMode === "details" ||
+                                            !["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string)
+                                        }
+                                        data={suppliers.map((supplier: Supplier) => ({
+                                            label: supplier.supplierName,
+                                            value: supplier.id,
+                                        }))}
+                                    />
+                                    {errors.supplier?.id && (
+                                        <span className="mt-1 block w-full text-sm text-rose-500">
+                                            {errors.supplier.id.message}
+                                        </span>
+                                    )}
+                                </div>
 
-                    {viewMode === "details" &&
-                        ["BAN_NHAP"].includes(outboundStatus as string) &&
-                        userInfo?.roles[0].type === "STAFF" && (
-                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                    onClick={(e) => handleChangeStatus(e, "CHO_DUYET")}
-                                >
-                                    Gửi đơn
-                                </button>
+                                <div className="w-full xl:w-1/2">
+                                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                        Địa chỉ xuất hàng <span className="text-meta-1">*</span>
+                                    </label>
+                                    <input
+                                        defaultValue={selectedSupplier?.address ? selectedSupplier?.address : ""}
+                                        type="text"
+                                        placeholder="Nhập địa chỉ xuất hàng"
+                                        disabled
+                                        className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                    />
+                                </div>
                             </div>
                         )}
+                        <div className="mb-4.5 flex flex-row gap-6">
+                            <div className="w-1/2">
+                                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                    Lí do xuất hàng
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Nhập lí do xuất hàng"
+                                    disabled={
+                                        viewMode === "details" ||
+                                        ["CHO_DUYET", "KIEM_HANG", "HOAN_THANH"].includes(outboundStatus as string)
+                                    }
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                />
+                            </div>
+                            <div className="w-1/2">
+                                {/* Dòng đầu tiên */}
+                                <div className="mb-4 flex items-center">
+                                    <label className="mr-3 text-sm font-medium text-black dark:text-white">
+                                        Có tính thuế nhập hàng:{" "}
+                                    </label>
+                                    <input
+                                        type="checkbox"
+                                        {...register("taxable")} // Kế thừa đăng ký từ React Hook Form
+                                        checked={watch("taxable")} // Đồng bộ hóa với giá trị từ React Hook Form
+                                        onChange={(e) => setValue("taxable", e.target.checked)} // Cập nhật giá trị
+                                        disabled={viewMode === "details" || outboundStatus === "KIEM_HANG"} // Vô hiệu hóa theo điều kiện
+                                        className="border-gray-300 rounded text-primary focus:ring-primary disabled:cursor-not-allowed"
+                                    />
+                                </div>
 
-                    {viewMode === "details" &&
-                        (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") &&
-                        ["CHO_DUYET"].includes(outboundStatus as string) && (
-                            <>
+                                {/* Dòng thứ hai */}
+                                <div className="flex items-center">
+                                    <label className="mr-3 text-sm font-medium text-black dark:text-white">
+                                        Trạng thái đơn:
+                                    </label>
+                                    {renderOutboundStatus(outboundStatus)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                        <h3 className="font-medium text-black dark:text-white">Danh sách sản phẩm</h3>
+                    </div>
+                    <div className="p-6.5">
+                        {viewMode !== "details" && ["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string) && (
+                            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                                <label className="mb-3 block self-center whitespace-nowrap text-sm font-medium text-black dark:text-white">
+                                    Tên sản phẩm <span className="text-meta-1">*</span>
+                                </label>
+                                <ReactSelect
+                                    defaultValue={product ? product.registrationCode : ""}
+                                    onChange={(optionValue) => {
+                                        if (!optionValue) return;
+                                        const option = productOpts.find(
+                                            (opt) => opt.registrationCode === optionValue.value
+                                        );
+                                        setProduct({
+                                            ...option,
+                                            baseUnit: option?.productBaseUnit,
+                                            product: {
+                                                id: option?.id,
+                                                productName: option?.productName,
+                                                productCode: option?.registrationCode,
+                                            },
+                                            batch: {
+                                                id: undefined,
+                                                batchCode: undefined,
+                                                expireDate: undefined,
+                                            },
+                                            targetUnit: {
+                                                id: undefined,
+                                            },
+                                        });
+                                    }}
+                                    // onInputChange={handleTypeProduct}
+                                    options={productOpts.map((option) => ({
+                                        value: option.registrationCode,
+                                        label: option.productName,
+                                    }))}
+                                    onMenuOpen={async () => await getProductOpts("")}
+                                    placeholder="Tìm kiếm sản phẩm..."
+                                    isSearchable
+                                    isClearable
+                                    isLoading={isFetchingProduct}
+                                    styles={{
+                                        control: (baseStyles, state) => ({
+                                            ...baseStyles,
+                                            width: "100%",
+                                            padding: "0.75rem 1.25rem",
+                                            cursor: "text",
+                                        }),
+                                    }}
+                                    className={"w-full"}
+                                />
+                                <IconButton
+                                    icon={<FaPlus />}
+                                    onClick={(e) => {
+                                        e!.preventDefault();
+                                        if (!product) {
+                                            // Nếu không có sản phẩm, thông báo lỗi
+                                            toast.error("Vui lòng chọn sản phẩm trước khi thêm.");
+                                            return;
+                                        }
+                                        addItem(e);
+                                    }}
+                                />
+                            </div>
+                        )}
+                        <ProductsTableOutbound
+                            data={products || []}
+                            active={
+                                viewMode !== "details" &&
+                                ["BAN_NHAP", "CHUA_LUU", "KIEM_HANG"].includes(outboundStatus as string)
+                            }
+                            errors={errors.outboundProductDetails || []} // Truyền lỗi vào đây
+                            outboundType={outboundType}
+                            setProducts={setValue}
+                            outboundStatus={outboundStatus}
+                            taxable={watch("taxable")}
+                            totalPrice={watch("totalPrice")}
+                            onTotalPriceChange={handleTotalPriceChange}
+                        />
+
+                        {viewMode === "details" &&
+                            ["CHO_DUYET"].includes(outboundStatus as string) &&
+                            userInfo?.roles[0].type === "STAFF" &&
+                            ["CHO_DUYET"].includes(outboundStatus as string) && (
                                 <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
                                     <div className="w-1/2">
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                            type="button"
-                                            onClick={() => handleOpenModal("DUYỆT")}
+                                            onClick={() => handleOpenModal("BỎ_DUYỆT")}
+                                            type={"button"}
                                         >
-                                            Duyệt Đơn
+                                            Hủy yêu cầu chờ duyệt
                                         </button>
                                     </div>
                                     <div className="w-1/2">
                                         <button
                                             className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                            type="button"
-                                            onClick={() => handleOpenModal("TỪ_CHỐI")}
+                                            onClick={() => router.push(`/outbound/list`)}
+                                            type={"button"}
                                         >
-                                            Từ chối Đơn
+                                            Quay lại danh sách
                                         </button>
                                     </div>
                                 </div>
-                            </>
+                            )}
+
+                        {viewMode === "details" &&
+                            ["BAN_NHAP"].includes(outboundStatus as string) &&
+                            userInfo?.roles[0].type === "STAFF" && (
+                                <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={(e) => handleChangeStatus(e, "CHO_DUYET")}
+                                    >
+                                        Gửi đơn
+                                    </button>
+                                </div>
+                            )}
+
+                        {viewMode === "details" &&
+                            (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") &&
+                            ["CHO_DUYET"].includes(outboundStatus as string) && (
+                                <>
+                                    <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                        <div className="w-1/2">
+                                            <button
+                                                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                                type="button"
+                                                onClick={() => handleOpenModal("DUYỆT")}
+                                            >
+                                                Duyệt Đơn
+                                            </button>
+                                        </div>
+                                        <div className="w-1/2">
+                                            <button
+                                                className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                                type="button"
+                                                onClick={() => handleOpenModal("TỪ_CHỐI")}
+                                            >
+                                                Từ chối Đơn
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                        {viewMode === "update" && ["KIEM_HANG"].includes(outboundStatus as string) && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={() => {
+                                            setValue("status", "KIEM_HANG");
+                                            setAction("HOAN_THANH");
+                                            console.log(errors);
+                                        }}
+                                    >
+                                        Cập nhật, xuất hàng và xác nhận đơn hoàn thành
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        type="submit"
+                                        onClick={setValue("status", "KIEM_HANG")}
+                                    >
+                                        Cập nhật và xuất hàng
+                                    </button>
+                                </div>
+                            </div>
                         )}
 
-                    {viewMode === "update" && ["KIEM_HANG"].includes(outboundStatus as string) && (
-                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                            <div className="w-1/2">
+                        {viewMode === "create" && outboundType !== "BAN_HANG" && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={() => {
+                                            setAction("CHO_DUYET");
+                                            console.log(errors);
+                                        }}
+                                    >
+                                        Tạo và gửi yêu cầu duyệt
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        type="submit"
+                                        onClick={() => {
+                                            setAction("BAN_NHAP");
+                                            console.log(errors);
+                                        }}
+                                    >
+                                        Lưu đơn
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {viewMode === "update" && ["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string) && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                        type="submit"
+                                        onClick={() => {
+                                            setAction("CHO_DUYET");
+                                            console.log(errors);
+                                        }}
+                                    >
+                                        Cập nhật và gửi yêu cầu duyệt
+                                    </button>
+                                </div>
+                                <div className="w-1/2">
+                                    <button
+                                        className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
+                                        type="submit"
+                                        onClick={() => {
+                                            setAction("BAN_NHAP");
+                                            console.log(errors);
+                                        }}
+                                    >
+                                        Cập nhật
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {viewMode === "create" && outboundType === "BAN_HANG" && (
+                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
                                 <button
                                     className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                     type="submit"
                                     onClick={() => {
-                                        setValue("status", "KIEM_HANG");
-                                        setAction("HOAN_THANH");
                                         console.log(errors);
                                     }}
                                 >
-                                    Cập nhật, xuất hàng và xác nhận đơn hoàn thành
+                                    Tạo đơn
                                 </button>
                             </div>
-                            <div className="w-1/2">
-                                <button
-                                    className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                    type="submit"
-                                    onClick={setValue("status", "KIEM_HANG")}
-                                >
-                                    Cập nhật và xuất hàng
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                        )}
 
-                    {viewMode === "create" && outboundType !== "BAN_HANG" && (
-                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                            <div className="w-1/2">
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                    onClick={() => {
-                                        setAction("CHO_DUYET");
-                                        console.log(errors);
-                                    }}
-                                >
-                                    Tạo và gửi yêu cầu duyệt
-                                </button>
-                            </div>
-                            <div className="w-1/2">
-                                <button
-                                    className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                    type="submit"
-                                    onClick={() => {
-                                        setAction("BAN_NHAP");
-                                        console.log(errors);
-                                    }}
-                                >
-                                    Lưu đơn
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {viewMode === "update" && ["CHUA_LUU", "BAN_NHAP"].includes(outboundStatus as string) && (
-                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                            <div className="w-1/2">
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                    onClick={() => {
-                                        setAction("CHO_DUYET");
-                                        console.log(errors);
-                                    }}
-                                >
-                                    Cập nhật và gửi yêu cầu duyệt
-                                </button>
-                            </div>
-                            <div className="w-1/2">
-                                <button
-                                    className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                    type="submit"
-                                    onClick={() => {
-                                        setAction("BAN_NHAP");
-                                        console.log(errors);
-                                    }}
-                                >
-                                    Cập nhật
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {viewMode === "create" && outboundType === "BAN_HANG" && (
-                        <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
+                        {viewMode === "details" && outboundStatus === "KIEM_HANG" && (
                             <button
-                                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
+                                className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                 type="submit"
                                 onClick={() => {
+                                    handleOpenModal("HOAN_THANH");
                                     console.log(errors);
                                 }}
                             >
-                                Tạo đơn
+                                Xuất hàng
                             </button>
-                        </div>
-                    )}
-
-                    {viewMode === "details" && outboundStatus === "KIEM_HANG" && (
-                        <button
-                            className="mt-6.5 flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                            type="submit"
-                            onClick={() => {
-                                handleOpenModal("HOAN_THANH");
-                                console.log(errors);
-                            }}
-                        >
-                            Xuất hàng
-                        </button>
-                    )}
+                        )}
+                    </div>
                 </div>
-            </div>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={false}>
-                <ModalContent>
-                    {(onClose) => (
-                        <>
-                            <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
-                            <ModalBody>
-                                {(() => {
-                                    switch (action) {
-                                        case "CHO_DUYET":
-                                            return <p>Bạn có chắc muốn gửi yêu cầu duyệt?</p>;
-                                        case "BỎ_DUYỆT":
-                                            return <p>Bạn có chắc muốn hủy yêu cầu duyệt đơn?</p>;
-                                        case "DUYỆT":
-                                            return <p>Bạn có chắc muốn duyệt đơn này?</p>;
-                                        case "TỪ_CHỐI":
-                                            return <p>Bạn có chắc muốn từ chối đơn này?</p>;
-                                        case "KIỂM":
-                                            return <p>Bạn có chắc hàng đã về để kiểm đơn này?</p>;
-                                        case "HOAN_THANH":
-                                            return (
-                                                <>
-                                                    <p>Bạn có muốn đánh dấu đơn này hoàn thành không?</p>
-                                                    <p>
-                                                        <i style={{ color: "red" }}>
-                                                            Lưu ý: Nếu xác nhận hoàn thành đơn hàng, bạn không thể quay
-                                                            lại chỉnh sửa được nữa.
-                                                        </i>
-                                                    </p>
-                                                </>
-                                            );
-                                        case "EXPORT":
-                                            return (
-                                                <iframe
-                                                    src={previewUrl}
-                                                    width="100%"
-                                                    height="500px"
-                                                    title="Preview PDF"
-                                                ></iframe>
-                                            );
-                                        default:
-                                            return (
-                                                <>
-                                                    <p>Vui lòng chọn kiểu xuất hàng</p>
-                                                    <Select
-                                                        value={outboundType}
-                                                        onChange={(e) =>
-                                                            setOutboundType(
-                                                                e.target.value as
-                                                                    | "HUY_HANG"
-                                                                    | "TRA_HANG"
-                                                                    | "BAN_HANG"
-                                                                    | "CHUYEN_KHO_NOI_BO"
-                                                            )
-                                                        }
-                                                        label="Chọn kiểu xuất hàng"
-                                                        className="max-w-full"
-                                                    >
-                                                        <SelectItem key={"CHUYEN_KHO_NOI_BO"}>
-                                                            Chuyển kho nội bộ
-                                                        </SelectItem>
-                                                        <SelectItem key={"HUY_HANG"}>Hủy hàng</SelectItem>
-                                                        <SelectItem key={"TRA_HANG"}>Trả hàng</SelectItem>
-                                                        <SelectItem key={"BAN_HANG"}>Bán hàng</SelectItem>
-                                                    </Select>
-                                                </>
-                                            );
-                                    }
-                                })()}
-                            </ModalBody>
-                            <ModalFooter>
-                                <Button
-                                    color="default"
-                                    variant="light"
-                                    onPress={async () => {
+                <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={false}>
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
+                                <ModalBody>
+                                    {(() => {
                                         switch (action) {
                                             case "CHO_DUYET":
-                                                toast.warning("Hủy gửi yêu cầu duyệt đơn!");
-                                                break;
+                                                return <p>Bạn có chắc muốn gửi yêu cầu duyệt?</p>;
                                             case "BỎ_DUYỆT":
-                                                toast.warning("Bỏ hủy yêu cầu duyệt đơn!");
-                                                break;
+                                                return <p>Bạn có chắc muốn hủy yêu cầu duyệt đơn?</p>;
                                             case "DUYỆT":
-                                                toast.warning("Bỏ duyệt đơn xuất hàng!");
-                                                break;
+                                                return <p>Bạn có chắc muốn duyệt đơn này?</p>;
                                             case "TỪ_CHỐI":
-                                                toast.warning("Từ chối duyệt đơn xuất hàng!");
-                                                break;
+                                                return <p>Bạn có chắc muốn từ chối đơn này?</p>;
                                             case "KIỂM":
-                                                toast.warning(
-                                                    "Hủy chuyển đơn xuất hàng sang trạng thái kiểm hàng thành công!"
-                                                );
-                                                break;
+                                                return <p>Bạn có chắc hàng đã về để kiểm đơn này?</p>;
                                             case "HOAN_THANH":
-                                                toast.warning(
-                                                    "Lưu đơn, xuất hàng thành công nhưng xác nhận đơn hoàn thành thất bại!"
+                                                return (
+                                                    <>
+                                                        <p>Bạn có muốn đánh dấu đơn này hoàn thành không?</p>
+                                                        <p>
+                                                            <i style={{ color: "red" }}>
+                                                                Lưu ý: Nếu xác nhận hoàn thành đơn hàng, bạn không thể
+                                                                quay lại chỉnh sửa được nữa.
+                                                            </i>
+                                                        </p>
+                                                    </>
                                                 );
-                                                router.push(`/outbound/list`);
-                                                break;
                                             case "EXPORT":
-                                                toast.error("Hủy xuất phiếu!");
-                                                break;
+                                                return (
+                                                    <iframe
+                                                        src={previewUrl}
+                                                        width="100%"
+                                                        height="500px"
+                                                        title="Preview PDF"
+                                                    ></iframe>
+                                                );
                                             default:
-                                                toast.error("Khởi tạo đơn xuất hàng thất bại!");
-                                                router.push(`/outbound/list`);
-                                                break;
+                                                return (
+                                                    <>
+                                                        <p>Vui lòng chọn kiểu xuất hàng</p>
+                                                        <Select
+                                                            value={outboundType}
+                                                            onChange={(e) =>
+                                                                setOutboundType(
+                                                                    e.target.value as
+                                                                        | "HUY_HANG"
+                                                                        | "TRA_HANG"
+                                                                        | "BAN_HANG"
+                                                                        | "CHUYEN_KHO_NOI_BO"
+                                                                )
+                                                            }
+                                                            label="Chọn kiểu xuất hàng"
+                                                            className="max-w-full"
+                                                        >
+                                                            <SelectItem key={"CHUYEN_KHO_NOI_BO"}>
+                                                                Chuyển kho nội bộ
+                                                            </SelectItem>
+                                                            <SelectItem key={"HUY_HANG"}>Hủy hàng</SelectItem>
+                                                            <SelectItem key={"TRA_HANG"}>Trả hàng</SelectItem>
+                                                            <SelectItem key={"BAN_HANG"}>Bán hàng</SelectItem>
+                                                        </Select>
+                                                    </>
+                                                );
                                         }
-                                        setAction("");
-                                        onClose(); // Đóng modal
-                                    }}
-                                >
-                                    Không
-                                </Button>
-                                <Button
-                                    color="primary"
-                                    onPress={async () => {
-                                        await handleAction(action); // Xử lý logic chính
-                                        setAction("");
-                                        onClose(); // Đóng modal
-                                    }}
-                                >
-                                    Chắc chắn
-                                </Button>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
-        </form>
+                                    })()}
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button
+                                        color="default"
+                                        variant="light"
+                                        onPress={async () => {
+                                            switch (action) {
+                                                case "CHO_DUYET":
+                                                    toast.warning("Hủy gửi yêu cầu duyệt đơn!");
+                                                    break;
+                                                case "BỎ_DUYỆT":
+                                                    toast.warning("Bỏ hủy yêu cầu duyệt đơn!");
+                                                    break;
+                                                case "DUYỆT":
+                                                    toast.warning("Bỏ duyệt đơn xuất hàng!");
+                                                    break;
+                                                case "TỪ_CHỐI":
+                                                    toast.warning("Từ chối duyệt đơn xuất hàng!");
+                                                    break;
+                                                case "KIỂM":
+                                                    toast.warning(
+                                                        "Hủy chuyển đơn xuất hàng sang trạng thái kiểm hàng thành công!"
+                                                    );
+                                                    break;
+                                                case "HOAN_THANH":
+                                                    toast.warning(
+                                                        "Lưu đơn, xuất hàng thành công nhưng xác nhận đơn hoàn thành thất bại!"
+                                                    );
+                                                    router.push(`/outbound/list`);
+                                                    break;
+                                                case "EXPORT":
+                                                    toast.error("Hủy xuất phiếu!");
+                                                    break;
+                                                default:
+                                                    toast.error("Khởi tạo đơn xuất hàng thất bại!");
+                                                    router.push(`/outbound/list`);
+                                                    break;
+                                            }
+                                            setAction("");
+                                            onClose(); // Đóng modal
+                                        }}
+                                    >
+                                        Không
+                                    </Button>
+                                    <Button
+                                        color="primary"
+                                        onPress={async () => {
+                                            await handleAction(action); // Xử lý logic chính
+                                            setAction("");
+                                            onClose(); // Đóng modal
+                                        }}
+                                    >
+                                        Chắc chắn
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
+            </form>
+        </>
     );
 };
 
