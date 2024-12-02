@@ -145,7 +145,7 @@ const ProductsTableBeforeCheck = ({
                                         type="text"
                                         defaultValue={taxable ? product.taxRate || "0" : "0"}
                                         onChange={(e) => handleChangeTaxRate(e, key)}
-                                        disabled
+                                        disabled={!active}
                                         className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                     />
                                     <span className="text-meta-5">%</span>

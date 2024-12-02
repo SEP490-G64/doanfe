@@ -9,13 +9,13 @@ import InputDateOne from "@/components/FormElements/InputDate/InputDateOne";
 import SelectGroupOne from "@/components/SelectGroup/SelectGroupOne";
 
 function HeaderTaskbar({
-                               productId,
-                               sessionToken,
-                               buttons,
-                               dataSearch,
-                               setDataSearch,
-                               handleSearch,
-                           }: {
+    productId,
+    sessionToken,
+    buttons,
+    dataSearch,
+    setDataSearch,
+    handleSearch,
+}: {
     productId?: string;
     sessionToken: string;
     buttons?: string;
@@ -30,7 +30,7 @@ function HeaderTaskbar({
             <div className="flex-1">
                 <div className="relative">
                     <button
-                        className="absolute left-0 top-0 h-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700 flex items-center justify-center"
+                        className="absolute left-0 top-0 flex h-full items-center justify-center rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
                         onClick={handleSearch}
                     >
                         <svg
@@ -61,11 +61,11 @@ function HeaderTaskbar({
                         value={dataSearch?.keyword}
                         placeholder="Nhập để tìm kiếm..."
                         onChange={(e) => setDataSearch({ ...dataSearch, keyword: e.target.value })}
-                        className="w-full bg-white pl-12 pr-4 py-2 font-medium focus:outline-none xl:w-125"
+                        className="w-full bg-white py-2 pl-12 pr-4 font-medium focus:outline-none xl:w-125"
                     />
                 </div>
 
-                <div className="mt-2 flex gap-4 items-center justify-between w-full">
+                <div className="mt-2 flex w-full items-center justify-between gap-4">
                     {/* Nhóm Produce */}
                     {/*<div className="flex flex-col w-1/2">*/}
                     {/*    <span className="font-semibold text-gray-700">Ngày sản xuất:</span>*/}
@@ -86,9 +86,9 @@ function HeaderTaskbar({
                     {/*</div>*/}
 
                     {/* Nhóm Expire */}
-                    <div className="flex flex-col w-full">
+                    <div className="flex w-full flex-col">
                         {/*<span className="font-semibold text-gray-700">Ngày hết hạn:</span>*/}
-                        <div className="flex gap-2 mt-1 items-center">
+                        <div className="mt-1 flex items-center gap-2">
                             <span className="text-gray-600">Từ:</span>
                             <InputDateOne
                                 dataSearch={dataSearch}

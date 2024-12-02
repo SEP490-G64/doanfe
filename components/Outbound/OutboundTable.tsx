@@ -21,7 +21,7 @@ import {
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { deleteOutbound, exportOutbound, getListOutbound } from "@/services/outboundServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
@@ -38,6 +38,7 @@ import Unauthorized from "@/components/common/Unauthorized";
 
 const OutboundTable = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<string>("");
     const [loading, setLoading] = useState(false);
@@ -52,12 +53,12 @@ const OutboundTable = () => {
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
     const [dataSearch, setDataSearch] = useState<DataSearch>({
-        keyword: "",
-        branchId: userInfo?.branch.id,
-        startDate: "",
-        endDate: "",
-        status: "",
-        type: "",
+        keyword: searchParams.get("keyword") || "",
+        branchId: searchParams.get("branchId") || userInfo?.branch.id,
+        startDate: searchParams.get("startDate") || "",
+        endDate: searchParams.get("endDate") || "",
+        status: searchParams.get("status") || "",
+        type: searchParams.get("type") || "",
     });
 
     const totalPages = useMemo(() => {
@@ -71,7 +72,12 @@ const OutboundTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListOutbound((page - 1).toString(), rowsPerPage.toString(), dataSearch, sessionToken);
+            const response = await getListOutbound(
+                (page - 1).toString(),
+                rowsPerPage.toString(),
+                dataSearch,
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setOutboundData(
@@ -154,15 +160,26 @@ const OutboundTable = () => {
 
     const handleDownload = () => {
         if (previewUrl) {
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = previewUrl;
-            link.setAttribute('download', 'outbound-' + code + '.pdf');
+            link.setAttribute("download", "outbound-" + code + ".pdf");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            toast.success("Xuất phiếu xuất hàng thành công")
+            toast.success("Xuất phiếu xuất hàng thành công");
         }
     };
+
+    useEffect(() => {
+        //Tạo query string từ object dataSearch
+        const queryParams = new URLSearchParams({
+            ...dataSearch,
+            page: page.toString(),
+            size: rowsPerPage.toString(),
+        }).toString();
+        // Chuyển hướng đến đường dẫn mới với query string
+        router.push(`/outbound/list?${queryParams}`);
+    }, [dataSearch, page, rowsPerPage, router]);
 
     const renderOutboundStatus = useCallback((status: string) => {
         switch (status) {
@@ -233,7 +250,7 @@ const OutboundTable = () => {
                     | "outboundDetails"
                     | "status"
                     | "totalPrice"
-                ];
+            ];
 
         switch (columnKey) {
             case "no.":
@@ -246,13 +263,9 @@ const OutboundTable = () => {
                         {(() => {
                             switch (outbound.outboundType) {
                                 case "CHUYEN_KHO_NOI_BO":
-                                    return <span>
-                                            {outbound.toBranch?.branchName}
-                                        </span>;
+                                    return <span>{outbound.toBranch?.branchName}</span>;
                                 case "TRA_HANG":
-                                    return <span>
-                                            {outbound.supplier?.supplierName}
-                                        </span>;
+                                    return <span>{outbound.supplier?.supplierName}</span>;
                                 case "BAN_HANG":
                                     return <span>{"Khách mua"}</span>;
                                 default:
@@ -274,7 +287,9 @@ const OutboundTable = () => {
                     <p className={"font-normal text-black dark:text-white"}>
                         {outbound.totalPrice
                             ? `${outbound.totalPrice.toLocaleString()}đ`
-                            : (outbound.status == "HOAN_THANH" ? "0đ" : "Chưa kiểm hàng nhập")}
+                            : outbound.status == "HOAN_THANH"
+                              ? "0đ"
+                              : "Chưa kiểm hàng nhập"}
                     </p>
                 );
             case "createdDate":
@@ -316,12 +331,20 @@ const OutboundTable = () => {
                             </button>
                         </Tooltip>
                         <Tooltip color="success" content="Xuất file" hidden={!["HOAN_THANH"].includes(outbound.status)}>
-                            <button hidden={!["HOAN_THANH"].includes(outbound.status)} className="hover:text-success" onClick={() => handleExport(outbound.id.toString(), outbound.outboundCode)}>
+                            <button
+                                hidden={!["HOAN_THANH"].includes(outbound.status)}
+                                className="hover:text-success"
+                                onClick={() => handleExport(outbound.id.toString(), outbound.outboundCode)}
+                            >
                                 <CiExport />
                             </button>
                         </Tooltip>
                         <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(outbound.id.toString(), "DELETE")} hidden={!["CHUA_LUU", "BAN_NHAP", "CHO_DUYET"].includes(outbound.status)}>
+                            <button
+                                className="hover:text-danger"
+                                onClick={() => handleOpenModal(outbound.id.toString(), "DELETE")}
+                                hidden={!["CHUA_LUU", "BAN_NHAP", "CHO_DUYET"].includes(outbound.status)}
+                            >
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -358,10 +381,8 @@ const OutboundTable = () => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <>
@@ -372,8 +393,7 @@ const OutboundTable = () => {
                     handleSearch={handleSearch}
                 />
 
-                <div
-                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                     Tìm thấy <span className="font-bold text-blue-600">{total}</span> phiếu xuất hàng
                     <div className="max-w-full overflow-x-auto">
                         <Table
@@ -485,10 +505,11 @@ const OutboundTable = () => {
                                                 <Button color="default" onPress={onClose}>
                                                     Đóng
                                                 </Button>
-                                                <Button color="success" onPress={handleDownload}>Tải xuống</Button>
+                                                <Button color="success" onPress={handleDownload}>
+                                                    Tải xuống
+                                                </Button>
                                             </>
                                         )}
-
                                     </ModalFooter>
                                 </>
                             )}
