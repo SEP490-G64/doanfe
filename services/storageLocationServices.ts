@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BranchBodyType } from "@/lib/schemaValidate/branchSchema";
+import { StorageLocationBodyType } from "@/lib/schemaValidate/storageLocationSchema";
 import * as httpRequest from "@/utils/httpRequests";
 import { toast } from "react-toastify";
 import { DataSearch } from "@/types/supplier";
@@ -9,9 +9,9 @@ interface Params extends DataSearch {
     size?: string;
 }
 
-export const getStaffBranches = async (token: string) => {
+export const getStaffStorageLocations = async (token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/staff/branch`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/storage-location`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -22,9 +22,9 @@ export const getStaffBranches = async (token: string) => {
     }
 };
 
-export const getAllBranch = async (token: string) => {
+export const getAllStorageLocation = async (token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/storage-location`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -35,7 +35,7 @@ export const getAllBranch = async (token: string) => {
     }
 };
 
-export const getListBranch = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
+export const getListStorageLocation = async (page: string, size: string, dataSearch: DataSearch, token: string) => {
     const params: Params = {
         page,
         size,
@@ -48,7 +48,7 @@ export const getListBranch = async (page: string, size: string, dataSearch: Data
     }
 
     try {
-        const res = await httpRequest.get(`dsd/api/v1/admin/branch`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/storage-location`, {
             headers: { Authorization: `Bearer ${token}` },
             params,
         });
@@ -60,9 +60,9 @@ export const getListBranch = async (page: string, size: string, dataSearch: Data
     }
 };
 
-export const getBranchById = async (id: string, token: string) => {
+export const getStorageLocationById = async (id: string, token: string) => {
     try {
-        const res = await httpRequest.get(`dsd/api/v1/admin/branch/${id}`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/storage-location/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -73,9 +73,9 @@ export const getBranchById = async (id: string, token: string) => {
     }
 };
 
-export const createBranch = async (branch: BranchBodyType, token: string) => {
+export const createStorageLocation = async (StorageLocation: StorageLocationBodyType, token: string) => {
     try {
-        const res = await httpRequest.post("dsd/api/v1/admin/branch", branch, {
+        const res = await httpRequest.post("dsd/api/v1/staff/storage-location", StorageLocation, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -97,9 +97,9 @@ export const createBranch = async (branch: BranchBodyType, token: string) => {
     }
 };
 
-export const updateBranch = async (branch: BranchBodyType, id: string, token: string) => {
+export const updateStorageLocation = async (StorageLocation: StorageLocationBodyType, id: string, token: string) => {
     try {
-        const res = await httpRequest.put(`dsd/api/v1/admin/branch/${id}`, branch, {
+        const res = await httpRequest.put(`dsd/api/v1/staff/storage-location/${id}`, StorageLocation, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -121,9 +121,9 @@ export const updateBranch = async (branch: BranchBodyType, id: string, token: st
     }
 };
 
-export const deleteBranch = async (id: string, token: string) => {
+export const deleteStorageLocation = async (id: string, token: string) => {
     try {
-        const res = await httpRequest.deleteAsync(`dsd/api/v1/admin/branch/${id}`, {
+        const res = await httpRequest.deleteAsync(`dsd/api/v1/staff/storage-location/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 

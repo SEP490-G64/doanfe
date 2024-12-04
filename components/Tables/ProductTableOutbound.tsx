@@ -43,6 +43,11 @@ const ProductsTableOutbound = ({
     const [validationErrors, setValidationErrors] = useState<ProductOutboundError[]>([]);
     const [totalPricing, setTotalPrice] = useState<number>(0);
 
+    const handleChangeTaxRate = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        data![index].taxRate = Number(e.target.value);
+        setProducts("outboundProductDetails", data);
+    };
+
     useEffect(() => {
         const timer = setTimeout(() => {
             if (data.length > 0) {
@@ -499,7 +504,7 @@ const ProductsTableOutbound = ({
                                         </span>
                                     )}
                                 {errors[key]?.preQuantity && (
-                                    <p className="mt-1 text-xs text-danger">{errors[key]?.preQuantity}</p>
+                                    <p className="mt-1 text-xs text-danger">{errors[key]?.preQuantity.message}</p>
                                 )}
                             </td>
 
@@ -524,7 +529,7 @@ const ProductsTableOutbound = ({
                                     </span>
                                 )}
                                 {errors[key]?.outboundQuantity && (
-                                    <p className="mt-1 text-xs text-danger">{errors[key]?.outboundQuantity}</p>
+                                    <p className="mt-1 text-xs text-danger">{errors[key]?.outboundQuantity.message}</p>
                                 )}
                             </td>
 
@@ -534,7 +539,7 @@ const ProductsTableOutbound = ({
                                         // Hiển thị productQuantity khi không có batches
                                         <input
                                             type="text"
-                                            value={product?.inboundPrice?.toLocaleString() || 0}
+                                            value={product?.inboundPrice ? product?.inboundPrice?.toLocaleString() : "0"}
                                             disabled
                                             className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                         />
@@ -542,7 +547,7 @@ const ProductsTableOutbound = ({
                                         // Hiển thị batchQuantity nếu có, nếu không thì 0
                                         <input
                                             type="text"
-                                            value={product?.price?.toLocaleString() || 0}
+                                            value={product?.price? product?.price?.toLocaleString() : "0"}
                                             disabled
                                             className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                         />
@@ -552,19 +557,25 @@ const ProductsTableOutbound = ({
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <input
                                         type="text"
-                                        defaultValue={
-                                            product?.sellPrice?.toLocaleString() ||
-                                            product?.price?.toLocaleString() ||
-                                            0
-                                        }
+                                        defaultValue={product?.sellPrice ? product?.sellPrice?.toLocaleString() :
+                                            (product?.price ? product?.price?.toLocaleString() : "0")}
                                         disabled
                                         className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                     />
                                 </td>
                             )}
 
-                            <td className="border-b border-[#eee] px-4 py-5 text-center text-black-2" hidden={!taxable}>
-                                {taxable ? product.taxRate || "0" : "0"}%
+                            <td className="border-b border-[#eee] px-4 py-5 text-center" hidden={!taxable}>
+                                <div className="flex items-center justify-center gap-1">
+                                    <input
+                                        type="text"
+                                        defaultValue={taxable ? product.taxRate || "0" : "0"}
+                                        onChange={(e) => handleChangeTaxRate(e, key)}
+                                        disabled={!active}
+                                        className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                    />
+                                    <span className="text-meta-5">%</span>
+                                </div>
                             </td>
 
                             {outboundType !== "BAN_HANG" && (

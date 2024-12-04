@@ -23,6 +23,7 @@ import { FaPlus } from "react-icons/fa";
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
 import Loader from "@/components/common/Loader";
 import {
+    approveInventoryCheck,
     changeInventoryCheckStatus,
     createInitInventoryCheck,
     getInventoryCheckById,
@@ -46,6 +47,8 @@ import { Type } from "@/types/type";
 import IconButton from "../UI/IconButton";
 import ProductsTableInventoryCheck from "../Tables/ProductsTableInventoryCheck";
 import HeaderTaskbar from "../HeaderTaskbar/GoBackHeaderTaskbar/page";
+import { changeOutboundStatus } from "@/services/outboundServices";
+import { changeInboundStatus } from "@/services/inboundServices";
 
 const InventoryCheckForm = ({
     viewMode,
@@ -64,7 +67,6 @@ const InventoryCheckForm = ({
     const [branch, setBranch] = useState<{ id: number; branchName: string } | undefined>();
     const [inventoryCheckStatus, setInventoryCheckStatus] = useState<string | undefined>();
     const [productOpts, setProductOpts] = useState<ProductCheckType[]>([]);
-    const { isOpen, onOpenChange } = useDisclosure();
     const [product, setProduct] = useState();
     const [saveDraft, setSaveDraft] = useState(false);
     const [inventoryCheckType, setInventoryCheckType] = useState<
@@ -74,6 +76,10 @@ const InventoryCheckForm = ({
     const [cateId, setCateId] = useState<string>();
     const [typeOpts, setTypeOpts] = useState([]);
     const [typeId, setTypeId] = useState<string>();
+    const [action, setAction] = useState<string>("");
+    const [approver, setApprover] = useState<{ firstName: string; lastName: string } | undefined>();
+    const [approve, setIsApprove] = useState<boolean | undefined>();
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const renderInventoryCheckStatus = useCallback((status: string | undefined) => {
         if (!status) return;
@@ -137,6 +143,8 @@ const InventoryCheckForm = ({
             createdBy: undefined,
             branch: undefined,
             inventoryCheckProductDetails: [],
+            approvedBy: undefined,
+            isApproved: undefined,
         },
     });
 
@@ -155,9 +163,51 @@ const InventoryCheckForm = ({
         [branchId]
     );
 
-    const handleTypeProduct = (inputString: string) => {
-        debouncedFetchOptions(inputString);
-        return inputString;
+    const handleAction = async (action: string) => {
+        try {
+            let res;
+            switch (action) {
+                case "CHO_DUYET":
+                    res = await changeInventoryCheckStatus(watch("inventoryCheckId")!.toString(), "CHO_DUYET", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Gửi yêu cầu duyệt đơn thành công!");
+                    }
+                    router.push(`/inventory-check-note/list`);
+                    break;
+                case "DUYỆT":
+                    await handleApprove(true);
+                    break;
+                case "TỪ_CHỐI":
+                    await handleApprove(false);
+                    break;
+                default:
+                    await initInventoryCheck();
+                    break;
+            }
+            setAction("");
+        } catch (error) {
+            console.error("Error handling action:", error);
+            toast.error("Có lỗi xảy ra khi xử lý yêu cầu");
+        }
+    };
+
+    const handleApprove = async (accept: boolean) => {
+        const response = await approveInventoryCheck(inventoryCheckId as string, accept, sessionToken);
+        if (response.status === "SUCCESS") {
+            if (accept) {
+                toast.warning("Hệ thống đang xử lý dữ liệu");
+
+                try {
+                    const res = await submitInventoryCheck(inventoryCheckId as string, sessionToken);
+                }
+                catch (error) {
+                    console.error("Error handling action:", error);
+                    toast.error("Có lỗi xảy ra khi xử lý yêu cầu");
+                }
+            }
+            router.push("/inventory-check-note/list");
+            router.refresh();
+        }
     };
 
     const addItem = (e?: React.MouseEvent) => {
@@ -210,6 +260,12 @@ const InventoryCheckForm = ({
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy?.id);
                 setValue("inventoryCheckProductDetails", response.data.inventoryCheckProductDetails);
+                setValue("approvedBy.id", response.data.approvedBy?.id);
+                setValue("isApproved", response.data.isApproved);
+
+                // Cập nhật state
+                setApprover(response.data.approvedBy);
+                setIsApprove(response.data.isApproved);
                 setUser(response.data.createdBy);
                 setBranch(response.data.branch);
                 setInventoryCheckStatus(response.data.status);
@@ -280,25 +336,6 @@ const InventoryCheckForm = ({
         }
     }, []);
 
-    const handleChangeStatus = async (e: React.MouseEvent, status: string) => {
-        e.preventDefault();
-        const response = await changeInventoryCheckStatus(inventoryCheckId as string, status, sessionToken);
-        if (response.status === "SUCCESS") {
-            router.push("/inventory-check-note/list");
-            router.refresh();
-        }
-    };
-
-    const handleSubmitInventoryCheck = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        const response = await submitInventoryCheck(inventoryCheckId as string, sessionToken);
-        if (response.status === "SUCCESS") {
-            router.push("/inventory-check-note/list");
-            router.refresh();
-            await changeInventoryCheckStatus(inventoryCheckId as string, "DA_CAN_BANG", sessionToken);
-        }
-    };
-
     const onSubmit = async (inventoryCheck: CheckBodyType) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
@@ -326,8 +363,11 @@ const InventoryCheckForm = ({
             const response = await submitDraft(inventoryCheck, sessionToken);
 
             if (response && response.status === "SUCCESS") {
-                if (!saveDraft)
-                    await changeInventoryCheckStatus(watch("inventoryCheckId")!.toString(), "CHO_DUYET", sessionToken);
+                await changeInboundStatus(watch("inventoryCheckId")!.toString(), "BAN_NHAP", sessionToken);
+                if (action === "CHO_DUYET") {
+                    handleOpenModal(action);
+                    return;
+                }
                 router.push("/inventory-check-note/list");
                 router.refresh();
             }
@@ -338,38 +378,69 @@ const InventoryCheckForm = ({
         }
     };
 
+    const handleOpenModal = (action: string) => {
+        setAction(action);
+        if (action !== "") {
+            onOpen();
+        }
+    };
+
     if (loading) return <Loader />;
     return (
         <>
             <HeaderTaskbar />
             <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)} noValidate>
                 {/* <!--  Thông tin người duyệt --> */}
-                {/* {viewMode !== "create" && (
+                {viewMode !== "create" && (
                     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <div className="p-6.5">
                             <div className="flex flex-col gap-6 xl:flex-row">
-                                <div className="flex w-full items-center gap-2 xl:w-1/2">
+                                <div className="flex w-full items-center gap-2 xl:w-3/5">
                                     <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                        Người duyệt: <span className="text-meta-1">*</span>
+                                        Người duyệt:
                                     </label>
                                     <input
+                                        defaultValue={
+                                            approver ? `${approver?.firstName} ${approver?.lastName}` : ""
+                                        }
                                         type="text"
-                                        placeholder="Nhập người duyệt"
-                                        disabled={viewMode === "details"}
+                                        placeholder="Chưa được duyệt"
+                                        disabled
                                         className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                     />
                                 </div>
-    
-                                <div className="flex w-full items-center gap-2 xl:w-1/2">
+
+                                <div className="flex w-full items-center gap-2 xl:w-2/5">
                                     <label className="mr-2 w-fit whitespace-nowrap text-sm font-medium text-black dark:text-white">
-                                        Ngày duyệt: <span className="text-meta-1">*</span>
+                                        Trạng thái duyệt:
                                     </label>
-                                    <DatePickerOne disabled={true} />
+                                    {(() => {
+                                        switch (approve) {
+                                            case false:
+                                                return (
+                                                    <p className="inline-flex rounded bg-danger/10 px-3 py-1 text-sm font-medium text-danger">
+                                                        Đơn bị từ chối
+                                                    </p>
+                                                );
+                                            case true:
+                                                return (
+                                                    <p className="inline-flex rounded bg-success/10 px-3 py-1 text-sm font-medium text-success">
+                                                        Đơn đã được duyệt
+                                                    </p>
+                                                );
+                                            default:
+                                                return (
+                                                    <p className="inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning">
+                                                        Đơn chưa được duyệt
+                                                    </p>
+                                                );
+                                        }
+                                    })()}
                                 </div>
                             </div>
                         </div>
                     </div>
-                )} */}
+                )}
 
                 {/* <!-- Input Fields --> */}
                 <div className="w-full rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -608,32 +679,6 @@ const InventoryCheckForm = ({
                             />
                         )}
 
-                        {viewMode === "details" && ["KIEM_HANG"].includes(inventoryCheckStatus as string) && (
-                            <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                                <button
-                                    className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                    type="submit"
-                                    onClick={(e) => handleSubmitInventoryCheck(e)}
-                                >
-                                    Kiểm hàng
-                                </button>
-                            </div>
-                        )}
-
-                        {viewMode === "details" &&
-                            ["BAN_NHAP"].includes(inventoryCheckStatus as string) &&
-                            userInfo?.roles[0].type === "STAFF" && (
-                                <div className="mt-6.5 flex flex-col items-center gap-6 xl:flex-row">
-                                    <button
-                                        className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                        type="submit"
-                                        onClick={(e) => handleChangeStatus(e, "CHO_DUYET")}
-                                    >
-                                        Gửi đơn
-                                    </button>
-                                </div>
-                            )}
-
                         {viewMode === "details" &&
                             ["CHO_DUYET", "BAN_NHAP"].includes(inventoryCheckStatus as string) &&
                             (userInfo?.roles[0].type === "ADMIN" || userInfo?.roles[0].type === "MANAGER") && (
@@ -641,8 +686,8 @@ const InventoryCheckForm = ({
                                     <div className="w-1/2">
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
-                                            type="submit"
-                                            onClick={(e) => handleSubmitInventoryCheck(e)}
+                                            type={"button"}
+                                            onClick={() => handleOpenModal("DUYỆT")}
                                         >
                                             Duyệt Đơn
                                         </button>
@@ -650,7 +695,8 @@ const InventoryCheckForm = ({
                                     <div className="w-1/2">
                                         <button
                                             className="flex w-full justify-center rounded border border-strokedark p-3 font-medium text-strokedark hover:bg-gray/90"
-                                            onClick={(e) => handleChangeStatus(e, "DANG_KIEM")}
+                                            type={"button"}
+                                            onClick={() => handleOpenModal("TỪ_CHỐI")}
                                         >
                                             Từ chối duyệt
                                         </button>
@@ -665,9 +711,11 @@ const InventoryCheckForm = ({
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type="submit"
-                                            onClick={() => console.log(errors)}
+                                            onClick={() => {
+                                                setAction("CHO_DUYET");
+                                            }}
                                         >
-                                            {viewMode === "create" ? "Tạo và gửi đơn" : "Gửi đơn"}
+                                            {viewMode === "create" ? "Tạo và gửi yêu cầu duyệt" : "Lưu và gửi yêu cầu duyệt"}
                                         </button>
                                     </div>
                                     <div className="w-1/2">
@@ -689,36 +737,69 @@ const InventoryCheckForm = ({
                             <>
                                 <ModalHeader className="flex flex-col gap-1">Xác nhận</ModalHeader>
                                 <ModalBody>
-                                    <p>Vui lòng chọn kiểu kiểm hàng</p>
-                                    <Select
-                                        value={inventoryCheckType}
-                                        onChange={(e) =>
-                                            setInventoryCheckType(
-                                                e.target.value as
-                                                    | "KIEM_KHO_DINH_KY"
-                                                    | "KIEM_KHO_DOT_XUAT"
-                                                    | "KIEM_KHO_VAT_LY_TOAN_PHAN"
-                                                    | "KIEM_KHO_TRONG_TAM"
-                                            )
+                                    {(() => {
+                                        switch (action) {
+                                            case "CHO_DUYET":
+                                                return <p>Bạn có chắc muốn gửi yêu cầu duyệt?</p>;
+                                            case "DUYỆT":
+                                                return <p>Bạn có chắc muốn duyệt đơn này?</p>;
+                                            case "TỪ_CHỐI":
+                                                return <p>Bạn có chắc muốn từ chối đơn này?</p>;
+                                            default:
+                                                return (
+                                                    <>
+                                                        <p>Vui lòng chọn kiểu kiểm hàng</p>
+                                                        <Select
+                                                            value={inventoryCheckType}
+                                                            onChange={(e) =>
+                                                                setInventoryCheckType(
+                                                                    e.target.value as
+                                                                        | "KIEM_KHO_DINH_KY"
+                                                                        | "KIEM_KHO_DOT_XUAT"
+                                                                        | "KIEM_KHO_VAT_LY_TOAN_PHAN"
+                                                                        | "KIEM_KHO_TRONG_TAM",
+                                                                )
+                                                            }
+                                                            label="Chọn kiểu kiểm hàng"
+                                                            className="max-w-full"
+                                                        >
+                                                            <SelectItem key={"KIEM_KHO_DINH_KY"}>Kiểm kho định
+                                                                kỳ</SelectItem>
+                                                            <SelectItem key={"KIEM_KHO_DOT_XUAT"}>Kiểm kho đột
+                                                                xuất</SelectItem>
+                                                            <SelectItem key={"KIEM_KHO_VAT_LY_TOAN_PHAN"}>
+                                                                Kiểm kho theo nhóm sản phẩm
+                                                            </SelectItem>
+                                                            <SelectItem key={"KIEM_KHO_TRONG_TAM"}>Kiểm kho theo loại
+                                                                sản phẩm</SelectItem>
+                                                        </Select>
+                                                    </>
+                                                );
                                         }
-                                        label="Chọn kiểu kiểm hàng"
-                                        className="max-w-full"
-                                    >
-                                        <SelectItem key={"KIEM_KHO_DINH_KY"}>Kiểm kho định kỳ</SelectItem>
-                                        <SelectItem key={"KIEM_KHO_DOT_XUAT"}>Kiểm kho đột xuất</SelectItem>
-                                        <SelectItem key={"KIEM_KHO_VAT_LY_TOAN_PHAN"}>
-                                            Kiểm kho theo nhóm sản phẩm
-                                        </SelectItem>
-                                        <SelectItem key={"KIEM_KHO_TRONG_TAM"}>Kiểm kho theo loại sản phẩm</SelectItem>
-                                    </Select>
+                                    })()}
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button
                                         color="default"
                                         variant="light"
-                                        onPress={() => {
-                                            onClose();
-                                            toast.error("Khởi tạo đơn kiểm hàng thất bại");
+                                        onPress={async () => {
+                                            switch (action) {
+                                                case "CHO_DUYET":
+                                                    toast.warning("Hủy gửi yêu cầu duyệt đơn!");
+                                                    break;
+                                                case "DUYỆT":
+                                                    toast.warning("Bỏ duyệt đơn kiểm hàng!");
+                                                    break;
+                                                case "TỪ_CHỐI":
+                                                    toast.warning("Từ chối duyệt đơn kiểm hàng!");
+                                                    break;
+                                                default:
+                                                    toast.error("Khởi tạo đơn kiểm hàng thất bại!");
+                                                    router.push(`/inventory-check-note/list`);
+                                                    break;
+                                            }
+                                            setAction("");
+                                            onClose(); // Đóng modal
                                         }}
                                     >
                                         Không
@@ -726,8 +807,9 @@ const InventoryCheckForm = ({
                                     <Button
                                         color="primary"
                                         onPress={async () => {
-                                            await initInventoryCheck();
-                                            onClose();
+                                            await handleAction(action); // Xử lý logic chính
+                                            setAction("");
+                                            onClose(); // Đóng modal
                                         }}
                                     >
                                         Chắc chắn

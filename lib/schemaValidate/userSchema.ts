@@ -15,6 +15,7 @@ export const BranchDtoBody = z
         capacity: z.number().optional(),
         activeStatus: z.boolean().optional(),
         branchType: z.string().optional(),
+        isDeleted: z.boolean().optional(),
     })
     .strict();
 

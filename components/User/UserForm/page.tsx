@@ -361,6 +361,7 @@ const UserForm = ({
                                         <button
                                             className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                             type="submit"
+                                            onClick={() => console.log(errors)}
                                         >
                                             {viewMode === "create" ? "Tạo mới" : "Cập nhật"}
                                         </button>

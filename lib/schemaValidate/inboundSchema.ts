@@ -59,7 +59,7 @@ const ProductInbound = z
         registrationCode: z.string().trim().optional(),
         productName: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm").max(100, "Giới hạn 100 kí tự"),
         discount: z.number().optional(),
-        taxRate: z.number().optional(),
+        taxRate: z.number().min(0, "Thuế không âm").max(150, "Thuế không vượt quá 150").optional(),
         productBaseUnit: z.object({ id: z.number(), unitName: z.string() }).optional(),
         baseUnit: z.object({ id: z.number(), unitName: z.string() }).optional(),
         requestQuantity: z
@@ -74,7 +74,11 @@ const ProductInbound = z
         receiveQuantity: z.number().int().optional(),
         productQuantity: z.number().int().optional(),
         batches: z.array(BatchProduct).optional(),
-        price: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
+        price: z
+            .number()
+            .min(0, "Giá không thể nhỏ hơn 0")
+            .max(100000000, "Không thể điền giá lớn hơn 100,000,000")
+            .optional(),
         inboundPrice: z.number().optional(),
         sellPrice: z.number().optional(),
         productUnits: z.array(z.object({ id: z.number(), unitName: z.string() })).optional(),

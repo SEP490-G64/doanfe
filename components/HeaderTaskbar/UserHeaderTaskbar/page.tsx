@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaFileImport } from "react-icons/fa6";
 
@@ -10,6 +10,8 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure
 import { toast } from "react-toastify";
 import { exportUser, importUser } from "@/services/userServices";
 import { FaFileExport } from "react-icons/fa";
+import { getAllBranch } from "@/services/branchServices";
+import { Branch } from "@/types/branch";
 
 function UserHeaderTaskbar({
                                sessionToken,
@@ -33,6 +35,25 @@ function UserHeaderTaskbar({
         { value: "DEACTIVATE", label: "Vô hiệu hóa" },
         { value: "REJECTED", label: "Từ chối" },
     ];
+    const [branchOpts, setBranchOpts] = useState([]);
+
+    const getDataOptions = async () => {
+        try {
+            const response = await Promise.all([
+                getAllBranch(sessionToken),
+            ]);
+
+            if (response) {
+                setBranchOpts(response[0].data.map((c: Branch) => ({ value: c.id, label: c.location })));
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        getDataOptions();
+    }, []);
 
     const handleOpenModal = () => {
         onOpen();
@@ -116,7 +137,7 @@ function UserHeaderTaskbar({
     return (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Nhóm ô tìm kiếm và Select */}
-            <div className="flex flex-1 items-center gap-2">
+            <div className="flex w-full items-center gap-4">
                 {/* Ô tìm kiếm */}
                 <div className="relative flex-1">
                     <button
@@ -155,42 +176,63 @@ function UserHeaderTaskbar({
                     />
                 </div>
 
-                {/* Select trạng thái */}
-                <div className="max-w-xs flex-shrink-0">
-                    <SelectGroupOne
-                        placeHolder={"Chọn trạng thái"}
-                        optsData={statusOpts}
-                        dataSearch={dataSearch}
-                        setDataSearch={setDataSearch}
-                        dataKey="status"
-                    />
+                {/* Select chi nhánh và trạng thái */}
+                <div className="flex gap-4 w-full sm:w-auto">
+                    {/* Select chi nhánh */}
+                    <div className="w-full sm:w-48">
+                        <SelectGroupOne
+                            placeHolder="Chọn chi nhánh"
+                            optsData={branchOpts}
+                            dataSearch={dataSearch}
+                            setDataSearch={setDataSearch}
+                            dataKey="branchId"
+                        />
+                    </div>
+
+                    {/* Select trạng thái */}
+                    <div className="w-full sm:w-48">
+                        <SelectGroupOne
+                            placeHolder="Chọn trạng thái"
+                            optsData={statusOpts}
+                            dataSearch={dataSearch}
+                            setDataSearch={setDataSearch}
+                            dataKey="status"
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* Các nút thao tác */}
-            <div className="mt-2 flex gap-2 sm:mt-0">
+            <div className="mt-2 sm:mt-0 flex gap-2 sm:justify-start">
                 <Button
                     label="Nhập file"
                     size="small"
                     icon={<FaFileImport />}
                     type="success"
-                    onClick={() => {
-                        handleOpenModal();
-                    }}
+                    onClick={() => handleOpenModal()}
                 />
                 <Button
                     label="Xuất file"
                     size="small"
                     icon={<FaFileExport />}
                     type="outline"
-                    onClick={() => {
-                        handleExport();
-                    }}
+                    onClick={() => handleExport()}
                 />
-                <Button label="Thêm mới" size="small" icon={<FaPlus />} onClick={() => router.push("/users/create")} />
+                <Button
+                    label="Thêm mới"
+                    size="small"
+                    icon={<FaPlus />}
+                    onClick={() => router.push("/users/create")}
+                />
             </div>
 
-            <Modal isOpen={isOpen} onOpenChange={(isOpen) => { onOpenChange(isOpen); if (!isOpen) setSelectedFile(null); }}>
+            <Modal
+                isOpen={isOpen}
+                onOpenChange={(isOpen) => {
+                    onOpenChange(isOpen);
+                    if (!isOpen) setSelectedFile(null);
+                }}
+            >
                 <ModalContent>
                     {(onClose) => (
                         <>
@@ -200,8 +242,8 @@ function UserHeaderTaskbar({
                                 <div className="mb-4 border-b pb-2">
                                     <h3 className="text-gray-600 mb-2 text-lg font-semibold">Hướng dẫn</h3>
                                     <p className="text-gray-700">
-                                        Vui lòng tải file mẫu, đọc kĩ hướng dẫn trong sheet 2, điền đầy đủ thông tin,
-                                        và tải lên lại file để nhập dữ liệu.
+                                        Vui lòng tải file mẫu, đọc kĩ hướng dẫn trong sheet 2, điền đầy đủ thông tin, và
+                                        tải lên lại file để nhập dữ liệu.
                                     </p>
                                     <a
                                         href="https://hrm-be-bucket.sgp1.digitaloceanspaces.com/documents/UserTemplate.xlsx"
@@ -254,7 +296,7 @@ function UserHeaderTaskbar({
                                         </label>
                                     </div>
                                     {selectedFile && (
-                                        <p className="mt-2 text-sm text-gray-500">Đã chọn: {selectedFile.name}</p>
+                                        <p className="text-gray-500 mt-2 text-sm">Đã chọn: {selectedFile.name}</p>
                                     )}
                                 </div>
                             </ModalBody>
@@ -262,12 +304,15 @@ function UserHeaderTaskbar({
                                 <NextUIButton color="default" onPress={onClose}>
                                     Hủy
                                 </NextUIButton>
-                                <NextUIButton color="primary" onPress={() => {
-                                    handleFileUpload();
-                                    onClose();
-                                }}>
+                                <NextUIButton
+                                    color="primary"
+                                    onPress={() => {
+                                        handleFileUpload();
+                                        onClose();
+                                    }}
+                                >
                                     Nhập file
-                            </NextUIButton>
+                                </NextUIButton>
                             </ModalFooter>
                         </>
                     )}

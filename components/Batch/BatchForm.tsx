@@ -166,9 +166,12 @@ const BatchForm = ({
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some((role) => role.type === "ADMIN")) {
-            return <Unauthorized></Unauthorized>;
-        } else {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
+        else {
             return (
                 <div className="flex flex-col gap-9">
                     {/* <!-- Contact Form --> */}

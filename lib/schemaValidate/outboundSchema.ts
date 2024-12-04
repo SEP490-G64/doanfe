@@ -62,7 +62,7 @@ const ProductOutbound = z
             .max(10000, "Số lượng yêu cầu không thể lớn hơn 10,000")
             .optional(),
         productQuantity: z.number().optional(),
-        taxRate: z.number().optional(),
+        taxRate: z.number().min(0, "Thuế không âm").max(150, "Thuế không vượt quá 150").optional(),
         batchQuantity: z.number().min(0).optional(),
         preQuantity: z.number().min(1, "Số lượng xuất không được nhỏ hơn 1").optional(),
     })
@@ -73,7 +73,7 @@ const ProductOutbound = z
             ctx.addIssue({
                 path: ["preQuantity"], // Gán lỗi vào trường preQuantity
                 code: z.ZodIssueCode.custom,
-                message: "preQuantity phải nhỏ hơn hoặc bằng batchQuantity",
+                message: "Số lượng xuất phải <= số lượng tồn kho",
             });
         }
     });

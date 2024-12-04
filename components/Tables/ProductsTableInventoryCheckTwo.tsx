@@ -100,17 +100,17 @@ const ProductsTableInventoryCheck = ({
                         </div>
                     );
                 case "productName":
-                    return (
+                    return product?.batch?.batchCode ? (
+                        <div className="flex items-center justify-start">
+                            <p className="text-bold ml-12 text-sm capitalize text-default-400">
+                                {product?.batch?.batchCode}
+                            </p>
+                        </div>
+                    ) : (
                         <div className="flex items-center justify-start">
                             <p className="text-bold text-left text-sm capitalize text-secondary">
                                 {product?.product?.productName}
                             </p>
-                        </div>
-                    );
-                case "batchCode":
-                    return (
-                        <div className="flex flex-col items-center justify-center">
-                            <p className="text-bold text-sm capitalize text-default-400">{product?.batch?.batchCode}</p>
                         </div>
                     );
                 case "baseUnit":
@@ -271,10 +271,7 @@ const ProductsTableInventoryCheck = ({
                         STT
                     </TableColumn>
                     <TableColumn className="text-center" key="productName">
-                        Tên sản phẩm
-                    </TableColumn>
-                    <TableColumn className="text-center" key="batchCode">
-                        Mã lô
+                        Tên sản phẩm - Mã lô
                     </TableColumn>
                     <TableColumn className="text-center" key="baseUnit">
                         Đơn vị
