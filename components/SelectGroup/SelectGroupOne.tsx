@@ -37,7 +37,7 @@ const SelectGroupOne = ({
                 <select
                     value={dataSearch[dataKey] || ""}
                     onChange={handleChange}
-                    className={`size-full min-w-[40px] appearance-none rounded border border-strokedark bg-transparent px-3 py-2 outline-none transition ${isOptionSelected ? "text-black dark:text-white" : "text-gray-500"} focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary`}
+                    className={`size-full min-w-[40px] appearance-none rounded border border-strokedark bg-transparent py-2 pl-3 pr-8 outline-none transition ${isOptionSelected ? "text-black dark:text-white" : "text-gray-500"} focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary`}
                     style={{ minHeight: "40px" }} // đảm bảo kích thước tối thiểu phù hợp với nút
                     disabled={userInfo?.roles[0].type === "STAFF" && dataKey == "branchId"}
                 >
