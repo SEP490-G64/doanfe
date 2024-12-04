@@ -105,7 +105,6 @@ export const changeInventoryCheckStatus = async (id: string, status: string, tok
         );
 
         if (res.status === "SUCCESS") {
-            toast.success("Thay đổi trạng thái phiếu kiểm thành công");
             return res;
         }
     } catch (error: any) {
@@ -128,7 +127,7 @@ export const submitInventoryCheck = async (id: string, token: string) => {
         );
 
         if (res.status === "SUCCESS") {
-            toast.success("Kiểm hàng thành công");
+            toast.success("Duyệt đơn và cân bằng kho thành công");
             return res;
         }
     } catch (error: any) {
@@ -154,6 +153,30 @@ export const deleteInventoryCheck = async (id: string, token: string) => {
         if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
         else {
             toast.error("Xóa phiếu kiểm hàng thất bại");
+            console.log(error);
+        }
+    }
+};
+
+export const approveInventoryCheck = async (id: string, accept: boolean, token: string) => {
+    try {
+        const res = await httpRequest.put(
+            `dsd/api/v1/staff/inventory-check/approve/${id}`,
+            {},
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { accept: accept },
+            }
+        );
+
+        if (res.status === "SUCCESS") {
+            if (!accept) toast.success("Từ chối phiếu kiểm thành công");
+            return res;
+        }
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            toast.error("Duyệt / Từ chối phiếu kiểm thất bại");
             console.log(error);
         }
     }

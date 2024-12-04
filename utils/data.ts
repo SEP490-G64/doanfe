@@ -94,12 +94,6 @@ export const outboundColumns = [
     { name: "Tác vụ", uid: "actions" },
 ];
 
-export const allowProductColumns = [
-    { name: "Mã đăng ký", uid: "registrationCode" },
-    { name: "Tên sản phẩm", uid: "productName" },
-    { name: "Tác vụ", uid: "actions" },
-];
-
 export const batchColumns = [
     { name: "STT", uid: "no." },
     { name: "Mã lô", uid: "batchCode" },

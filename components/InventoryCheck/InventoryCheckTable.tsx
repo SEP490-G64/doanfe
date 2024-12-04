@@ -34,6 +34,7 @@ import Unauthorized from "@/components/common/Unauthorized";
 import { DataSearch } from "@/types/inbound";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
+import { CiExport } from "react-icons/ci";
 
 const InventoryCheckTable = () => {
     const router = useRouter();
@@ -134,7 +135,7 @@ const InventoryCheckTable = () => {
         router.push(`/inventory-check-note/list?${queryParams}`);
     }, [dataSearch, page, rowsPerPage, router]);
 
-    const renderOutboundStatus = useCallback((status: string) => {
+    const renderStatus = useCallback((status: string) => {
         switch (status) {
             case "CHUA_LUU":
                 return (
@@ -186,7 +187,7 @@ const InventoryCheckTable = () => {
                     <p className="font-normal text-black dark:text-white">{`${inventoryCheck.createdBy.firstName} ${inventoryCheck.createdBy.lastName}`}</p>
                 );
             case "status":
-                return renderOutboundStatus(inventoryCheck.status);
+                return renderStatus(inventoryCheck.status);
             case "createdDate":
                 return (
                     <p className="font-normal text-black dark:text-white">
@@ -200,6 +201,7 @@ const InventoryCheckTable = () => {
                             <button
                                 className="hover:text-primary"
                                 onClick={() => router.push(`/inventory-check-note/details/${inventoryCheck.id}`)}
+                                hidden={!["DA_CAN_BANG", "CHO_DUYET"].includes(inventoryCheck.status)}
                             >
                                 <svg
                                     className="fill-current"
@@ -224,12 +226,17 @@ const InventoryCheckTable = () => {
                             <button
                                 className="hover:text-secondary"
                                 onClick={() => router.push(`/inventory-check-note/update/${inventoryCheck.id}`)}
+                                hidden={["CHO_DUYET", "DA_CAN_BANG"].includes(inventoryCheck.status)}
                             >
                                 <FaPencil />
                             </button>
                         </Tooltip>
-                        {/* <Tooltip color="danger" content="Xóa">
-                            <button className="hover:text-danger" onClick={() => handleOpenModal(inventoryCheck.id)}>
+                        <Tooltip color="danger" content="Xóa">
+                            <button
+                                className="hover:text-danger"
+                                onClick={() => handleOpenModal(inventoryCheck.id.toString())}
+                                hidden={["DA_CAN_BANG"].includes(inventoryCheck.status)}
+                            >
                                 <svg
                                     className="fill-current"
                                     width="18"
@@ -256,7 +263,7 @@ const InventoryCheckTable = () => {
                                     />
                                 </svg>
                             </button>
-                        </Tooltip> */}
+                        </Tooltip>
                     </div>
                 );
             default:

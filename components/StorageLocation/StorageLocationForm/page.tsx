@@ -15,7 +15,7 @@ import Unauthorized from "@/components/common/Unauthorized";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 
-const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "create"; branchId?: string }) => {
+const StorageLocationForm = ({ viewMode, StorageLocationId }: { viewMode: "details" | "update" | "create"; StorageLocationId?: string }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
@@ -51,7 +51,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
         }
         setLoading(true);
         try {
-            const response = await getBranchById(branchId as string, sessionToken);
+            const response = await getBranchById(StorageLocationId as string, sessionToken);
 
             if (response.message === "200 OK") {
                 const fields: [
@@ -96,7 +96,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
         try {
             let response;
             if (viewMode === "create") response = await createBranch(branch, sessionToken);
-            else response = await updateBranch(branch, branchId as string, sessionToken);
+            else response = await updateBranch(branch, StorageLocationId as string, sessionToken);
 
             if (response && response.message === "200 OK") {
                 router.push("/branches/list");
@@ -111,13 +111,17 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some((role) => role.type === "ADMIN")) {
-            return <Unauthorized></Unauthorized>;
-        } else {
+        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
+            return (
+                <Unauthorized></Unauthorized>
+            );
+        }
+        else {
             return (
                 <div className="flex flex-col gap-9">
                     {/* <!-- Contact Form --> */}
-                    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div
+                        className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                             <div className="p-6.5">
                                 <div className="mb-4.5">
@@ -133,8 +137,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                     />
                                     {errors.branchName && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.branchName.message}
-                                        </span>
+                                        {errors.branchName.message}
+                                    </span>
                                     )}
                                 </div>
 
@@ -151,8 +155,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                     />
                                     {errors.location && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.location.message}
-                                        </span>
+                                        {errors.location.message}
+                                    </span>
                                     )}
                                 </div>
 
@@ -170,8 +174,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         />
                                         {errors.contactPerson && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                                {errors.contactPerson.message}
-                                            </span>
+                                            {errors.contactPerson.message}
+                                        </span>
                                         )}
                                     </div>
 
@@ -188,8 +192,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         />
                                         {errors.phoneNumber && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                                {errors.phoneNumber.message}
-                                            </span>
+                                            {errors.phoneNumber.message}
+                                        </span>
                                         )}
                                     </div>
                                 </div>
@@ -224,8 +228,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         </div>
                                         {errors.branchType && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                                {errors.branchType.message}
-                                            </span>
+                                            {errors.branchType.message}
+                                        </span>
                                         )}
                                     </div>
 
@@ -234,8 +238,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             Quy mô
                                         </label>
                                         <input
-                                            type="text"
-                                            value={watch("capacity")?.toLocaleString() || ""}
+                                            type="number"
                                             placeholder="Nhập quy mô"
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             {...register("capacity")}
@@ -243,8 +246,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         />
                                         {errors.capacity && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                                {errors.capacity.message}
-                                            </span>
+                                            {errors.capacity.message}
+                                        </span>
                                         )}
                                     </div>
 
@@ -275,7 +278,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             <button
                                                 className="flex w-full justify-center rounded border border-primary bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                                 type={"button"}
-                                                onClick={() => router.push(`/branches/update/${branchId}`)}
+                                                onClick={() => router.push(`/branches/update/${StorageLocationId}`)}
                                             >
                                                 Đi đến cập nhật
                                             </button>
@@ -337,4 +340,4 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
     }
 };
 
-export default BranchForm;
+export default StorageLocationForm;
