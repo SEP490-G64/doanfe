@@ -533,16 +533,16 @@ const ProductsTableOutbound = ({
                                     {product?.batches?.length === 0 || product?.product?.batches?.length === 0 ? (
                                         // Hiển thị productQuantity khi không có batches
                                         <input
-                                            type="number"
-                                            value={product?.inboundPrice || 0}
+                                            type="text"
+                                            value={product?.inboundPrice?.toLocaleString() || 0}
                                             disabled
                                             className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                         />
                                     ) : (
                                         // Hiển thị batchQuantity nếu có, nếu không thì 0
                                         <input
-                                            type="number"
-                                            value={product?.price || 0}
+                                            type="text"
+                                            value={product?.price?.toLocaleString() || 0}
                                             disabled
                                             className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                         />
@@ -551,8 +551,12 @@ const ProductsTableOutbound = ({
                             ) : (
                                 <td className="border-b border-[#eee] px-4 py-5 text-center">
                                     <input
-                                        type="number"
-                                        defaultValue={product?.sellPrice || product?.price || 0}
+                                        type="text"
+                                        defaultValue={
+                                            product?.sellPrice?.toLocaleString() ||
+                                            product?.price?.toLocaleString() ||
+                                            0
+                                        }
                                         disabled
                                         className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                     />
