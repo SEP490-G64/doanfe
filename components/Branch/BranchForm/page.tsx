@@ -111,17 +111,13 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
-        }
-        else {
+        if (!userInfo?.roles?.some((role) => role.type === "ADMIN")) {
+            return <Unauthorized></Unauthorized>;
+        } else {
             return (
                 <div className="flex flex-col gap-9">
                     {/* <!-- Contact Form --> */}
-                    <div
-                        className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                             <div className="p-6.5">
                                 <div className="mb-4.5">
@@ -137,8 +133,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                     />
                                     {errors.branchName && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.branchName.message}
-                                    </span>
+                                            {errors.branchName.message}
+                                        </span>
                                     )}
                                 </div>
 
@@ -155,8 +151,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                     />
                                     {errors.location && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.location.message}
-                                    </span>
+                                            {errors.location.message}
+                                        </span>
                                     )}
                                 </div>
 
@@ -174,8 +170,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         />
                                         {errors.contactPerson && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.contactPerson.message}
-                                        </span>
+                                                {errors.contactPerson.message}
+                                            </span>
                                         )}
                                     </div>
 
@@ -192,8 +188,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         />
                                         {errors.phoneNumber && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.phoneNumber.message}
-                                        </span>
+                                                {errors.phoneNumber.message}
+                                            </span>
                                         )}
                                     </div>
                                 </div>
@@ -228,8 +224,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         </div>
                                         {errors.branchType && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.branchType.message}
-                                        </span>
+                                                {errors.branchType.message}
+                                            </span>
                                         )}
                                     </div>
 
@@ -238,7 +234,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             Quy mô
                                         </label>
                                         <input
-                                            type="number"
+                                            type="text"
+                                            value={watch("capacity")?.toLocaleString() || ""}
                                             placeholder="Nhập quy mô"
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             {...register("capacity")}
@@ -246,8 +243,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         />
                                         {errors.capacity && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.capacity.message}
-                                        </span>
+                                                {errors.capacity.message}
+                                            </span>
                                         )}
                                     </div>
 

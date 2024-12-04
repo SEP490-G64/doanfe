@@ -495,6 +495,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </label>
                                                 <input
                                                     {...register("inboundPrice")}
+                                                    value={watch("inboundPrice")?.toLocaleString() || 0}
                                                     type="text"
                                                     placeholder="Nhập giá nhập"
                                                     disabled={
@@ -510,6 +511,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </label>
                                                 <input
                                                     {...register("sellPrice")}
+                                                    value={watch("sellPrice")?.toLocaleString() || 0}
                                                     type="text"
                                                     placeholder="Nhập giá bán"
                                                     disabled={
@@ -669,6 +671,11 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </label>
                                                 <input
                                                     {...register(`unitConversions.${index}.factorConversion`)}
+                                                    value={
+                                                        watch(
+                                                            `unitConversions.${index}.factorConversion`
+                                                        )?.toLocaleString() || 0
+                                                    }
                                                     type="text"
                                                     placeholder="Nhập số lượng"
                                                     disabled={viewMode === "details"}
@@ -812,7 +819,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             </label>
                                             <input
                                                 type="text"
-                                                value={totalQuantity ? 0 : totalQuantity}
+                                                value={totalQuantity ? totalQuantity.toLocaleString() : 0}
                                                 disabled
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />
@@ -827,6 +834,9 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     key={field.id}
                                                     hidden={index !== 0}
                                                     {...register(`branchProducts.${index}.quantity`)}
+                                                    value={
+                                                        watch(`branchProducts.${index}.quantity`)?.toLocaleString() || 0
+                                                    }
                                                     type="text"
                                                     placeholder="0"
                                                     disabled
@@ -894,7 +904,12 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </label>
                                                 <input
                                                     {...register(`branchProducts.${index}.minQuantity`)}
-                                                    type="number"
+                                                    value={
+                                                        watch(
+                                                            `branchProducts.${index}.minQuantity`
+                                                        )?.toLocaleString() || 0
+                                                    }
+                                                    type="text"
                                                     placeholder="Nhập định mức dưới"
                                                     disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -911,7 +926,12 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </label>
                                                 <input
                                                     {...register(`branchProducts.${index}.maxQuantity`)}
-                                                    type="number"
+                                                    value={
+                                                        watch(
+                                                            `branchProducts.${index}.maxQuantity`
+                                                        )?.toLocaleString() || 0
+                                                    }
+                                                    type="text"
                                                     placeholder="Nhập định mức trên"
                                                     disabled={viewMode === "details"}
                                                     className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
