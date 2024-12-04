@@ -29,6 +29,7 @@ export const BranchBody = z
                 required_error: "Vui lòng chọn kiểu chi nhánh",
             })
         ),
+        isDeleted: z.boolean(),
     })
     .strict();
 

@@ -17,5 +17,6 @@ export type User = {
 
 export type DataSearch = {
     keyword?: string;
+    branchId?: string;
     status?: string;
 };

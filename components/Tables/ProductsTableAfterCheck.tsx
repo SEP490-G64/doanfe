@@ -30,6 +30,12 @@ const ProductsTableAfterCheck = ({
     const [batchErrors, setBatchErrors] = useState<number[]>([]);
     const [totalPricing, setTotalPrice] = useState<number>(0);
 
+    // Xử lý khi thay đổi số lượng
+    const handleChangeTaxRate = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        data![index].taxRate = Number(e.target.value);
+        setProducts("productInbounds", data);
+    };
+
     useEffect(() => {
         const total = calculateTotalPrice(data); // Tính tổng tiền khi dữ liệu thay đổi
         setTotalPrice(total);
@@ -78,6 +84,9 @@ const ProductsTableAfterCheck = ({
             expireDate: undefined,
         };
         data[index].batches!.push(newBatch);
+
+        data[index].batches![0].inboundBatchQuantity = data[index].receiveQuantity;
+        data[index].batches![0].inboundPrice = data[index].price;
 
         // Biến kiểm tra lỗi
         let duplicate = false;
@@ -434,8 +443,9 @@ const ProductsTableAfterCheck = ({
                                             type="text"
                                             value={
                                                 bIndex === 0
-                                                    ? batch.inboundBatchQuantity?.toLocaleString() ||
-                                                      product.receiveQuantity?.toLocaleString()
+                                                    ? batch.inboundBatchQuantity
+                                                        ? batch.inboundBatchQuantity?.toLocaleString()
+                                                        : product.receiveQuantity?.toLocaleString()
                                                     : batch.inboundBatchQuantity?.toLocaleString()
                                             }
                                             disabled={!active}
@@ -457,8 +467,9 @@ const ProductsTableAfterCheck = ({
                                             type="text"
                                             value={
                                                 bIndex === 0
-                                                    ? batch.inboundPrice?.toLocaleString() ||
-                                                      product.price?.toLocaleString()
+                                                    ? batch.inboundPrice
+                                                        ? batch.inboundPrice?.toLocaleString()
+                                                        : product.price?.toLocaleString()
                                                     : batch.inboundPrice?.toLocaleString()
                                             }
                                             disabled={!active}
@@ -472,11 +483,17 @@ const ProductsTableAfterCheck = ({
                                         )}
                                     </td>
 
-                                    <td
-                                        className="border-b border-[#eee] px-4 py-5 text-center text-black-2"
-                                        hidden={!taxable}
-                                    >
-                                        {taxable ? product.taxRate || "0" : "0"}%
+                                    <td className="border-b border-[#eee] px-4 py-5 text-center" hidden={!taxable}>
+                                        <div className="flex items-center justify-center gap-1">
+                                            <input
+                                                type="text"
+                                                defaultValue={taxable ? product.taxRate || "0" : "0"}
+                                                onChange={(e) => handleChangeTaxRate(e, key)}
+                                                disabled={!active}
+                                                className="w-12 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                            />
+                                            <span className="text-meta-5">%</span>
+                                        </div>
                                     </td>
 
                                     <td className="border-b border-[#eee] px-4 py-5 text-center">

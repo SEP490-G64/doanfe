@@ -35,7 +35,12 @@ const ProductCheck = z
         productUnits: z.array(z.object({ id: z.number(), unitName: z.string() })).optional(),
         systemQuantity: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
         productQuantity: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
-        countedQuantity: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
+        countedQuantity: z
+            .number()
+            .int()
+            .min(0, "Số lượng không thể nhỏ hơn 0")
+            .max(100000000000, "Số lượng không được lớn hơn 100,000,000,000")
+            .optional(),
         difference: z.number().int().optional(),
         reason: z.string().trim().max(256, "Giới hạn 255 kí tự").optional(),
         inboundPrice: z.number().min(0, "Giá không thể nhỏ hơn 0").optional(),
@@ -52,6 +57,8 @@ export const CheckBody = z
         note: z.string().trim().max(256, "Giới hạn 255 kí tự").optional(),
         createdBy: z.object({ id: z.number() }),
         branch: z.object({ id: z.coerce.number() }).optional(),
+        approvedBy: z.object({ id: z.number().optional() }).optional(),
+        isApproved: z.boolean().optional(),
         inventoryCheckProductDetails: z.array(ProductCheck),
     })
     .strict();

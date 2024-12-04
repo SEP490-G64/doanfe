@@ -164,7 +164,7 @@ const BatchForm = ({ viewMode, productId, batchId }: { viewMode: "details" | "up
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
+        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
             return (
                 <Unauthorized></Unauthorized>
             );

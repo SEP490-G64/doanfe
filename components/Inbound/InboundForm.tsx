@@ -65,6 +65,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
     const [branch, setBranch] = useState<{ id: number; branchName: string } | undefined>();
     const [inboundStatus, setInboundStatus] = useState<string | undefined>();
     const [approve, setIsApprove] = useState<boolean | undefined>();
+    const [taxable, setTaxable] = useState<boolean | undefined>();
     const [suppliers, setSuppliers] = useState([]);
     const [branches, setBranches] = useState([]);
     const [productOpts, setProductOpts] = useState<ProductInfor[]>([]);
@@ -225,11 +226,9 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                     break;
                 case "DUYỆT":
                     await handleApprove(true);
-                    router.push(`/inbound/list`);
                     break;
                 case "TỪ_CHỐI":
                     await handleApprove(false);
-                    router.push(`/inbound/list`);
                     break;
                 case "KIỂM":
                     res = await changeInboundStatus(watch("inboundId")!.toString(), "KIEM_HANG", sessionToken);
@@ -277,6 +276,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 setValue("note", response.data.note);
                 setValue("createdBy.id", response.data.createdBy.id);
                 setValue("taxable", response.data.taxable);
+                setTaxable(response.data.taxable);
                 setUser(response.data.createdBy);
                 setBranch(response.data.toBranch);
                 setInboundStatus(response.data.status);
@@ -324,6 +324,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                 setSelectedSupplier(response.data.supplier); // Cập nhật selectedSupplier
                 setSelectedFromBranch(response.data.fromBranch);
                 setIsApprove(response.data.isApproved);
+                setTaxable(response.data.taxable);
 
                 // Trigger `getBranchOpts` nếu cần
                 if (response.data.inboundType === "CHUYEN_KHO_NOI_BO") {
@@ -822,8 +823,11 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         <input
                                             type="checkbox"
                                             {...register("taxable")} // Kế thừa đăng ký từ React Hook Form
-                                            checked={watch("taxable")} // Đồng bộ hóa với giá trị từ React Hook Form
-                                            onChange={(e) => setValue("taxable", e.target.checked)} // Cập nhật giá trị
+                                            checked={inboundStatus === "KIEM_HANG" ? taxable : watch("taxable")} // Đồng bộ hóa với giá trị từ React Hook Form
+                                            onChange={(e) => {
+                                                setValue("taxable", e.target.checked);
+                                                setTaxable(taxable);
+                                            }} // Cập nhật giá trị
                                             disabled={viewMode === "details" || inboundStatus === "KIEM_HANG"} // Vô hiệu hóa theo điều kiện
                                             className="border-gray-300 rounded text-primary focus:ring-primary disabled:cursor-not-allowed"
                                         />
@@ -916,7 +920,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                         }
                                         active={viewMode !== "details" && inboundStatus === "KIEM_HANG"}
                                         setProducts={setValue}
-                                        taxable={watch("taxable")}
+                                        taxable={taxable}
                                         errors={errors.productInbounds || []} // Truyền lỗi vào đây
                                         totalPrice={watch("totalPrice")}
                                         onTotalPriceChange={handleTotalPriceChange}
@@ -941,7 +945,7 @@ const InboundForm = ({ viewMode, inboundId }: { viewMode: "details" | "update" |
                                             ) || []
                                         }
                                         active={inboundStatus === "KIEM_HANG"}
-                                        taxable={watch("taxable")}
+                                        taxable={taxable}
                                         errors={errors}
                                         setProducts={setValue}
                                         totalPrice={watch("totalPrice")}

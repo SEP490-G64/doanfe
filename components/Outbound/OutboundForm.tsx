@@ -69,6 +69,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
     const [totalPrice, setTotalPrice] = useState<number>(0);
     const [approve, setIsApprove] = useState<boolean | undefined>();
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [taxable, setTaxable] = useState<boolean | undefined>();
 
     const renderOutboundStatus = useCallback((status: string | undefined) => {
         if (!status) return;
@@ -165,16 +166,6 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             setProductOpts([]);
         }
     }, 500);
-    // const debouncedFetchOptions = useCallback(
-    //     debounce((inputValue: string) => {
-    //         if (inputValue) {
-    //             getProductOpts(inputValue);
-    //         } else {
-    //             setProductOpts([]);
-    //         }
-    //     }, 500),
-    //     [selectedSupId, selectedToBranchId]
-    // );
 
     const handleTypeProduct = (inputString: string) => {
         debouncedFetchOptions(inputString);
@@ -210,6 +201,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                 setBranch(response.data.fromBranch);
                 setOutboundStatus(response.data.status);
                 setIsApprove(response.data.isApproved);
+                setTaxable(response.data.taxable);
 
                 if (outboundType === "CHUYEN_KHO_NOI_BO") await getBranchOpts(response.data.fromBranch.id);
             }
@@ -268,6 +260,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
             setSelectedToBranch(outboundData.toBranch);
             setApprover(outboundData.approvedBy);
             setIsApprove(outboundData.isApproved);
+            setTaxable(outboundData.taxable);
         } catch (error) {
             console.error(error);
         } finally {
@@ -502,11 +495,9 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                     break;
                 case "DUYỆT":
                     await handleApprove(true);
-                    router.push(`/outbound/list`);
                     break;
                 case "TỪ_CHỐI":
                     await handleApprove(false);
-                    router.push(`/outbound/list`);
                     break;
                 case "KIỂM":
                     res = await changeOutboundStatus(watch("outboundId")!.toString(), "KIEM_HANG", sessionToken);
@@ -737,8 +728,9 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                     <input
                                         type="checkbox"
                                         {...register("taxable")} // Kế thừa đăng ký từ React Hook Form
-                                        checked={watch("taxable")} // Đồng bộ hóa với giá trị từ React Hook Form
-                                        onChange={(e) => setValue("taxable", e.target.checked)} // Cập nhật giá trị
+                                        checked={outboundStatus === "KIEM_HANG" ? taxable : watch("taxable")} // Đồng bộ hóa với giá trị từ React Hook Form
+                                        onChange={(e) => {setValue("taxable", e.target.checked);
+                                            setTaxable(taxable);}} // Cập nhật giá trị
                                         disabled={viewMode === "details" || outboundStatus === "KIEM_HANG"} // Vô hiệu hóa theo điều kiện
                                         className="border-gray-300 rounded text-primary focus:ring-primary disabled:cursor-not-allowed"
                                     />
@@ -835,7 +827,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                             outboundType={outboundType}
                             setProducts={setValue}
                             outboundStatus={outboundStatus}
-                            taxable={watch("taxable")}
+                            taxable={outboundStatus === "KIEM_HANG" ? taxable : watch("taxable")}
                             totalPrice={watch("totalPrice")}
                             onTotalPriceChange={handleTotalPriceChange}
                         />

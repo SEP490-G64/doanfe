@@ -15,7 +15,7 @@ import Unauthorized from "@/components/common/Unauthorized";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 
-const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "create"; branchId?: string }) => {
+const StorageLocationForm = ({ viewMode, StorageLocationId }: { viewMode: "details" | "update" | "create"; StorageLocationId?: string }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
@@ -51,7 +51,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
         }
         setLoading(true);
         try {
-            const response = await getBranchById(branchId as string, sessionToken);
+            const response = await getBranchById(StorageLocationId as string, sessionToken);
 
             if (response.message === "200 OK") {
                 const fields: [
@@ -96,7 +96,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
         try {
             let response;
             if (viewMode === "create") response = await createBranch(branch, sessionToken);
-            else response = await updateBranch(branch, branchId as string, sessionToken);
+            else response = await updateBranch(branch, StorageLocationId as string, sessionToken);
 
             if (response && response.message === "200 OK") {
                 router.push("/branches/list");
@@ -278,7 +278,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             <button
                                                 className="flex w-full justify-center rounded border border-primary bg-primary p-3 font-medium text-gray hover:bg-primary/90"
                                                 type={"button"}
-                                                onClick={() => router.push(`/branches/update/${branchId}`)}
+                                                onClick={() => router.push(`/branches/update/${StorageLocationId}`)}
                                             >
                                                 Đi đến cập nhật
                                             </button>
@@ -340,4 +340,4 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
     }
 };
 
-export default BranchForm;
+export default StorageLocationForm;

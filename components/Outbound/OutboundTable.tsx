@@ -301,6 +301,7 @@ const OutboundTable = () => {
                             <button
                                 className="hover:text-primary"
                                 onClick={() => router.push(`/outbound/details/${outbound.id}`)}
+                                hidden={["BAN_NHAP", "KIEM_HANG"].includes(outbound.status)}
                             >
                                 <svg
                                     className="fill-current"
