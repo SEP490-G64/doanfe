@@ -51,6 +51,21 @@ export const getInventoryCheckById = async (id: string, token: string) => {
     }
 };
 
+export const getSubcribe = async (id: string, token: string) => {
+    try {
+        const res = await httpRequest.get(`dsd/api/v1/staff/inventory-check/${id}/subscribe`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return res;
+    } catch (error: any) {
+        if (error.status === 401) toast.error("Phiên đăng nhập đã hết hạn");
+        else {
+            console.log(error);
+        }
+    }
+};
+
 export const createInitInventoryCheck = async (token: string) => {
     try {
         const res = await httpRequest.post(

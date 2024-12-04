@@ -7,7 +7,6 @@ import { postResetPassword } from "@/utils/httpRequests";
 export const login = async (user: LoginBodyType) => {
     try {
         const res = await httpRequest.post("/dsd/api/v1/auth/login", user);
-
         return res;
     } catch (error: any) {
         if (error.status === 401) toast.error("Sai tên đăng nhập hoặc mật khẩu");
