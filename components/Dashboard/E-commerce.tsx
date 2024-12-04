@@ -75,8 +75,7 @@ const ECommerce: React.FC = () => {
         // Khi selectedBranchId thay đổi, gọi lại API để lấy dữ liệu dashboard cho branch đó
         if (selectedBranchId !== null) {
             getDashboardItems(selectedBranchId); // Truyền branchId đã chọn vào API
-        }
-        else {
+        } else {
             setSelectedBranchId(userInfo?.branch.id);
         }
     }, [selectedBranchId]); // Khi selectedBranchId thay đổi, thực thi lại hàm này
@@ -90,7 +89,7 @@ const ECommerce: React.FC = () => {
     return (
         <>
             <div className="mx-auto w-full">
-                <div className="mb-4 flex items-center justify-end space-x-2">
+                <div className="relative mb-4 flex items-center justify-end space-x-2">
                     <label htmlFor="branch" className="text-md font-medium text-black">
                         Chọn chi nhánh:
                     </label>
@@ -99,7 +98,7 @@ const ECommerce: React.FC = () => {
                         name="branch"
                         value={selectedBranchId || ""}
                         onChange={handleChange}
-                        className="border-gray-300 mt-2 block w-full max-w-3xl rounded-md border px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        className="border-gray-300 block w-full max-w-3xl appearance-none rounded-md border px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     >
                         <option value="">Chọn chi nhánh</option>
                         {branchOpts.map((branch) => (
@@ -108,8 +107,19 @@ const ECommerce: React.FC = () => {
                             </option>
                         ))}
                     </select>
+
+                    <span className="absolute right-2 top-1/2 z-30 -translate-y-1/2">
+                        <svg
+                            className="text-gray-500 fill-current"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"></path>
+                        </svg>
+                    </span>
                 </div>
-                <div className="h-2"></div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
@@ -142,7 +152,7 @@ const ECommerce: React.FC = () => {
                     <div>Đang tải dữ liệu...</div> // Hoặc có thể sử dụng một spinner
                 ) : (
                     <>
-                        <div className="col-span-12 xl:col-span-12 grid grid-cols-12 gap-4">
+                        <div className="col-span-12 grid grid-cols-12 gap-4 xl:col-span-12">
                             <div className="col-span-6 xl:col-span-6">
                                 <ChartThree data={dashboard?.topCategories} title="Sản phẩm phân loại theo nhóm" />
                             </div>
