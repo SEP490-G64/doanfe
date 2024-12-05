@@ -19,6 +19,10 @@ import { getProductsChangedHistory } from "@/services/productServices";
 import { ProductChangedHistory, InventoryUpdate } from "@/types/inventoryCheck";
 import { getSubcribe } from "@/services/inventoryCheckServices";
 
+interface ProductInventoryCheckError {
+    countedQuantity: string;
+}
+
 const ProductsTableInventoryCheck = ({
     inventoryCheckId,
     data,
@@ -26,13 +30,15 @@ const ProductsTableInventoryCheck = ({
     startedDate,
     sessionToken,
     setProducts,
+    errors,
 }: {
-    inventoryCheckId?: string; 
+    inventoryCheckId?: string;
     data: ProductCheckType[];
     active: boolean;
     startedDate: string;
     sessionToken: string;
     setProducts: any;
+    errors: ProductInventoryCheckError[];
 }) => {
     const [productsChanged, setProductsChanged] = useState<ProductChangedHistory[]>([]);
     const [changedQuantity, setChangedQuantity] = useState<number>(0);
@@ -53,14 +59,14 @@ const ProductsTableInventoryCheck = ({
     useEffect(() => {
         const url = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
         const sse = new EventSource(url); // Declare with `let` to allow reassignment
-    
+
         console.log("SSE connection established");
         sse.addEventListener("inventoryUpdate", (event) => {
             const data = JSON.parse(event.data);
             setUpdatedProductIds(data.productIds || []);
             setBatchIds(data.batchIds || []);
             console.log("Received SSE data:", data);
-          });
+        });
         sse.onerror = (error) => {
             console.error("SSE encountered an error:", error);
         };
@@ -69,26 +75,26 @@ const ProductsTableInventoryCheck = ({
                 console.log("Cleaning up: Closing SSE connection");
                 const closeSSEConnection = async () => {
                     if (sse) {
-                      sse.close();
-                      const closeUrl = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
-                      try {
-                        const response = await fetch(closeUrl, {
-                          method: "POST", // Adjust method as per API specification
-                          headers: {
-                            Authorization: `Bearer ${sessionToken}`, // If needed
-                            "Content-Type": "application/json",
-                          },
-                        });
-                        if (!response.ok) {
-                          throw new Error(`Failed to close inventory check. Status: ${response.status}`);
+                        sse.close();
+                        const closeUrl = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
+                        try {
+                            const response = await fetch(closeUrl, {
+                                method: "POST", // Adjust method as per API specification
+                                headers: {
+                                    Authorization: `Bearer ${sessionToken}`, // If needed
+                                    "Content-Type": "application/json",
+                                },
+                            });
+                            if (!response.ok) {
+                                throw new Error(`Failed to close inventory check. Status: ${response.status}`);
+                            }
+                            console.log("Successfully informed server about SSE closure");
+                        } catch (error) {
+                            console.error("Error while closing inventory check:", error);
                         }
-                        console.log("Successfully informed server about SSE closure");
-                      } catch (error) {
-                        console.error("Error while closing inventory check:", error);
-                      }
                     }
-                  };
-                  closeSSEConnection();
+                };
+                closeSSEConnection();
             }
         };
     }, [inventoryCheckId, sessionToken]);
@@ -145,37 +151,40 @@ const ProductsTableInventoryCheck = ({
                         </div>
                     );
                 case "productName":
-                    const isUpdatedAfterStartDate = product?.product?.lastUpdated && active && new Date(product?.product?.lastUpdated) > new Date(startedDate)
+                    const isUpdatedAfterStartDate =
+                        product?.product?.lastUpdated &&
+                        active &&
+                        new Date(product?.product?.lastUpdated) > new Date(startedDate);
                     const isProductUpdated = updatedProductIds.includes(product?.product?.id);
                     const isBatchUpdated = product?.batch?.id && updatedBatchIds.includes(product?.batch?.id);
                     const isUpdated = product?.batch ? isBatchUpdated : isProductUpdated;
                     return product?.batch?.batchCode ? (
                         <div className="flex items-center justify-start">
-                      <p
-        className={`text-bold text-left text-sm capitalize ${
-          isUpdated
-            ? "text-amber-600" // Highlight if the product or batch is updated
-            : isUpdatedAfterStartDate
-            ? "text-amber-600" // Highlight if the product was updated after start date
-            : "text-secondary"
-        }`}
-      >
-        {product?.product?.productName}
-      </p>
+                            <p
+                                className={`text-bold text-left text-sm capitalize ${
+                                    isUpdated
+                                        ? "text-amber-600" // Highlight if the product or batch is updated
+                                        : isUpdatedAfterStartDate
+                                          ? "text-amber-600" // Highlight if the product was updated after start date
+                                          : "text-secondary"
+                                }`}
+                            >
+                                {product?.product?.productName}
+                            </p>
                         </div>
                     ) : (
                         <div className="flex items-center justify-start">
-                      <p
-        className={`text-bold text-left text-sm capitalize ${
-          isUpdated
-            ? "text-amber-600" // Highlight if the product or batch is updated
-            : isUpdatedAfterStartDate
-            ? "text-amber-600" // Highlight if the product was updated after start date
-            : "text-secondary"
-        }`}
-      >
-        {product?.product?.productName}
-      </p>
+                            <p
+                                className={`text-bold text-left text-sm capitalize ${
+                                    isUpdated
+                                        ? "text-amber-600" // Highlight if the product or batch is updated
+                                        : isUpdatedAfterStartDate
+                                          ? "text-amber-600" // Highlight if the product was updated after start date
+                                          : "text-secondary"
+                                }`}
+                            >
+                                {product?.product?.productName}
+                            </p>
                         </div>
                     );
                 case "baseUnit":
@@ -196,15 +205,20 @@ const ProductsTableInventoryCheck = ({
                     );
                 case "countedQuantity":
                     return (
-                        <div className="flex items-center justify-center">
-                            <input
-                                type="text"
-                                value={product?.countedQuantity?.toLocaleString("en-US") || ""}
-                                disabled={!active}
-                                onChange={(e) => handleChangeCountedQuantity(e, index)}
-                                className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                            />
-                        </div>
+                        <>
+                            <div className="flex items-center justify-center">
+                                <input
+                                    type="text"
+                                    value={product?.countedQuantity?.toLocaleString("en-US") || ""}
+                                    disabled={!active}
+                                    onChange={(e) => handleChangeCountedQuantity(e, index)}
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                />
+                            </div>
+                            {errors[index]?.countedQuantity && (
+                                <p className="mt-1 text-xs text-danger">{errors[index]?.countedQuantity.message}</p>
+                            )}
+                        </>
                     );
                 case "difference":
                     return (
@@ -266,7 +280,7 @@ const ProductsTableInventoryCheck = ({
                     return cellValue;
             }
         },
-        [data,updatedProductIds,updatedBatchIds]
+        [data, updatedProductIds, updatedBatchIds]
     );
 
     const renderCellTwo = React.useCallback((product: any, columnKey: any, index: number) => {
@@ -298,7 +312,7 @@ const ProductsTableInventoryCheck = ({
 
     const handleChangeCountedQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         data![index].countedQuantity = Number(e.target.value.replace(/,/g, ""));
-        if (data![index].systemQuantity)
+        if (data![index].systemQuantity !== undefined && data![index].systemQuantity !== null)
             data![index].difference = data![index].systemQuantity - Number(e.target.value.replace(/,/g, ""));
         if (!e.target.value) data![index].difference = undefined;
         setProducts("inventoryCheckProductDetails", data);
@@ -385,10 +399,7 @@ const ProductsTableInventoryCheck = ({
                                 >
                                     <TableHeader>
                                         <TableColumn className="text-center" key="productName">
-                                            Tên sản phẩm
-                                        </TableColumn>
-                                        <TableColumn className="text-center" key="batch">
-                                            Mã lô
+                                            Tên sản phẩm - Mã lô
                                         </TableColumn>
                                         <TableColumn className="text-center" key="quantity">
                                             Số lượng thay đổi
