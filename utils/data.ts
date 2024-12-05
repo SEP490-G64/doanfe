@@ -125,3 +125,35 @@ export const inventoryCheckColumnsTwo = [
     { name: "Nhà sản xuất", uid: "manufacturerName" },
     { name: "Ngày hết hạn", uid: "expireDate" },
 ];
+
+export const StorageLocationColumns = [
+    { name: "STT", uid: "no." },
+    { name: "Mã vị trí lưu trữ", uid: "code" },
+    { name: "Loại vị trí lưu trữ", uid: "type" },
+    { name: "Khu vực", uid: "zone" },
+    { name: "Lối đi", uid: "aisle" },
+    { name: "Số hàng", uid: "row" },
+    { name: "Cấp kệ", uid: "level" },
+    { name: "Trạng thái hoạt động", uid: "active" },
+    { name: "Tác vụ", uid: "actions" },
+];
+
+export const InventoryReportColumns = [
+    { name: "STT", uid: "index" },
+    { name: "Hình ảnh", uid: "image" },
+    { name: "Mã sản phẩm", uid: "registrationCode" },
+    { name: "Tên sản phẩm", uid: "productName" },
+    { name: "Định mức dưới", uid: "minQuantity" },
+    { name: "Định mức trên", uid: "maxQuantity" },
+    { name: "Tồn kho", uid: "totalQuantity" },
+    { name: "Có thể bán", uid: "sellableQuantity" },
+    { name: "Vị trí lưu trữ", uid: "storageLocation" },
+    { name: "Xem lô sản phẩm", uid: "actions" },
+];
+
+export const InventoryBatchReportColumns = [
+    { name: "STT", uid: "index" },
+    { name: "Mã lô", uid: "batchCode" },
+    { name: "Ngày hết hạn", uid: "expireDate" },
+    { name: "Số lượng tồn kho", uid: "totalQuantity" },
+];

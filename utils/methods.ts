@@ -65,3 +65,32 @@ export const formatDateTimeDDMMYYYYHHMM = (date: Date | string | undefined) => {
     // Định dạng lại chuỗi
     return `${day < 10 ? `0${day}` : day}-${month < 10 ? `0${month}` : month}-${year} ${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}`;
 };
+
+export const formatLargeNumber = (num: number | undefined) => {
+    if (num === undefined) {
+        return "0";
+    } else {
+        let formattedNumber = "";
+        if (num >= 1_000_000_000_000_000_000) {
+            formattedNumber = (num / 1_000_000_000_000_000_000).toFixed(1); // Quinquaginta
+            return parseFloat(formattedNumber).toLocaleString() + "Qi"; // Triệu Triệu Triệu Triệu (Quinquaginta)
+        } else if (num >= 1_000_000_000_000_000) {
+            formattedNumber = (num / 1_000_000_000_000_000).toFixed(1); // Quadrillion
+            return parseFloat(formattedNumber).toLocaleString() + "Qa"; // Triệu Triệu Triệu (Quadrillion)
+        } else if (num >= 1_000_000_000_000) {
+            formattedNumber = (num / 1_000_000_000_000).toFixed(1); // Trillion
+            return parseFloat(formattedNumber).toLocaleString() + "T"; // Triệu Tỷ (Trillion)
+        } else if (num >= 1_000_000_000) {
+            formattedNumber = (num / 1_000_000_000).toFixed(1); // Billion
+            return parseFloat(formattedNumber).toLocaleString() + "B"; // Tỷ (Billion)
+        } else if (num >= 1_000_000) {
+            formattedNumber = (num / 1_000_000).toFixed(1); // Million
+            return parseFloat(formattedNumber).toLocaleString() + "M"; // Triệu (Million)
+        } else if (num >= 1_000) {
+            formattedNumber = (num / 1_000).toFixed(1); // Thousand
+            return parseFloat(formattedNumber).toLocaleString() + "K"; // Nghìn (Thousand)
+        } else {
+            return num ? num.toLocaleString() : "0"; // Nếu không phải số lớn, chỉ định dạng với dấu phẩy
+        }
+    }
+};

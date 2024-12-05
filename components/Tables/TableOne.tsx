@@ -1,6 +1,7 @@
 import React from "react";
 import { CiExport, CiImport } from "react-icons/ci";
 import { bold } from "next/dist/lib/picocolors";
+import { formatLargeNumber } from "@/utils/methods";
 
 interface Product {
     id: string;
@@ -87,13 +88,13 @@ const TableOne: React.FC<TableOneProps> = ({ data }) => {
                             <div className="col-span-3 flex items-center justify-center flex-wrap p-5 xl:p-5">
                                 <div className="w-full flex items-center justify-center">
                                     <p className="flex items-center text-black dark:text-white">
-                                        {product.inboundQuantity.toLocaleString()} {product.unitName}{" "}
+                                        {formatLargeNumber(product.inboundQuantity)} {product.unitName}{" "}
                                         <CiImport className="ml-2 text-success"/>
                                     </p>
                                 </div>
                                 <div className="w-full flex items-center justify-center">
                                     <p className="flex items-center text-black dark:text-white">
-                                        {product.outboundQuantity.toLocaleString()} {product.unitName}{" "}
+                                        {formatLargeNumber(product.outboundQuantity)} {product.unitName}{" "}
                                         <CiExport className="ml-2 text-danger"/>
                                     </p>
                                 </div>
@@ -102,7 +103,7 @@ const TableOne: React.FC<TableOneProps> = ({ data }) => {
                             {/* Total Quantity Column */}
                             <div className="col-span-2 flex items-center justify-center p-2.5 xl:p-5">
                                 <p className="text-meta-5">
-                                    {product.totalQuantity.toLocaleString()} {product.unitName}
+                                    {formatLargeNumber(product.totalQuantity)} {product.unitName}
                                 </p>
                             </div>
 
@@ -110,13 +111,13 @@ const TableOne: React.FC<TableOneProps> = ({ data }) => {
                             <div className="col-span-3 flex items-center justify-center flex-wrap p-5 xl:p-5">
                                 <div className="w-full flex items-center justify-center">
                                     <p className="flex items-center text-black dark:text-white">
-                                        {product.inboundPrice.toLocaleString()}đ{" "}
+                                        {formatLargeNumber(product.inboundPrice)}đ{" "}
                                         <CiImport className="ml-2 text-success"/>
                                     </p>
                                 </div>
                                 <div className="w-full flex items-center justify-center">
                                     <p className="flex items-center text-black dark:text-white">
-                                        {product.outboundPrice.toLocaleString()}đ{" "}
+                                        {formatLargeNumber(product.outboundPrice)}đ{" "}
                                         <CiExport className="ml-2 text-danger"/>
                                     </p>
                                 </div>
@@ -125,7 +126,7 @@ const TableOne: React.FC<TableOneProps> = ({ data }) => {
                             {/* Total Price Column */}
                             <div className="col-span-1 flex items-center justify-center p-2.5 xl:p-5">
                                 <p className="text-meta-3">
-                                    {product.totalPrice.toLocaleString()}đ
+                                    {formatLargeNumber(product.totalPrice)}đ
                                 </p>
                             </div>
                         </div>

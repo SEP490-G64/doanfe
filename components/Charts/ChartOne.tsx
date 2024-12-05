@@ -9,6 +9,7 @@ import { jwtDecode } from "jwt-decode";
 import { getDashboardChart } from "@/services/reportServices";
 import { toast } from "react-toastify";
 import { DashboardChartBodyType } from "@/lib/schemaValidate/reportSchema";
+import { formatLargeNumber } from "@/utils/methods";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
     ssr: false,
@@ -103,7 +104,12 @@ const options: ApexOptions = {
             },
         },
         min: 0,
-        max: 100,
+        labels: {
+            formatter: function (value: number) {
+                // Format lại trục Y theo kiểu của bạn (ví dụ: triệu, tỷ, ...)
+                return formatLargeNumber(value);
+            },
+        },
     },
 };
 

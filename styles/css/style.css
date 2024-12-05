@@ -251,3 +251,55 @@ input[type="search"]::-webkit-search-cancel-button {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.warning-box-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.warning-box {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.warning-box .box {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.text {
+    font-size: 16px;
+}
+
+.red-warning .box {
+    background-color: #f87171; /* Đỏ */
+}
+
+.yellow-warning .box {
+    background-color: #facc15; /* Vàng */
+}
+
+.green-warning .box {
+    background-color: #4caf50; /* Xanh lá */
+}
+
+.warning-box.red-warning {
+    background-color: rgba(248, 113, 113, 0.1); /* Màu nền nhẹ cho cảnh báo đỏ */
+}
+
+.warning-box.yellow-warning {
+    background-color: rgba(250, 204, 21, 0.1); /* Màu nền nhẹ cho cảnh báo vàng */
+}
+
+.warning-box.green-warning {
+    background-color: rgba(76, 175, 80, 0.1); /* Màu nền nhẹ cho cảnh báo xanh lá */
+}
+
