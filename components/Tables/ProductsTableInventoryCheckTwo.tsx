@@ -32,7 +32,7 @@ const ProductsTableInventoryCheck = ({
     setProducts,
     errors,
 }: {
-    inventoryCheckId: string;
+    inventoryCheckId?: string;
     data: ProductCheckType[];
     active: boolean;
     startedDate: string;
@@ -57,53 +57,44 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
     useEffect(() => {
-        const url = `http://localhost:8081/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
+        const url = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
         const sse = new EventSource(url); // Declare with `let` to allow reassignment
 
         console.log("SSE connection established");
-
-        sse.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                setUpdatedProductIds(data.productIds || []);
-                setBatchIds(data.batchIds || []);
-                console.log("Received SSE data:", data);
-                sse.close();
-            } catch (error) {
-                console.error("Error parsing SSE data:", error);
-            }
-        };
-
+        sse.addEventListener("inventoryUpdate", (event) => {
+            const data = JSON.parse(event.data);
+            setUpdatedProductIds(data.productIds || []);
+            setBatchIds(data.batchIds || []);
+            console.log("Received SSE data:", data);
+        });
         sse.onerror = (error) => {
             console.error("SSE encountered an error:", error);
-            sse.close();
         };
-
-        const closeStreamApi = async () => {
-            const closeApiUrl = `http://localhost:8081/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
-            try {
-                const response = await fetch(closeApiUrl, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${sessionToken}`, // Add the Bearer token here
-                        "Content-Type": "application/json", // Optional, if you have a JSON body or expect JSON
-                    },
-                });
-                if (!response.ok) {
-                    console.error("Failed to close the stream:", response.statusText);
-                } else {
-                    console.log("Successfully closed the stream");
-                }
-            } catch (error) {
-                console.error("Error calling close stream API:", error);
-            }
-        };
-
         return () => {
             if (sse) {
                 console.log("Cleaning up: Closing SSE connection");
-                sse.close();
-                closeStreamApi(); // Call API to close the stream
+                const closeSSEConnection = async () => {
+                    if (sse) {
+                        sse.close();
+                        const closeUrl = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
+                        try {
+                            const response = await fetch(closeUrl, {
+                                method: "POST", // Adjust method as per API specification
+                                headers: {
+                                    Authorization: `Bearer ${sessionToken}`, // If needed
+                                    "Content-Type": "application/json",
+                                },
+                            });
+                            if (!response.ok) {
+                                throw new Error(`Failed to close inventory check. Status: ${response.status}`);
+                            }
+                            console.log("Successfully informed server about SSE closure");
+                        } catch (error) {
+                            console.error("Error while closing inventory check:", error);
+                        }
+                    }
+                };
+                closeSSEConnection();
             }
         };
     }, [inventoryCheckId, sessionToken]);
@@ -160,7 +151,7 @@ const ProductsTableInventoryCheck = ({
                         </div>
                     );
                 case "productName":
-const isUpdatedAfterStartDate =
+                    const isUpdatedAfterStartDate =
                         product?.product?.lastUpdated &&
                         active &&
                         new Date(product?.product?.lastUpdated) > new Date(startedDate);
@@ -169,8 +160,16 @@ const isUpdatedAfterStartDate =
                     const isUpdated = product?.batch ? isBatchUpdated : isProductUpdated;
                     return product?.batch?.batchCode ? (
                         <div className="flex items-center justify-start">
-                            <p className="text-bold ml-12 text-sm capitalize text-default-400">
-                                {product?.batch?.batchCode}
+                            <p
+                                className={`text-bold text-left text-sm capitalize ${
+                                    isUpdated
+                                        ? "text-amber-600" // Highlight if the product or batch is updated
+                                        : isUpdatedAfterStartDate
+                                          ? "text-amber-600" // Highlight if the product was updated after start date
+                                          : "text-secondary"
+                                }`}
+                            >
+                                {product?.product?.productName}
                             </p>
                         </div>
                     ) : (
@@ -351,7 +350,10 @@ const isUpdatedAfterStartDate =
                         STT
                     </TableColumn>
                     <TableColumn className="text-center" key="productName">
-                        Tên sản phẩm - Mã lô
+                        Tên sản phẩm
+                    </TableColumn>
+                    <TableColumn className="text-center" key="batchCode">
+                        Mã lô
                     </TableColumn>
                     <TableColumn className="text-center" key="baseUnit">
                         Đơn vị
@@ -397,10 +399,7 @@ const isUpdatedAfterStartDate =
                                 >
                                     <TableHeader>
                                         <TableColumn className="text-center" key="productName">
-                                            Tên sản phẩm
-                                        </TableColumn>
-                                        <TableColumn className="text-center" key="batch">
-                                            Mã lô
+                                            Tên sản phẩm - Mã lô
                                         </TableColumn>
                                         <TableColumn className="text-center" key="quantity">
                                             Số lượng thay đổi

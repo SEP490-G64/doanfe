@@ -668,6 +668,7 @@ const InventoryCheckForm = ({
                             />
                         ) : (
                             <ProductsTableInventoryCheckTwo
+                                inventoryCheckId={inventoryCheckId}
                                 data={productOpts || []}
                                 active={
                                     viewMode !== "details" &&
