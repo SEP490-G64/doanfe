@@ -145,18 +145,23 @@ const ProductsTableInventoryCheck = ({
                         </div>
                     );
                 case "productName":
-const isUpdatedAfterStartDate =
-                        product?.product?.lastUpdated &&
-                        active &&
-                        new Date(product?.product?.lastUpdated) > new Date(startedDate);
+                    const isUpdatedAfterStartDate = product?.product?.lastUpdated && active && new Date(product?.product?.lastUpdated) > new Date(startedDate)
                     const isProductUpdated = updatedProductIds.includes(product?.product?.id);
                     const isBatchUpdated = product?.batch?.id && updatedBatchIds.includes(product?.batch?.id);
                     const isUpdated = product?.batch ? isBatchUpdated : isProductUpdated;
                     return product?.batch?.batchCode ? (
                         <div className="flex items-center justify-start">
-                            <p className="text-bold ml-12 text-sm capitalize text-default-400">
-                                {product?.batch?.batchCode}
-                            </p>
+                      <p
+        className={`text-bold text-left text-sm capitalize ${
+          isUpdated
+            ? "text-amber-600" // Highlight if the product or batch is updated
+            : isUpdatedAfterStartDate
+            ? "text-amber-600" // Highlight if the product was updated after start date
+            : "text-secondary"
+        }`}
+      >
+        {product?.product?.productName}
+      </p>
                         </div>
                     ) : (
                         <div className="flex items-center justify-start">
