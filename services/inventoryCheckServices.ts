@@ -81,7 +81,6 @@ export const submitDraft = async (checkDraft: CheckBodyType, token: string) => {
         });
 
         if (res.data) {
-            toast.success("Lưu phiếu kiểm thành công");
             return res;
         }
     } catch (error: any) {

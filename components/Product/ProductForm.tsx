@@ -49,6 +49,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
     const [manOpts, setManOpts] = useState([]);
     const [unitOpts, setUnitOpts] = useState([]);
     const [totalQuantity, setTotalQuantity] = useState(number);
+    const [formattedSellPrice, setFormattedSellPrice] = useState("");
+    const [formattedInboundPrice, setFormattedInboundPrice] = useState("");
 
     const specialConditionOpts = [
         {
@@ -87,6 +89,18 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
             label: "Ngừng kinh doanh",
         },
     ];
+
+    const handleSellPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const numericValue = Number(e.target.value.replace(/,/g, "")); // Loại bỏ dấu phẩy
+        setFormattedSellPrice(numericValue.toLocaleString()); // Định dạng với dấu phẩy
+        setValue("sellPrice", numericValue); // Lưu giá trị không định dạng vào react-hook-form
+    };
+
+    const handleInboundPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const numericValue = Number(e.target.value.replace(/,/g, "")); // Loại bỏ dấu phẩy
+        setFormattedInboundPrice(numericValue.toLocaleString()); // Định dạng với dấu phẩy
+        setValue("inboundPrice", numericValue); // Lưu giá trị không định dạng vào react-hook-form
+    };
 
     const getDataOptions = async () => {
         setLoading(true);
@@ -243,6 +257,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                     "sellPrice",
                 ];
 
+                setFormattedInboundPrice(response.data.inboundPrice.toLocaleString());
+                setFormattedSellPrice(response.data.sellPrice.toLocaleString());
                 fields.forEach((field) => setValue(field, response.data[field]));
 
                 const branchProduct = response.data.branchProducts.find(
@@ -495,8 +511,9 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                 </label>
                                                 <input
                                                     {...register("inboundPrice")}
-                                                    value={watch("inboundPrice")?.toLocaleString() || 0}
                                                     type="text"
+                                                    value={formattedInboundPrice} // Hiển thị giá trị định dạng
+                                                    onChange={handleInboundPriceChange} // Xử lý định dạng khi thay đổi
                                                     placeholder="Nhập giá nhập"
                                                     disabled={
                                                         viewMode === "details" || userInfo?.roles[0].type !== "MANAGER"
@@ -510,10 +527,10 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     Giá bán <span className="text-meta-1">*</span>
                                                 </label>
                                                 <input
-                                                    {...register("sellPrice")}
-                                                    value={watch("sellPrice")?.toLocaleString() || 0}
                                                     type="text"
                                                     placeholder="Nhập giá bán"
+                                                    value={formattedSellPrice} // Hiển thị giá trị định dạng
+                                                    onChange={handleSellPriceChange} // Xử lý định dạng khi thay đổi
                                                     disabled={
                                                         viewMode === "details" || userInfo?.roles[0].type !== "MANAGER"
                                                     }
