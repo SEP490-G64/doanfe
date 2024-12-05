@@ -38,7 +38,7 @@ const ProductCheck = z
         countedQuantity: z
             .number()
             .int()
-            .min(0, "Số lượng không thể nhỏ hơn 0")
+            .min(-100000, "Số lượng không thể < -100,000")
             .max(100000000000, "Số lượng không được > 100,000,000,000")
             .optional(),
         difference: z.number().int().optional(),

@@ -199,13 +199,13 @@ const ProductsTable = () => {
                 return (
                     <div>
                         <h5 className="font-normal text-black dark:text-white">
-                            {product.quantity} {product.baseUnit}
+                            {product.quantity?.toLocaleString()} {product.baseUnit}
                         </h5>
                         {product.unitConversions && product.unitConversions.length > 0 && (
                             <>
                                 {product.unitConversions.map((conversion) => (
                                     <h5 key={conversion.id} className="font-normal text-black dark:text-white">
-                                        = {conversion.factorConversion * product.quantity}{" "}
+                                        = {(conversion.factorConversion * product.quantity).toLocaleString()}{" "}
                                         {conversion.smallerUnit?.unitName}
                                     </h5>
                                 ))}
