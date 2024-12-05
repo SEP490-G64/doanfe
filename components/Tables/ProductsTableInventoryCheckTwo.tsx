@@ -18,18 +18,24 @@ import { ProductCheckType } from "@/lib/schemaValidate/inventoryCheckSchema";
 import { getProductsChangedHistory } from "@/services/productServices";
 import { ProductChangedHistory } from "@/types/inventoryCheck";
 
+interface ProductInventoryCheckError {
+    countedQuantity: string;
+}
+
 const ProductsTableInventoryCheck = ({
     data,
     active,
     startedDate,
     sessionToken,
     setProducts,
+    errors
 }: {
     data: ProductCheckType[];
     active: boolean;
     startedDate: string;
     sessionToken: string;
     setProducts: any;
+    errors: ProductInventoryCheckError[];
 }) => {
     const [productsChanged, setProductsChanged] = useState<ProductChangedHistory[]>([]);
     const [changedQuantity, setChangedQuantity] = useState<number>(0);
@@ -131,15 +137,20 @@ const ProductsTableInventoryCheck = ({
                     );
                 case "countedQuantity":
                     return (
-                        <div className="flex items-center justify-center">
-                            <input
-                                type="text"
-                                value={product?.countedQuantity?.toLocaleString("en-US") || ""}
-                                disabled={!active}
-                                onChange={(e) => handleChangeCountedQuantity(e, index)}
-                                className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                            />
-                        </div>
+                        <>
+                            <div className="flex items-center justify-center">
+                                <input
+                                    type="text"
+                                    value={product?.countedQuantity?.toLocaleString("en-US") || ""}
+                                    disabled={!active}
+                                    onChange={(e) => handleChangeCountedQuantity(e, index)}
+                                    className="w-full rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                />
+                            </div>
+                            {errors[index]?.countedQuantity && (
+                                <p className="mt-1 text-xs text-danger">{errors[index]?.countedQuantity.message}</p>
+                            )}
+                        </>
                     );
                 case "difference":
                     return (
