@@ -165,15 +165,7 @@ const InventoryCheckForm = ({
 
     const handleAction = async (action: string) => {
         try {
-            let res;
             switch (action) {
-                case "CHO_DUYET":
-                    res = await changeInventoryCheckStatus(watch("inventoryCheckId")!.toString(), "CHO_DUYET", sessionToken);
-                    if (res.status === "SUCCESS") {
-                        toast.success("Gửi yêu cầu duyệt đơn thành công!");
-                    }
-                    router.push(`/inventory-check-note/list`);
-                    break;
                 case "DUYỆT":
                     await handleApprove(true);
                     break;
@@ -195,10 +187,13 @@ const InventoryCheckForm = ({
         const response = await approveInventoryCheck(inventoryCheckId as string, accept, sessionToken);
         if (response.status === "SUCCESS") {
             if (accept) {
-                toast.warning("Hệ thống đang xử lý dữ liệu");
-
+                if (loading) {
+                    toast.warning("Hệ thống đang xử lý dữ liệu");
+                    return;
+                }
+                setLoading(true);
                 try {
-                    const res = await submitInventoryCheck(inventoryCheckId as string, sessionToken);
+                    await submitInventoryCheck(inventoryCheckId as string, sessionToken);
                 }
                 catch (error) {
                     console.error("Error handling action:", error);
@@ -365,8 +360,13 @@ const InventoryCheckForm = ({
             if (response && response.status === "SUCCESS") {
                 await changeInboundStatus(watch("inventoryCheckId")!.toString(), "BAN_NHAP", sessionToken);
                 if (action === "CHO_DUYET") {
-                    handleOpenModal(action);
-                    return;
+                    const res = await changeInventoryCheckStatus(watch("inventoryCheckId")!.toString(), "CHO_DUYET", sessionToken);
+                    if (res.status === "SUCCESS") {
+                        toast.success("Lưu và gửi yêu cầu duyệt đơn thành công!");
+                    }
+                }
+                else {
+                    toast.success("Lưu phiếu kiểm thành công");
                 }
                 router.push("/inventory-check-note/list");
                 router.refresh();
@@ -673,6 +673,7 @@ const InventoryCheckForm = ({
                                     viewMode !== "details" &&
                                     ["BAN_NHAP", "CHUA_LUU", "DANG_KIEM"].includes(inventoryCheckStatus as string)
                                 }
+                                errors={errors.inventoryCheckProductDetails || []} // Truyền lỗi vào đây
                                 startedDate={watch("createdDate")}
                                 sessionToken={sessionToken}
                                 setProducts={setValue}
@@ -739,8 +740,6 @@ const InventoryCheckForm = ({
                                 <ModalBody>
                                     {(() => {
                                         switch (action) {
-                                            case "CHO_DUYET":
-                                                return <p>Bạn có chắc muốn gửi yêu cầu duyệt?</p>;
                                             case "DUYỆT":
                                                 return <p>Bạn có chắc muốn duyệt đơn này?</p>;
                                             case "TỪ_CHỐI":
@@ -784,9 +783,6 @@ const InventoryCheckForm = ({
                                         variant="light"
                                         onPress={async () => {
                                             switch (action) {
-                                                case "CHO_DUYET":
-                                                    toast.warning("Hủy gửi yêu cầu duyệt đơn!");
-                                                    break;
                                                 case "DUYỆT":
                                                     toast.warning("Bỏ duyệt đơn kiểm hàng!");
                                                     break;

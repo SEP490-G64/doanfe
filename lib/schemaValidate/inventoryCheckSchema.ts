@@ -39,7 +39,7 @@ const ProductCheck = z
             .number()
             .int()
             .min(0, "Số lượng không thể nhỏ hơn 0")
-            .max(100000000000, "Số lượng không được lớn hơn 100,000,000,000")
+            .max(100000000000, "Số lượng không được > 100,000,000,000")
             .optional(),
         difference: z.number().int().optional(),
         reason: z.string().trim().max(256, "Giới hạn 255 kí tự").optional(),

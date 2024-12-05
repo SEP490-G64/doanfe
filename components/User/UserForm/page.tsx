@@ -12,7 +12,7 @@ import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import { createUser, getUserById, updateUser } from "@/services/userServices";
-import { getListBranch } from "@/services/branchServices";
+import { getAllBranch, getListBranch } from "@/services/branchServices";
 import {Branch} from "@/types/branch";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
@@ -34,10 +34,6 @@ const UserForm = ({
     const [branches, setBranches] = useState<Branch[]>([]);
     const [status, setStatus] = useState<string>("");
     const [role, setRole] = useState<string>("");
-    const [dataSearch, setDataSearch] = useState<DataSearch>({
-        keyword: "",
-        status: "",
-    });
 
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
@@ -92,6 +88,11 @@ const UserForm = ({
                 fields.forEach((field) => setValue(field, response.data[field]));
                 setStatus(response.data["status"]);
                 setRole(response.data[`roles.${0}.type`]);
+                // Đặt giá trị mặc định cho branch.id
+                if (response.data.branch?.id) {
+                    setValue("branch.id", response.data.branch.id.toString());
+                }
+
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -102,7 +103,7 @@ const UserForm = ({
 
     const getBranches = async () => {
         try {
-            const response = await getListBranch("0", "10", dataSearch, sessionToken);
+            const response = await getAllBranch(sessionToken);
 
             setBranches(response.data);
         } catch (error) {
@@ -111,13 +112,16 @@ const UserForm = ({
     };
 
     useEffect(() => {
-        getBranches();
-        if (viewMode != "create") {
-            getUserInfo();
-        }
-        if (viewMode === "create") {
-            setValue("status", "ACTIVATE"); // Đảm bảo status có giá trị mặc định
-        }
+        const fetchData = async () => {
+            await getBranches(); // Tải danh sách chi nhánh
+            if (viewMode !== "create") {
+                await getUserInfo(); // Sau đó tải thông tin người dùng
+            }
+            if (viewMode === "create") {
+                setValue("status", "ACTIVATE");
+            }
+        };
+        fetchData();
     }, []);
 
     const onSubmit = async (user: UserBodyType) => {
@@ -339,6 +343,7 @@ const UserForm = ({
                                     placeholder={"Chọn chi nhánh làm việc"}
                                     register={{ ...register("branch.id") }}
                                     watch={watch("branch.id")}
+                                    defaultValue={watch("branch.id")} // Gán giá trị mặc định khi form khởi tạo
                                     disabled={viewMode !== "create" && viewMode !== "update" && viewMode !== "approve"}
                                     data={
                                         branches.map((branch) => ({

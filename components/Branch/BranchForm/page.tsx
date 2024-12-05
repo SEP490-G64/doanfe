@@ -20,6 +20,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
     const router = useRouter();
     const { sessionToken } = useAppContext();
     const { isOpen, onOpenChange } = useDisclosure();
+    const [formattedCapacity, setFormattedCapacity] = useState("");
 
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
@@ -43,6 +44,13 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
             isDeleted: false
         },
     });
+
+    const handleCapacityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value.replace(/,/g, ""); // Loại bỏ dấu phẩy
+        const numericValue = parseInt(rawValue, 10) || 0; // Chuyển đổi thành số
+        setFormattedCapacity(numericValue.toLocaleString()); // Định dạng với dấu phẩy
+        setValue("capacity", numericValue); // Lưu giá trị không định dạng vào react-hook-form
+    };
 
     const getBranchInfo = async () => {
         if (loading) {
@@ -72,6 +80,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                     "activeStatus",
                 ];
 
+                setFormattedCapacity(response.data.capacity.toLocaleString());
                 fields.forEach((field) => setValue(field, response.data[field]));
             } else router.push("/not-found");
         } catch (error) {
@@ -120,8 +129,7 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
             return (
                 <div className="flex flex-col gap-9">
                     {/* <!-- Contact Form --> */}
-                    <div
-                        className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+                    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <form onSubmit={handleSubmit(onSubmit)} noValidate method={"post"}>
                             <div className="p-6.5">
                                 <div className="mb-4.5">
@@ -137,8 +145,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                     />
                                     {errors.branchName && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.branchName.message}
-                                    </span>
+                                            {errors.branchName.message}
+                                        </span>
                                     )}
                                 </div>
 
@@ -155,8 +163,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                     />
                                     {errors.location && (
                                         <span className="mt-1 block w-full text-sm text-rose-500">
-                                        {errors.location.message}
-                                    </span>
+                                            {errors.location.message}
+                                        </span>
                                     )}
                                 </div>
 
@@ -174,8 +182,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         />
                                         {errors.contactPerson && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.contactPerson.message}
-                                        </span>
+                                                {errors.contactPerson.message}
+                                            </span>
                                         )}
                                     </div>
 
@@ -192,8 +200,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         />
                                         {errors.phoneNumber && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.phoneNumber.message}
-                                        </span>
+                                                {errors.phoneNumber.message}
+                                            </span>
                                         )}
                                     </div>
                                 </div>
@@ -228,8 +236,8 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                         </div>
                                         {errors.branchType && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.branchType.message}
-                                        </span>
+                                                {errors.branchType.message}
+                                            </span>
                                         )}
                                     </div>
 
@@ -238,16 +246,17 @@ const BranchForm = ({ viewMode, branchId }: { viewMode: "details" | "update" | "
                                             Quy mô
                                         </label>
                                         <input
-                                            type="number"
+                                            type="text"
                                             placeholder="Nhập quy mô"
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            {...register("capacity")}
+                                            value={formattedCapacity} // Hiển thị giá trị định dạng
+                                            onChange={handleCapacityChange} // Xử lý định dạng khi thay đổi
                                             disabled={viewMode === "details"}
                                         />
                                         {errors.capacity && (
                                             <span className="mt-1 block w-full text-sm text-rose-500">
-                                            {errors.capacity.message}
-                                        </span>
+                                                {errors.capacity.message}
+                                            </span>
                                         )}
                                     </div>
 

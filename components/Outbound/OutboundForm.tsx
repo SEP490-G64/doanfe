@@ -712,6 +712,7 @@ const OutboundForm = ({ viewMode, outboundId }: { viewMode: "details" | "update"
                                 <input
                                     type="text"
                                     placeholder="Nhập lí do xuất hàng"
+                                    {...register("note")}
                                     disabled={
                                         viewMode === "details" ||
                                         ["CHO_DUYET", "KIEM_HANG", "HOAN_THANH"].includes(outboundStatus as string)
