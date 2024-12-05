@@ -65,7 +65,7 @@ const menuGroups = [
                 children: [
                     { label: "Thống kê tổng quan", route: "/" },
                     { label: "Báo cáo tồn kho", route: "/report/inventory-report" },
-                    { label: "Báo cáo giá trị nhập - xuất", route: "/report/inbound-outbound-report" },
+                    // { label: "Báo cáo giá trị nhập - xuất", route: "/report/inbound-outbound-report" },
                 ],
             },
             {
@@ -98,7 +98,7 @@ const menuGroups = [
             {
                 icon: <PiListNumbers />,
                 label: "Kiểm kê hàng hóa",
-                route: "/inventory-check"
+                route: "/inventory-check",
             },
             {
                 icon: <GiMedicines />,
@@ -117,7 +117,11 @@ const menuGroups = [
                     { icon: <BiCategory />, label: "Quản lý nhóm sản phẩm", route: "/categories/list" },
                     { icon: <MdOutlineBloodtype />, label: "Quản lý loại sản phẩm", route: "/types/list" },
                     { icon: <TfiSupport />, label: "Quản lý nhà cung cấp", route: "/suppliers/list" },
-                    { icon: <MdOutlinePrecisionManufacturing />, label: "Quản lý nhà sản xuất", route: "/manufacturers/list" },
+                    {
+                        icon: <MdOutlinePrecisionManufacturing />,
+                        label: "Quản lý nhà sản xuất",
+                        route: "/manufacturers/list",
+                    },
                     { icon: <TbRulerMeasure />, label: "Quản lý đơn vị", route: "/units/list" },
                 ],
             },
@@ -150,9 +154,7 @@ const menuGroups = [
                 route: "/profile",
             },
             {
-                icon: (
-                    <MdOutlinePassword />
-                ),
+                icon: <MdOutlinePassword />,
                 label: "Đổi mật khẩu",
                 route: "/profile/change-password",
             },
@@ -212,9 +214,7 @@ const menuAdminGroups = [
                 route: "/profile",
             },
             {
-                icon: (
-                    <MdOutlinePassword />
-                ),
+                icon: <MdOutlinePassword />,
                 label: "Đổi mật khẩu",
                 route: "/profile/change-password",
             },
@@ -231,7 +231,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     const userInfo = tokenDecoded.information;
 
     // Kiểm tra điều kiện của userInfo trước khi hiển thị menuGroups
-    const isUserAllowed = userInfo && userInfo?.roles[0].type === 'ADMIN'; // Điều kiện có thể thay đổi tùy vào yêu cầu của bạn
+    const isUserAllowed = userInfo && userInfo?.roles[0].type === "ADMIN"; // Điều kiện có thể thay đổi tùy vào yêu cầu của bạn
 
     return (
         <aside

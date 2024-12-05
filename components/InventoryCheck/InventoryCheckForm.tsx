@@ -194,8 +194,7 @@ const InventoryCheckForm = ({
                 setLoading(true);
                 try {
                     await submitInventoryCheck(inventoryCheckId as string, sessionToken);
-                }
-                catch (error) {
+                } catch (error) {
                     console.error("Error handling action:", error);
                     toast.error("Có lỗi xảy ra khi xử lý yêu cầu");
                 }
@@ -360,12 +359,15 @@ const InventoryCheckForm = ({
             if (response && response.status === "SUCCESS") {
                 await changeInboundStatus(watch("inventoryCheckId")!.toString(), "BAN_NHAP", sessionToken);
                 if (action === "CHO_DUYET") {
-                    const res = await changeInventoryCheckStatus(watch("inventoryCheckId")!.toString(), "CHO_DUYET", sessionToken);
+                    const res = await changeInventoryCheckStatus(
+                        watch("inventoryCheckId")!.toString(),
+                        "CHO_DUYET",
+                        sessionToken
+                    );
                     if (res.status === "SUCCESS") {
                         toast.success("Lưu và gửi yêu cầu duyệt đơn thành công!");
                     }
-                }
-                else {
+                } else {
                     toast.success("Lưu phiếu kiểm thành công");
                 }
                 router.push("/inventory-check-note/list");
@@ -400,9 +402,7 @@ const InventoryCheckForm = ({
                                         Người duyệt:
                                     </label>
                                     <input
-                                        defaultValue={
-                                            approver ? `${approver?.firstName} ${approver?.lastName}` : ""
-                                        }
+                                        defaultValue={approver ? `${approver?.firstName} ${approver?.lastName}` : ""}
                                         type="text"
                                         placeholder="Chưa được duyệt"
                                         disabled
@@ -497,9 +497,7 @@ const InventoryCheckForm = ({
                         </div>
 
                         <div className="mb-4.5">
-                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                Ghi chú
-                            </label>
+                            <label className="mb-3 block text-sm font-medium text-black dark:text-white">Ghi chú</label>
                             <textarea
                                 {...register("note")}
                                 rows={5}
@@ -668,7 +666,7 @@ const InventoryCheckForm = ({
                             />
                         ) : (
                             <ProductsTableInventoryCheckTwo
-                                inventoryCheckId={inventoryCheckId}
+                                inventoryCheckId={watch("inventoryCheckId")?.toString()}
                                 data={productOpts || []}
                                 active={
                                     viewMode !== "details" &&
@@ -717,7 +715,9 @@ const InventoryCheckForm = ({
                                                 setAction("CHO_DUYET");
                                             }}
                                         >
-                                            {viewMode === "create" ? "Tạo và gửi yêu cầu duyệt" : "Lưu và gửi yêu cầu duyệt"}
+                                            {viewMode === "create"
+                                                ? "Tạo và gửi yêu cầu duyệt"
+                                                : "Lưu và gửi yêu cầu duyệt"}
                                         </button>
                                     </div>
                                     <div className="w-1/2">
@@ -757,21 +757,24 @@ const InventoryCheckForm = ({
                                                                         | "KIEM_KHO_DINH_KY"
                                                                         | "KIEM_KHO_DOT_XUAT"
                                                                         | "KIEM_KHO_VAT_LY_TOAN_PHAN"
-                                                                        | "KIEM_KHO_TRONG_TAM",
+                                                                        | "KIEM_KHO_TRONG_TAM"
                                                                 )
                                                             }
                                                             label="Chọn kiểu kiểm hàng"
                                                             className="max-w-full"
                                                         >
-                                                            <SelectItem key={"KIEM_KHO_DINH_KY"}>Kiểm kho định
-                                                                kỳ</SelectItem>
-                                                            <SelectItem key={"KIEM_KHO_DOT_XUAT"}>Kiểm kho đột
-                                                                xuất</SelectItem>
+                                                            <SelectItem key={"KIEM_KHO_DINH_KY"}>
+                                                                Kiểm kho định kỳ
+                                                            </SelectItem>
+                                                            <SelectItem key={"KIEM_KHO_DOT_XUAT"}>
+                                                                Kiểm kho đột xuất
+                                                            </SelectItem>
                                                             <SelectItem key={"KIEM_KHO_VAT_LY_TOAN_PHAN"}>
                                                                 Kiểm kho theo nhóm sản phẩm
                                                             </SelectItem>
-                                                            <SelectItem key={"KIEM_KHO_TRONG_TAM"}>Kiểm kho theo loại
-                                                                sản phẩm</SelectItem>
+                                                            <SelectItem key={"KIEM_KHO_TRONG_TAM"}>
+                                                                Kiểm kho theo loại sản phẩm
+                                                            </SelectItem>
                                                         </Select>
                                                     </>
                                                 );
