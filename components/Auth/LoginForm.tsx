@@ -10,6 +10,9 @@ import { login } from "@/services/authServices";
 import { LoginBody, LoginBodyType } from "@/lib/schemaValidate/authSchema";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppProvider/AppProvider";
+import { getMessaging, getToken } from "firebase/messaging";
+import { app } from "@/firebase/firebase";
+import { deleteToken } from "firebase/messaging";
 
 function LoginForm() {
     const [loading, setLoading] = useState(false);
@@ -28,6 +31,21 @@ function LoginForm() {
         },
     });
 
+    const requestFirebaseToken = async () => {
+        try {
+            const messaging = getMessaging(app);
+            // Delete the current token to refresh it
+            await deleteToken(messaging);
+            const token = await getToken(messaging, {
+                vapidKey: "BNVsai0MSwtblLLkjjrijFbsQzMAfulOpGnMaWtmZoaFyohhYf2tH-RNLSpBkNq8JkokveYLFbvefEtrUTDuRbU",
+            });
+            console.log("Firebase device token:", token);
+            return token;
+        } catch (error) {
+            console.error("Error getting device token:", error);
+            return null;
+        }
+    };
     const onSubmit = async (user: LoginBodyType) => {
         if (loading) {
             toast.warning("Hệ thống đang xử lý dữ liệu");
@@ -35,8 +53,12 @@ function LoginForm() {
         }
         setLoading(true);
         try {
-            const response = await login(user);
-
+            // Retrieve Firebase device token
+            const rawDeviceToken = await requestFirebaseToken();
+            const deviceToken = rawDeviceToken ?? undefined;
+            const userWithDeviceToken = { ...user, deviceToken };
+            const response = await login(userWithDeviceToken);
+            console.log(response);
             if (response && response.message === "200 OK") {
                 toast.success("Đăng nhập thành công");
 
