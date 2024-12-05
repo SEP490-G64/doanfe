@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
@@ -22,6 +22,15 @@ const SelectGroupOne = ({
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
 
+    useEffect(() => {
+        if (dataKey === "branchId" && userInfo?.branch?.id && dataSearch[dataKey] !== userInfo.branch.id) {
+            setDataSearch((prev: any) => ({
+                ...prev,
+                branchId: userInfo.branch.id, // Chỉ cập nhật nếu giá trị khác
+            }));
+        }
+    }, [dataKey, userInfo, setDataSearch, dataSearch]);
+
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setDataSearch({
@@ -41,7 +50,7 @@ const SelectGroupOne = ({
                     style={{ minHeight: "40px" }} // đảm bảo kích thước tối thiểu phù hợp với nút
                     disabled={userInfo?.roles[0].type === "STAFF" && dataKey == "branchId"}
                 >
-                    <option value="" className="text-gray-500">
+                    <option value="" className="text-gray-500" disabled={dataKey === "branchId"}>
                         {placeHolder}
                     </option>
 

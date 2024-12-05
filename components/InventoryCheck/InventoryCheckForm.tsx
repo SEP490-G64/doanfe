@@ -498,7 +498,7 @@ const InventoryCheckForm = ({
 
                         <div className="mb-4.5">
                             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                Ghi chú <span className="text-meta-1">*</span>
+                                Ghi chú
                             </label>
                             <textarea
                                 {...register("note")}
