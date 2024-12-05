@@ -16,7 +16,15 @@ import { jwtDecode } from "jwt-decode";
 import { getProductById } from "@/services/productServices";
 import { formatDateTimeYYYYMMDD } from "@/utils/methods";
 
-const BatchForm = ({ viewMode, productId, batchId }: { viewMode: "details" | "update" | "create"; productId?: string; batchId?: string }) => {
+const BatchForm = ({
+    viewMode,
+    productId,
+    batchId,
+}: {
+    viewMode: "details" | "update" | "create";
+    productId?: string;
+    batchId?: string;
+}) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { sessionToken } = useAppContext();
@@ -43,7 +51,7 @@ const BatchForm = ({ viewMode, productId, batchId }: { viewMode: "details" | "up
             expireDate: undefined,
             inboundPrice: undefined,
             product: {
-                id: parseInt(productId as string, 10)
+                id: parseInt(productId as string, 10),
             },
         },
     });
@@ -58,13 +66,7 @@ const BatchForm = ({ viewMode, productId, batchId }: { viewMode: "details" | "up
             const response = await getBatchById(batchId as string, sessionToken);
 
             if (response.message === "200 OK") {
-                const fields: [
-                    "batchCode",
-                    "produceDate",
-                    "expireDate",
-                    "inboundPrice",
-                    "product",
-                ] = [
+                const fields: ["batchCode", "produceDate", "expireDate", "inboundPrice", "product"] = [
                     "batchCode",
                     "produceDate",
                     "expireDate",
@@ -72,7 +74,7 @@ const BatchForm = ({ viewMode, productId, batchId }: { viewMode: "details" | "up
                     "product",
                 ];
 
-                console.log(response.data)
+                console.log(response.data);
 
                 // Chuyển ngày sản xuất và ngày hết hạn sang định dạng yyyy-MM-dd
                 if (response.data.produceDate) {
@@ -84,7 +86,7 @@ const BatchForm = ({ viewMode, productId, batchId }: { viewMode: "details" | "up
 
                 fields.forEach((field) => setValue(field, response.data[field]));
 
-                console.log(response.data)
+                console.log(response.data);
             } else router.push("/not-found");
         } catch (error) {
             console.log(error);
@@ -108,8 +110,8 @@ const BatchForm = ({ viewMode, productId, batchId }: { viewMode: "details" | "up
 
         // Trả về theo định dạng yyyy-MM-ddTHH:mm:ss mà không phụ thuộc vào múi giờ
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
 
         return `${year}-${month}-${day}T00:00:00`;
     };
@@ -220,6 +222,7 @@ const BatchForm = ({ viewMode, productId, batchId }: { viewMode: "details" | "up
                                             placeholder="Nhập giá nhập lô"
                                             className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             {...register("inboundPrice")}
+                                            value={watch("inboundPrice")?.toLocaleString()}
                                             disabled={viewMode === "details"}
                                         />
                                         {errors.inboundPrice && (
