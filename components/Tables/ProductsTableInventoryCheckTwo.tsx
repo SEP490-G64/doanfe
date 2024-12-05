@@ -160,14 +160,20 @@ const ProductsTableInventoryCheck = ({
                         </div>
                     );
                 case "productName":
-                    const isUpdatedAfterStartDate =
+const isUpdatedAfterStartDate =
                         product?.product?.lastUpdated &&
                         active &&
                         new Date(product?.product?.lastUpdated) > new Date(startedDate);
                     const isProductUpdated = updatedProductIds.includes(product?.product?.id);
                     const isBatchUpdated = product?.batch?.id && updatedBatchIds.includes(product?.batch?.id);
                     const isUpdated = product?.batch ? isBatchUpdated : isProductUpdated;
-                    return (
+                    return product?.batch?.batchCode ? (
+                        <div className="flex items-center justify-start">
+                            <p className="text-bold ml-12 text-sm capitalize text-default-400">
+                                {product?.batch?.batchCode}
+                            </p>
+                        </div>
+                    ) : (
                         <div className="flex items-center justify-start">
                             <p
                                 className={`text-bold text-left text-sm capitalize ${
@@ -180,12 +186,6 @@ const ProductsTableInventoryCheck = ({
                             >
                                 {product?.product?.productName}
                             </p>
-                        </div>
-                    );
-                case "batchCode":
-                    return (
-                        <div className="flex flex-col items-center justify-center">
-                            <p className="text-bold text-sm capitalize text-default-400">{product?.batch?.batchCode}</p>
                         </div>
                     );
                 case "baseUnit":
