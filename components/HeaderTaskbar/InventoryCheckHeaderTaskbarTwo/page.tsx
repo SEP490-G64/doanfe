@@ -245,9 +245,9 @@ function HeaderTaskbar({
                                 />
                                 <span>Số lượng còn ít hơn hoặc bằng</span>
                                 <input
-                                    type="number"
-                                    value={lowQuantity}
-                                    onChange={(e) => setLowQuantity(Number(e.target.value))}
+                                    type="text"
+                                    value={lowQuantity.toLocaleString()}
+                                    onChange={(e) => setLowQuantity(Number(e.target.value.replace(/,/g, "")))}
                                     className="border-gray-300 text-gray-700 w-32 rounded-md border p-1 shadow-sm focus:outline-none"
                                 />
                             </label>
@@ -323,9 +323,9 @@ function HeaderTaskbar({
                                     />
                                     <span>Sản phẩm hết hạn trong</span>
                                     <input
-                                        type="number"
-                                        value={numberOfDates}
-                                        onChange={(e) => setNumberOfDates(Number(e.target.value))}
+                                        type="text"
+                                        value={numberOfDates.toLocaleString()}
+                                        onChange={(e) => setNumberOfDates(Number(e.target.value.replace(/,/g, "")))}
                                         className="border-gray-300 text-gray-700 w-24 rounded-md border p-1 shadow-sm focus:outline-none"
                                     />
                                     <span>ngày</span>

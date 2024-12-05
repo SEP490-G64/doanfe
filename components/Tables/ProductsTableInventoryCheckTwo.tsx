@@ -162,7 +162,7 @@ const ProductsTableInventoryCheck = ({
                         <div className="flex items-center justify-start">
                             <p
                                 className={`text-bold ml-12 text-sm capitalize text-default-400 ${
-                                    isUpdated
+                                    isBatchUpdated
                                         ? "text-amber-600" // Highlight if the product or batch is updated
                                         : isUpdatedAfterStartDate
                                           ? "text-amber-600" // Highlight if the product was updated after start date
