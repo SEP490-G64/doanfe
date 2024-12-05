@@ -58,7 +58,7 @@ const ProductsTableInventoryCheck = ({
     }, [page, data]);
     useEffect(() => {
         const url = `http://localhost:8081/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
-        let sse = new EventSource(url); // Declare with `let` to allow reassignment
+        const sse = new EventSource(url); // Declare with `let` to allow reassignment
 
         console.log("SSE connection established");
 
