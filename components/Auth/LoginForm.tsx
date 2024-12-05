@@ -11,9 +11,8 @@ import { LoginBody, LoginBodyType } from "@/lib/schemaValidate/authSchema";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "../AppProvider/AppProvider";
 import { getMessaging, getToken } from "firebase/messaging";
-import{app} from "@/firebase/firebase"
+import { app } from "@/firebase/firebase";
 import { deleteToken } from "firebase/messaging";
-
 
 function LoginForm() {
     const [loading, setLoading] = useState(false);
@@ -31,11 +30,11 @@ function LoginForm() {
             password: "",
         },
     });
-  
-     const requestFirebaseToken = async () => {
+
+    const requestFirebaseToken = async () => {
         try {
             const messaging = getMessaging(app);
-             // Delete the current token to refresh it
+            // Delete the current token to refresh it
             await deleteToken(messaging);
             const token = await getToken(messaging, {
                 vapidKey: "BNVsai0MSwtblLLkjjrijFbsQzMAfulOpGnMaWtmZoaFyohhYf2tH-RNLSpBkNq8JkokveYLFbvefEtrUTDuRbU",
@@ -54,10 +53,10 @@ function LoginForm() {
         }
         setLoading(true);
         try {
-             // Retrieve Firebase device token
-             const rawDeviceToken = await requestFirebaseToken();
-             const deviceToken = rawDeviceToken ?? undefined;
-        const userWithDeviceToken = { ...user, deviceToken };
+            // Retrieve Firebase device token
+            const rawDeviceToken = await requestFirebaseToken();
+            const deviceToken = rawDeviceToken ?? undefined;
+            const userWithDeviceToken = { ...user, deviceToken };
             const response = await login(userWithDeviceToken);
             console.log(response);
             if (response && response.message === "200 OK") {

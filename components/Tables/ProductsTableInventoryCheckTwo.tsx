@@ -182,6 +182,12 @@ const ProductsTableInventoryCheck = ({
                             </p>
                         </div>
                     );
+                case "batchCode":
+                    return (
+                        <div className="flex flex-col items-center justify-center">
+                            <p className="text-bold text-sm capitalize text-default-400">{product?.batch?.batchCode}</p>
+                        </div>
+                    );
                 case "baseUnit":
                     return (
                         <div className="flex flex-col items-center justify-center">
@@ -307,7 +313,7 @@ const ProductsTableInventoryCheck = ({
 
     const handleChangeCountedQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         data![index].countedQuantity = Number(e.target.value.replace(/,/g, ""));
-        if (data![index].systemQuantity)
+        if (data![index].systemQuantity !== undefined && data![index].systemQuantity !== null)
             data![index].difference = data![index].systemQuantity - Number(e.target.value.replace(/,/g, ""));
         if (!e.target.value) data![index].difference = undefined;
         setProducts("inventoryCheckProductDetails", data);
