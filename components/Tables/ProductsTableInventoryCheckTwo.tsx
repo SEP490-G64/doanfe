@@ -57,7 +57,7 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
     useEffect(() => {
-        const url = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
+        const url = `http://stream.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
         const sse = new EventSource(url); // Declare with `let` to allow reassignment
 
         console.log("SSE connection established");
