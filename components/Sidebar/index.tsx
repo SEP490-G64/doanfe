@@ -20,7 +20,6 @@ import { PiListNumbers } from "react-icons/pi";
 import SidebarItem from "@/components/Sidebar/SidebarItem";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
-import { useRouter } from "next/navigation";
 import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 
@@ -63,7 +62,11 @@ const menuGroups = [
                 ),
                 label: "Thống kê",
                 route: "#",
-                children: [{ label: "Thống kê tổng quan", route: "/" }],
+                children: [
+                    { label: "Thống kê tổng quan", route: "/" },
+                    { label: "Báo cáo tồn kho", route: "/report/inventory-report" },
+                    { label: "Báo cáo giá trị nhập - xuất", route: "/report/inbound-outbound-report" },
+                ],
             },
             {
                 icon: <BiImport />,

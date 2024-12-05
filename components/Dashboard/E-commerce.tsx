@@ -16,6 +16,7 @@ import { MdPrecisionManufacturing, MdProductionQuantityLimits } from "react-icon
 import { getStaffBranches } from "@/services/branchServices";
 import { Branch } from "@/types/branch";
 import { DashboardBodyType } from "@/lib/schemaValidate/reportSchema";
+import { formatLargeNumber } from "@/utils/methods"
 
 const ChartThree = dynamic(() => import("@/components/Charts/ChartThree"), {
     ssr: false,
@@ -125,20 +126,20 @@ const ECommerce: React.FC = () => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
                 <CardDataStats
                     title="Tổng giá trị nhập"
-                    total={dashboard?.dashboardItems?.at(0) ? dashboard?.dashboardItems?.at(0)?.toLocaleString() : "0"}
+                    total={formatLargeNumber(dashboard?.dashboardItems?.at(0))}
                 >
                     <TfiImport style={{ color: "#0069d9", strokeWidth: "1px" }} />
                 </CardDataStats>
                 <CardDataStats
                     title="Tổng giá trị xuất"
-                    total={dashboard?.dashboardItems?.at(1) ? dashboard?.dashboardItems?.at(1)?.toLocaleString() : "0"}
+                    total={formatLargeNumber(dashboard?.dashboardItems?.at(1))}
                 >
                     <TfiExport style={{ color: "#0069d9", strokeWidth: "1px" }} />
                 </CardDataStats>
-                <CardDataStats title="Tổng sản phẩm" total={dashboard?.dashboardItems?.at(2) ?? "0"}>
+                <CardDataStats title="Tổng sản phẩm" total={formatLargeNumber(dashboard?.dashboardItems?.at(2))}>
                     <MdProductionQuantityLimits style={{ color: "#0069d9", fontSize: "22px" }} />
                 </CardDataStats>
-                <CardDataStats title="Tổng nhà cung cấp" total={dashboard?.dashboardItems?.at(3) ?? "0"}>
+                <CardDataStats title="Tổng nhà cung cấp" total={formatLargeNumber(dashboard?.dashboardItems?.at(3))}>
                     <MdPrecisionManufacturing style={{ color: "#0069d9", fontSize: "22px" }} />
                 </CardDataStats>
             </div>

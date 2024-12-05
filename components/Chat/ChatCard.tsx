@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Chat } from "@/types/chat";
 import z from "zod";
+import { formatLargeNumber } from "@/utils/methods";
 
 interface Supplier {
     id: string,
@@ -39,7 +40,7 @@ const ChatCard: React.FC<ChatCardProps> = ({ data }) => {
                                 <h5 className="font-medium text-black dark:text-white">{supplier.supplierName}</h5>
                                 <p className="text-sm text-black dark:text-white">{supplier.address}</p>
                                 <p className="text-xs text-meta-5"> {supplier.quantity} đơn giao dịch</p>
-                                <p className="text-sm"> Tổng giá trị nhập - xuất: <span className="text-meta-3">{supplier.value.toLocaleString()} VND</span></p>
+                                <p className="text-sm"> Tổng giá trị nhập - xuất: <span className="text-meta-3">{formatLargeNumber(supplier.value)}đ</span></p>
                             </div>
                         </div>
                     </Link>
