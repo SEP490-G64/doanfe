@@ -161,7 +161,7 @@ const ProductsTableInventoryCheck = ({
                     return product?.batch?.batchCode ? (
                         <div className="flex items-center justify-start">
                             <p
-                                className={`text-bold text-left text-sm capitalize ${
+                                className={`text-bold ml-12 text-sm capitalize text-default-400 ${
                                     isUpdated
                                         ? "text-amber-600" // Highlight if the product or batch is updated
                                         : isUpdatedAfterStartDate
@@ -169,7 +169,7 @@ const ProductsTableInventoryCheck = ({
                                           : "text-secondary"
                                 }`}
                             >
-                                {product?.product?.productName}
+                                {product?.batch?.batchCode}
                             </p>
                         </div>
                     ) : (
@@ -350,10 +350,7 @@ const ProductsTableInventoryCheck = ({
                         STT
                     </TableColumn>
                     <TableColumn className="text-center" key="productName">
-                        Tên sản phẩm
-                    </TableColumn>
-                    <TableColumn className="text-center" key="batchCode">
-                        Mã lô
+                        Tên sản phẩm - Mã lô
                     </TableColumn>
                     <TableColumn className="text-center" key="baseUnit">
                         Đơn vị
@@ -399,7 +396,10 @@ const ProductsTableInventoryCheck = ({
                                 >
                                     <TableHeader>
                                         <TableColumn className="text-center" key="productName">
-                                            Tên sản phẩm - Mã lô
+                                            Tên sản phẩm
+                                        </TableColumn>
+                                        <TableColumn className="text-center" key="batchCode">
+                                            Mã lô
                                         </TableColumn>
                                         <TableColumn className="text-center" key="quantity">
                                             Số lượng thay đổi
