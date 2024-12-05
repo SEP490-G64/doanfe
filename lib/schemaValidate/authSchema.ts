@@ -61,6 +61,7 @@ export const LoginBody = z
     .object({
         email: z.string().email("Email không phù hợp"),
         password: z.string().min(6, "Mật khẩu tối thiểu gồm 6 kí tự").max(100),
+        deviceToken: z.string().optional(), // Add deviceToken
     })
     .strict();
 

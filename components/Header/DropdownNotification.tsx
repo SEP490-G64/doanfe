@@ -1,8 +1,8 @@
+"use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
-import { toast } from "react-toastify";
 
 import ClickOutside from "@/components/ClickOutside";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
@@ -10,6 +10,7 @@ import { TokenDecoded } from "@/types/tokenDecoded";
 import { getAllNotifications, getQuantityUnreadNoti, markAsRead } from "@/services/notificationServices";
 import { Notification } from "@/types/notification";
 import { formatDateTimeDDMMYYYYHHMM } from "@/utils/methods";
+import useFirebaseMessaging from "@/hooks/useFirebaseMessaging";
 
 const DropdownNotification = () => {
     const router = useRouter();
@@ -50,37 +51,39 @@ const DropdownNotification = () => {
 
         getAllNotificationsByUserId();
         getQuantityUnread();
-    }, []);
+    }, [dropdownOpen]);
 
-    useEffect(() => {
-        // Kết nối tới SSE API
-        const eventSource = new EventSource(
-            `https://warehouse.longtam.store/dsd/api/v1/staff/notification/${userInfo!.id}/stream`
-            // `localhost:8081/dsd/api/v1/staff/notification/${userInfo!.id}/stream`
-        );
+    useFirebaseMessaging();
 
-        // Lắng nghe sự kiện "message" từ server
-        eventSource.onmessage = async (event) => {
-            const data = JSON.parse(event.data);
+    // useEffect(() => {
+    //     // Kết nối tới SSE API
+    //     const eventSource = new EventSource(
+    //         `https://warehouse.longtam.store/dsd/api/v1/staff/notification/${userInfo!.id}/stream`
+    //         // `localhost:8081/dsd/api/v1/staff/notification/${userInfo!.id}/stream`
+    //     );
 
-            // Hiển thị thông báo bằng React Toastify
-            toast.info(data.notification.message);
+    //     // Lắng nghe sự kiện "message" từ server
+    //     eventSource.onmessage = async (event) => {
+    //         const data = JSON.parse(event.data);
 
-            // Gọi API để đồng bộ danh sách thông báo
-            await getAllNotifications(userInfo!.id.toString(), sessionToken);
-        };
+    //         // Hiển thị thông báo bằng React Toastify
+    //         toast.info(data.notification.message);
 
-        // Xử lý lỗi nếu xảy ra
-        eventSource.onerror = (error) => {
-            console.error("SSE error:", error);
-            eventSource.close();
-        };
+    //         // Gọi API để đồng bộ danh sách thông báo
+    //         await getAllNotifications(userInfo!.id.toString(), sessionToken);
+    //     };
 
-        // Dọn dẹp kết nối SSE khi component bị hủy
-        return () => {
-            eventSource.close();
-        };
-    }, []);
+    //     // Xử lý lỗi nếu xảy ra
+    //     eventSource.onerror = (error) => {
+    //         console.error("SSE error:", error);
+    //         eventSource.close();
+    //     };
+
+    //     // Dọn dẹp kết nối SSE khi component bị hủy
+    //     return () => {
+    //         eventSource.close();
+    //     };
+    // }, []);
 
     const handleClickNoti = async (notiId: string, notiType: string) => {
         try {

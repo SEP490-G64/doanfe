@@ -9,6 +9,7 @@ export interface ProductInfor {
         registrationCode?: string;
         productName?: string;
         productCode?: string;
+        lastUpdated?: string;
     };
     productBaseUnit?: {
         id?: number;
@@ -68,4 +69,9 @@ export interface InventoryCheck {
     status: string;
     inventoryCheckDetails: [];
     inventoryCheckProductDetails: [];
+}
+export interface InventoryUpdate {
+    productIds: number[]; // Adjust this type to match your API response
+    inventoryCheckId: number;
+    batchIds: number[];
 }

@@ -16,6 +16,8 @@
     "@nextui-org/react": "^2.4.8",
     "apexcharts": "^3.45.2",
     "axios": "^1.7.7",
+    "eventsource": "^2.0.2",
+    "firebase": "^11.0.2",
     "flatpickr": "^4.6.13",
     "framer-motion": "^11.9.0",
     "jsvectormap": "^1.6.0",

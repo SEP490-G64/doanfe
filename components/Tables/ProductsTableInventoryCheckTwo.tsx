@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Table,
     TableHeader,
@@ -16,20 +16,23 @@ import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDi
 import { formatDateTimeDDMMYYYYHHMM } from "@/utils/methods";
 import { ProductCheckType } from "@/lib/schemaValidate/inventoryCheckSchema";
 import { getProductsChangedHistory } from "@/services/productServices";
-import { ProductChangedHistory } from "@/types/inventoryCheck";
+import { ProductChangedHistory, InventoryUpdate } from "@/types/inventoryCheck";
+import { getSubcribe } from "@/services/inventoryCheckServices";
 
 interface ProductInventoryCheckError {
     countedQuantity: string;
 }
 
 const ProductsTableInventoryCheck = ({
+    inventoryCheckId,
     data,
     active,
     startedDate,
     sessionToken,
     setProducts,
-    errors
+    errors,
 }: {
+    inventoryCheckId: string;
     data: ProductCheckType[];
     active: boolean;
     startedDate: string;
@@ -43,7 +46,8 @@ const ProductsTableInventoryCheck = ({
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [page, setPage] = React.useState(1);
     const rowsPerPage = 20;
-
+    const [updatedProductIds, setUpdatedProductIds] = useState<number[]>([]); // Explicitly define as number[]
+    const [updatedBatchIds, setBatchIds] = useState<number[]>([]); // Explicitly define as number[]
     const pages = Math.ceil(data.length / rowsPerPage);
 
     const items = React.useMemo(() => {
@@ -52,7 +56,57 @@ const ProductsTableInventoryCheck = ({
 
         return data.slice(start, end);
     }, [page, data]);
+    useEffect(() => {
+        const url = `http://localhost:8081/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
+        const sse = new EventSource(url); // Declare with `let` to allow reassignment
 
+        console.log("SSE connection established");
+
+        sse.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                setUpdatedProductIds(data.productIds || []);
+                setBatchIds(data.batchIds || []);
+                console.log("Received SSE data:", data);
+                sse.close();
+            } catch (error) {
+                console.error("Error parsing SSE data:", error);
+            }
+        };
+
+        sse.onerror = (error) => {
+            console.error("SSE encountered an error:", error);
+            sse.close();
+        };
+
+        const closeStreamApi = async () => {
+            const closeApiUrl = `http://localhost:8081/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
+            try {
+                const response = await fetch(closeApiUrl, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${sessionToken}`, // Add the Bearer token here
+                        "Content-Type": "application/json", // Optional, if you have a JSON body or expect JSON
+                    },
+                });
+                if (!response.ok) {
+                    console.error("Failed to close the stream:", response.statusText);
+                } else {
+                    console.log("Successfully closed the stream");
+                }
+            } catch (error) {
+                console.error("Error calling close stream API:", error);
+            }
+        };
+
+        return () => {
+            if (sse) {
+                console.log("Cleaning up: Closing SSE connection");
+                sse.close();
+                closeStreamApi(); // Call API to close the stream
+            }
+        };
+    }, [inventoryCheckId, sessionToken]);
     const getProductsChanged = async (productId: number, batchCode: string | undefined) => {
         try {
             const response = await getProductsChangedHistory(startedDate, productId, sessionToken);
@@ -106,17 +160,32 @@ const ProductsTableInventoryCheck = ({
                         </div>
                     );
                 case "productName":
-                    return product?.batch?.batchCode ? (
+                    const isUpdatedAfterStartDate =
+                        product?.product?.lastUpdated &&
+                        active &&
+                        new Date(product?.product?.lastUpdated) > new Date(startedDate);
+                    const isProductUpdated = updatedProductIds.includes(product?.product?.id);
+                    const isBatchUpdated = product?.batch?.id && updatedBatchIds.includes(product?.batch?.id);
+                    const isUpdated = product?.batch ? isBatchUpdated : isProductUpdated;
+                    return (
                         <div className="flex items-center justify-start">
-                            <p className="text-bold ml-12 text-sm capitalize text-default-400">
-                                {product?.batch?.batchCode}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-start">
-                            <p className="text-bold text-left text-sm capitalize text-secondary">
+                            <p
+                                className={`text-bold text-left text-sm capitalize ${
+                                    isUpdated
+                                        ? "text-amber-600" // Highlight if the product or batch is updated
+                                        : isUpdatedAfterStartDate
+                                          ? "text-amber-600" // Highlight if the product was updated after start date
+                                          : "text-secondary"
+                                }`}
+                            >
                                 {product?.product?.productName}
                             </p>
+                        </div>
+                    );
+                case "batchCode":
+                    return (
+                        <div className="flex flex-col items-center justify-center">
+                            <p className="text-bold text-sm capitalize text-default-400">{product?.batch?.batchCode}</p>
                         </div>
                     );
                 case "baseUnit":
@@ -212,7 +281,7 @@ const ProductsTableInventoryCheck = ({
                     return cellValue;
             }
         },
-        [data]
+        [data, updatedProductIds, updatedBatchIds]
     );
 
     const renderCellTwo = React.useCallback((product: any, columnKey: any, index: number) => {
@@ -244,7 +313,7 @@ const ProductsTableInventoryCheck = ({
 
     const handleChangeCountedQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         data![index].countedQuantity = Number(e.target.value.replace(/,/g, ""));
-        if (data![index].systemQuantity)
+        if (data![index].systemQuantity !== undefined && data![index].systemQuantity !== null)
             data![index].difference = data![index].systemQuantity - Number(e.target.value.replace(/,/g, ""));
         if (!e.target.value) data![index].difference = undefined;
         setProducts("inventoryCheckProductDetails", data);
