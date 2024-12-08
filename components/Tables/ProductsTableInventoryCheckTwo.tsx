@@ -61,29 +61,58 @@ const ProductsTableInventoryCheck = ({
         const socket = new WebSocket('ws://warehouse.longtam.store/ws');
         const stompClient = new Client({
           webSocketFactory: () => socket,
+          connectHeaders: {
+            // Optionally add any headers if needed
+          },
           onConnect: () => {
-            console.log('Connected to WebSocket');
-            // Subscribe to a topic for a specific inventory check ID
-            stompClient.subscribe(`/topic/inventory-check/${inventoryCheckId}`, (message) => {
-              const update = JSON.parse(message.body);
-              setUpdatedProductIds(update.productIds || []);    
-              console.log(update.productIds)
-              setBatchIds(update.batchIds || []);
-              console.log(update.batchIds)
-              console.log('Received update:', update);
-            }); 
+            try {
+              console.log('Connected to WebSocket');
+    
+              // Subscribe to a topic for a specific inventory check ID
+              stompClient.subscribe(`/topic/inventory-check/${inventoryCheckId}`, (message) => {
+                try {
+                  const update = JSON.parse(message.body);
+                  setUpdatedProductIds(update.productIds || []);
+                  console.log(update.productIds);
+                  setBatchIds(update.batchIds || []);
+                  console.log(update.batchIds);
+                  console.log('Received update:', update);
+                } catch (error) {
+                  console.error('Error parsing message body:', error);
+                }
+              });
+            } catch (error) {
+              console.error('Error during WebSocket onConnect:', error);
+            }
           },
           onDisconnect: () => {
-            console.log('Disconnected from WebSocket');
+            try {
+              console.log('Disconnected from WebSocket');
+            } catch (error) {
+              console.error('Error during WebSocket onDisconnect:', error);
+            }
           },
+          reconnectDelay: 300,
+          heartbeatIncoming: 40000, // Heartbeat interval in milliseconds (server-to-client)
+          heartbeatOutgoing: 40000, // Heartbeat interval in milliseconds (client-to-server)
         });
     
-        stompClient.activate();
+        // Activate the STOMP client
+        try {
+          stompClient.activate();
+        } catch (error) {
+          console.error('Error activating STOMP client:', error);
+        }
     
+        // Cleanup on component unmount
         return () => {
-          stompClient.deactivate();
+          try {
+            stompClient.deactivate();
+          } catch (error) {
+            console.error('Error during WebSocket cleanup:', error);
+          }
         };
-      }, []);
+      }, []); 
     const getProductsChanged = async (productId: number, batchCode: string | undefined) => {
         try {
             const response = await getProductsChangedHistory(startedDate, productId, sessionToken);
