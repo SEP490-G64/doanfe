@@ -57,46 +57,46 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
     useEffect(() => {
-        const url = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
-        const sse = new EventSource(url); // Declare with `let` to allow reassignment
-
-        console.log("SSE connection established");
-        sse.addEventListener("inventoryUpdate", (event) => {
-            const data = JSON.parse(event.data);
-            setUpdatedProductIds(data.productIds || []);
-            setBatchIds(data.batchIds || []);
-            console.log("Received SSE data:", data);
-        });
-        sse.onerror = (error) => {
-            console.error("SSE encountered an error:", error);
-        };
-        return () => {
-            if (sse) {
-                console.log("Cleaning up: Closing SSE connection");
-                const closeSSEConnection = async () => {
-                    if (sse) {
-                        sse.close();
-                        const closeUrl = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
-                        try {
-                            const response = await fetch(closeUrl, {
-                                method: "POST", // Adjust method as per API specification
-                                headers: {
-                                    Authorization: `Bearer ${sessionToken}`, // If needed
-                                    "Content-Type": "application/json",
-                                },
-                            });
-                            if (!response.ok) {
-                                throw new Error(`Failed to close inventory check. Status: ${response.status}`);
-                            }
-                            console.log("Successfully informed server about SSE closure");
-                        } catch (error) {
-                            console.error("Error while closing inventory check:", error);
-                        }
-                    }
-                };
-                closeSSEConnection();
-            }
-        };
+        // const url = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
+        // const sse = new EventSource(url); // Declare with `let` to allow reassignment
+        //
+        // console.log("SSE connection established");
+        // sse.addEventListener("inventoryUpdate", (event) => {
+        //     const data = JSON.parse(event.data);
+        //     setUpdatedProductIds(data.productIds || []);
+        //     setBatchIds(data.batchIds || []);
+        //     console.log("Received SSE data:", data);
+        // });
+        // sse.onerror = (error) => {
+        //     console.error("SSE encountered an error:", error);
+        // };
+        // return () => {
+        //     if (sse) {
+        //         console.log("Cleaning up: Closing SSE connection");
+        //         const closeSSEConnection = async () => {
+        //             if (sse) {
+        //                 sse.close();
+        //                 const closeUrl = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
+        //                 try {
+        //                     const response = await fetch(closeUrl, {
+        //                         method: "POST", // Adjust method as per API specification
+        //                         headers: {
+        //                             Authorization: `Bearer ${sessionToken}`, // If needed
+        //                             "Content-Type": "application/json",
+        //                         },
+        //                     });
+        //                     if (!response.ok) {
+        //                         throw new Error(`Failed to close inventory check. Status: ${response.status}`);
+        //                     }
+        //                     console.log("Successfully informed server about SSE closure");
+        //                 } catch (error) {
+        //                     console.error("Error while closing inventory check:", error);
+        //                 }
+        //             }
+        //         };
+        //         closeSSEConnection();
+        //     }
+        // };
     }, [inventoryCheckId, sessionToken]);
     const getProductsChanged = async (productId: number, batchCode: string | undefined) => {
         try {
