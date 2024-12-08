@@ -12,7 +12,8 @@ import {
     Tooltip,
 } from "@nextui-org/react";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
-
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 import { formatDateTimeDDMMYYYYHHMM } from "@/utils/methods";
 import { ProductCheckType } from "@/lib/schemaValidate/inventoryCheckSchema";
 import { getProductsChangedHistory } from "@/services/productServices";
@@ -57,47 +58,32 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
     useEffect(() => {
-        // const url = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
-        // const sse = new EventSource(url); // Declare with `let` to allow reassignment
-        //
-        // console.log("SSE connection established");
-        // sse.addEventListener("inventoryUpdate", (event) => {
-        //     const data = JSON.parse(event.data);
-        //     setUpdatedProductIds(data.productIds || []);
-        //     setBatchIds(data.batchIds || []);
-        //     console.log("Received SSE data:", data);
-        // });
-        // sse.onerror = (error) => {
-        //     console.error("SSE encountered an error:", error);
-        // };
-        // return () => {
-        //     if (sse) {
-        //         console.log("Cleaning up: Closing SSE connection");
-        //         const closeSSEConnection = async () => {
-        //             if (sse) {
-        //                 sse.close();
-        //                 const closeUrl = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
-        //                 try {
-        //                     const response = await fetch(closeUrl, {
-        //                         method: "POST", // Adjust method as per API specification
-        //                         headers: {
-        //                             Authorization: `Bearer ${sessionToken}`, // If needed
-        //                             "Content-Type": "application/json",
-        //                         },
-        //                     });
-        //                     if (!response.ok) {
-        //                         throw new Error(`Failed to close inventory check. Status: ${response.status}`);
-        //                     }
-        //                     console.log("Successfully informed server about SSE closure");
-        //                 } catch (error) {
-        //                     console.error("Error while closing inventory check:", error);
-        //                 }
-        //             }
-        //         };
-        //         closeSSEConnection();
-        //     }
-        // };
-    }, [inventoryCheckId, sessionToken]);
+        const socket = new WebSocket('ws://warehouse.longtam.store/ws');
+        const stompClient = new Client({
+          webSocketFactory: () => socket,
+          onConnect: () => {
+            console.log('Connected to WebSocket');
+            // Subscribe to a topic for a specific inventory check ID
+            stompClient.subscribe(`/topic/inventory-check/${inventoryCheckId}`, (message) => {
+              const update = JSON.parse(message.body);
+              setUpdatedProductIds(update.productIds || []);    
+              console.log(update.productIds)
+              setBatchIds(update.batchIds || []);
+              console.log(update.batchIds)
+              console.log('Received update:', update);
+            }); 
+          },
+          onDisconnect: () => {
+            console.log('Disconnected from WebSocket');
+          },
+        });
+    
+        stompClient.activate();
+    
+        return () => {
+          stompClient.deactivate();
+        };
+      }, []);
     const getProductsChanged = async (productId: number, batchCode: string | undefined) => {
         try {
             const response = await getProductsChangedHistory(startedDate, productId, sessionToken);
