@@ -57,7 +57,7 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
     useEffect(() => {
-        const url = `http://stream.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
+        const url = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/${inventoryCheckId}/stream?authToken=${encodeURIComponent(sessionToken)}`;
         const sse = new EventSource(url); // Declare with `let` to allow reassignment
 
         console.log("SSE connection established");
@@ -76,7 +76,7 @@ const ProductsTableInventoryCheck = ({
                 const closeSSEConnection = async () => {
                     if (sse) {
                         sse.close();
-                        const closeUrl = `http://stream.longtam.store/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
+                        const closeUrl = `https://warehouse.longtam.store/dsd/api/v1/staff/inventory-check/close/${inventoryCheckId}`;
                         try {
                             const response = await fetch(closeUrl, {
                                 method: "POST", // Adjust method as per API specification
