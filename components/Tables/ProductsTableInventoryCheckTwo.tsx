@@ -126,7 +126,7 @@ const ProductsTableInventoryCheck = ({
         // Cleanup on component unmount
         return () => {
           try {
-            clearInterval(intervalId)
+            clearInterval(intervalId);
             stompClient.deactivate();
           } catch (error) {
             console.error('Error during WebSocket cleanup:', error);
