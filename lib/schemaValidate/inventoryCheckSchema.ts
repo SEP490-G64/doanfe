@@ -36,8 +36,8 @@ const ProductCheck = z
         systemQuantity: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
         productQuantity: z.number().int().min(0, "Số lượng không thể nhỏ hơn 0").optional(),
         countedQuantity: z
-            .number()
-            .int()
+            .number({ message: "Số lượng yêu cầu không hợp lệ" })
+            .int({ message: "Số lượng yêu cầu không hợp lệ" })
             .min(-100000, "Số lượng không thể < -100,000")
             .max(100000000000, "Số lượng không được > 100,000,000,000")
             .optional(),

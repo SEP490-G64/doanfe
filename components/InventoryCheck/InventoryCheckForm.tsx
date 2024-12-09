@@ -112,16 +112,10 @@ const InventoryCheckForm = ({
                         Đang kiểm
                     </p>
                 );
-            case "DANG_THANH_TOAN":
-                return (
-                    <p className={"inline-flex rounded bg-warning/10 px-3 py-1 text-sm font-medium text-warning"}>
-                        Đang thanh toán
-                    </p>
-                );
-            case "HOAN_THANH":
+            case "DA_CAN_BANG":
                 return (
                     <p className={"inline-flex rounded bg-success/10 px-3 py-1 text-sm font-medium text-success"}>
-                        Hoàn thành
+                        Đã cân bằng
                     </p>
                 );
         }
@@ -662,6 +656,8 @@ const InventoryCheckForm = ({
                                     ["BAN_NHAP", "CHUA_LUU", "DANG_KIEM"].includes(inventoryCheckStatus as string)
                                 }
                                 errors={errors}
+                                startedDate={watch("createdDate")}
+                                sessionToken={sessionToken}
                                 setProducts={setValue}
                             />
                         ) : (
