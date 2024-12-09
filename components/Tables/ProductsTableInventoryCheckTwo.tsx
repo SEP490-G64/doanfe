@@ -58,7 +58,7 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
     useEffect(() => {
-        const socket = new WebSocket('ws://warehouse.longtam.store/ws');
+        const socket = new WebSocket('ws://warehouse.longtam.store/dsd/ws');
         
         const stompClient = new Client({
           webSocketFactory: () => socket,
