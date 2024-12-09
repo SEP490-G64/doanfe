@@ -157,16 +157,16 @@ const ChartOne: React.FC<ChartOneProps> = ({ branchId }) => {
         setTimeRange(range);
     };
 
-    const categories = chart.map(item => item.time);
+    const categories = chart.map((item) => item.time);
     const startDate = categories.length > 0 ? categories[0] : "";
     const endDate = categories.length > 0 ? categories[categories.length - 1] : "";
-    const inboundData = chart.map(item => item.inbound);
-    const outboundData = chart.map(item => item.outbound);
+    const inboundData = chart.map((item) => item.inbound);
+    const outboundData = chart.map((item) => item.outbound);
 
     // Calculate the maximum value from inbound or outbound data
     const maxValue = Math.max(
         Math.max(...inboundData), // max of inbound
-        Math.max(...outboundData)  // max of outbound
+        Math.max(...outboundData) // max of outbound
     );
 
     const series = [
@@ -185,23 +185,25 @@ const ChartOne: React.FC<ChartOneProps> = ({ branchId }) => {
             <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
                 <div className="flex w-full flex-wrap gap-3 sm:gap-5">
                     <div className="flex min-w-47.5">
-                        <span
-                            className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-primary">
+                        <span className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-primary">
                             <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-primary"></span>
                         </span>
                         <div className="w-full">
                             <p className="font-semibold text-primary">Tổng giá trị nhập</p>
-                            <p className="text-sm font-medium">{startDate} đến {endDate}</p>
+                            <p className="text-sm font-medium">
+                                {startDate} đến {endDate}
+                            </p>
                         </div>
                     </div>
                     <div className="flex min-w-47.5">
-                        <span
-                            className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-secondary">
+                        <span className="mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-secondary">
                             <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-secondary"></span>
                         </span>
                         <div className="w-full">
                             <p className="font-semibold text-secondary">Tổng giá trị xuất</p>
-                            <p className="text-sm font-medium">{startDate} đến {endDate}</p>
+                            <p className="text-sm font-medium">
+                                {startDate} đến {endDate}
+                            </p>
                         </div>
                     </div>
                 </div>

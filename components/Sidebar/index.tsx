@@ -65,6 +65,7 @@ const menuGroups = [
                 children: [
                     { label: "Thống kê tổng quan", route: "/" },
                     { label: "Báo cáo tồn kho", route: "/report/inventory-report" },
+                    { label: "Kiểm kê hàng hóa", route: "/inventory-check" },
                     // { label: "Báo cáo giá trị nhập - xuất", route: "/report/inbound-outbound-report" },
                 ],
             },
@@ -95,11 +96,11 @@ const menuGroups = [
                     { label: "Thêm mới phiếu kiểm", route: "/inventory-check-note/create" },
                 ],
             },
-            {
-                icon: <PiListNumbers />,
-                label: "Kiểm kê hàng hóa",
-                route: "/inventory-check",
-            },
+            // {
+            //     icon: <PiListNumbers />,
+            //     label: "Kiểm kê hàng hóa",
+            //     route: "/inventory-check",
+            // },
             {
                 icon: <GiMedicines />,
                 label: "Quản lý sản phẩm",
