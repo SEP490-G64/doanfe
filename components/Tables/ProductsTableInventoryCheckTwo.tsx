@@ -196,7 +196,7 @@ const ProductsTableInventoryCheck = ({
                     return product?.batch?.batchCode ? (
                         <div className="flex items-center justify-start">
                             <p
-                                className={`text-bold ml-12 text-sm capitalize text-default-400 ${
+                                className={`text-bold ml-12 text-sm capitalize ${
                                     isBatchUpdated
                                         ? "text-amber-600" // Highlight if the product or batch is updated
                                         : isUpdatedAfterStartDate
@@ -315,7 +315,7 @@ const ProductsTableInventoryCheck = ({
                     return cellValue;
             }
         },
-        [data, updatedProductIds, updatedBatchIds]
+        [data, updatedProductIds, updatedBatchIds, errors]
     );
 
     const renderCellTwo = React.useCallback((product: any, columnKey: any, index: number) => {
@@ -433,7 +433,7 @@ const ProductsTableInventoryCheck = ({
                                         <TableColumn className="text-center" key="productName">
                                             Tên sản phẩm
                                         </TableColumn>
-                                        <TableColumn className="text-center" key="batchCode">
+                                        <TableColumn className="text-center" key="batch">
                                             Mã lô
                                         </TableColumn>
                                         <TableColumn className="text-center" key="quantity">
@@ -462,15 +462,17 @@ const ProductsTableInventoryCheck = ({
                                             {changedQuantity}
                                         </span>
                                     </p>
-                                    <label>
-                                        Nhập số lượng thực tế{" "}
-                                        <input
-                                            value={data[indexProduct]?.countedQuantity || ""}
-                                            type="number"
-                                            onChange={(e) => handleChangeCountedQuantity(e, indexProduct)}
-                                            className="w-30 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                        />
-                                    </label>
+                                    {active && (
+                                        <label>
+                                            Nhập số lượng thực tế{" "}
+                                            <input
+                                                value={data[indexProduct]?.countedQuantity || ""}
+                                                type="number"
+                                                onChange={(e) => handleChangeCountedQuantity(e, indexProduct)}
+                                                className="w-30 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                            />
+                                        </label>
+                                    )}
                                 </div>
                                 <Button
                                     color="primary"

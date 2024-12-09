@@ -92,6 +92,8 @@ const DropdownNotification = () => {
 
             if (["CANH_BAO_SAN_PHAM", "DUOI_DINH_MUC", "VUOT_DINH_MUC", "HET_HAN", "GAN_HET_HAN"].includes(notiType))
                 router.push("/inventory-check");
+            else if (["HET_HAN", "GAN_HET_HAN"].includes(notiType))
+                router.push("/inventory-check?filterMode=expireDate&outExpireDate=true");
             else if (["YEU_CAU_DUYET_DON_NHAP", "NHAP_PHIEU_NHAP_VAO_HE_THONG"].includes(notiType))
                 router.push("/inbound/list");
             else if (["YEU_CAU_DUYET_DON_XUAT", "NHAP_PHIEU_XUAT_VAO_HE_THONG"].includes(notiType))

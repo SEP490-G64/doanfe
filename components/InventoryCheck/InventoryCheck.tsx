@@ -11,7 +11,7 @@ import {
     Select,
     SelectItem,
 } from "@nextui-org/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import Loader from "@/components/common/Loader";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
@@ -22,10 +22,17 @@ import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import { Product } from "@/types/product";
 import { formatDateTimeDDMMYYYY } from "@/utils/methods";
-import { getListProductByCheckQuantity } from "@/services/productServices";
+import {
+    getListProductByCheckExpiredDate,
+    getListProductByCheckNonePrice,
+    getListProductByCheckNumberOfExpiredDate,
+    getListProductByCheckPrice,
+    getListProductByCheckQuantity,
+} from "@/services/productServices";
 
 const InventoryCheckTable = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
     const [inventoryCheckData, setInventoryCheckData] = useState<Product[]>([]);
     const [total, setTotal] = useState(0);
@@ -34,18 +41,20 @@ const InventoryCheckTable = () => {
     const { sessionToken } = useAppContext();
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
-    const [filterMode, setFilterMode] = useState<"quantity" | "price" | "expireDate">("quantity");
+    const [filterMode, setFilterMode] = useState<"quantity" | "price" | "expireDate">(
+        (searchParams.get("filterMode") as "quantity" | "price" | "expireDate") || "quantity"
+    );
     const [selectedOptions, setSelectedOptions] = useState({
-        lowQuantity: false,
-        warningQuantity: true,
-        outOfStock: false,
-        lostPrice: false,
-        warningPrice: false,
-        outExpireDate: false,
-        lowExpireDate: false,
+        lowQuantity: searchParams.get("lowQuantity") === "true" ? true : false,
+        warningQuantity: searchParams.get("warningQuantity") === "false" ? false : true,
+        outOfStock: searchParams.get("outOfStock") === "true" ? true : false,
+        lostPrice: searchParams.get("lostPrice") === "true" ? true : false,
+        warningPrice: searchParams.get("warningPrice") === "true" ? true : false,
+        outExpireDate: searchParams.get("outExpireDate") === "true" ? true : false,
+        lowExpireDate: searchParams.get("lowExpireDate") === "true" ? true : false,
     });
-    const [lowQuantity, setLowQuantity] = useState(0);
-    const [numberOfDates, setNumberOfDates] = useState(0);
+    const [lowQuantityNumber, setLowQuantityNumber] = useState(Number(searchParams.get("lowQuantityNumber")) || 0);
+    const [numberOfDates, setNumberOfDates] = useState(Number(searchParams.get("numberOfDates")) || 0);
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -87,24 +96,92 @@ const InventoryCheckTable = () => {
             if (loading) return;
             setLoading(true);
             try {
-                const response = await getListProductByCheckQuantity(
-                    page.toString(),
-                    rowsPerPage.toString(),
-                    selectedOptions.lowQuantity,
-                    lowQuantity,
-                    selectedOptions.warningQuantity,
-                    selectedOptions.outOfStock,
-                    sessionToken
-                );
-
-                if (response.message === "200 OK") {
-                    setInventoryCheckData(
-                        response.data.map((item: Product, index: number) => ({
-                            ...item,
-                            index: index + 1 + (page - 1) * rowsPerPage,
-                        }))
+                let response;
+                if (filterMode === "quantity") {
+                    response = await getListProductByCheckQuantity(
+                        page.toString(),
+                        rowsPerPage.toString(),
+                        selectedOptions.lowQuantity,
+                        lowQuantity,
+                        selectedOptions.warningQuantity,
+                        selectedOptions.outOfStock,
+                        sessionToken
                     );
-                    setTotal(response.total);
+
+                    if (response.message === "200 OK") {
+                        setInventoryCheckData(
+                            response.data.map((item: Product, index: number) => ({
+                                ...item,
+                                index: index + 1 + (page - 1) * rowsPerPage,
+                            }))
+                        );
+                        setTotal(response.total);
+                    }
+                } else if (filterMode === "price") {
+                    if (selectedOptions.warningPrice) {
+                        response = await getListProductByCheckPrice(
+                            page.toString(),
+                            rowsPerPage.toString(),
+                            sessionToken
+                        );
+                        if (response.message === "200 OK") {
+                            setInventoryCheckData(
+                                response.data.map((item: Product, index: number) => ({
+                                    ...item,
+                                    index: index + 1 + (page - 1) * rowsPerPage,
+                                }))
+                            );
+                            setTotal(response.total);
+                        }
+                    } else if (selectedOptions.lostPrice) {
+                        response = await getListProductByCheckNonePrice(
+                            page.toString(),
+                            rowsPerPage.toString(),
+                            sessionToken
+                        );
+                        if (response.message === "200 OK") {
+                            setInventoryCheckData(
+                                response.data.map((item: Product, index: number) => ({
+                                    ...item,
+                                    index: index + 1 + (page - 1) * rowsPerPage,
+                                }))
+                            );
+                            setTotal(response.total);
+                        }
+                    }
+                } else if (filterMode === "expireDate") {
+                    if (selectedOptions.lowExpireDate) {
+                        response = await getListProductByCheckNumberOfExpiredDate(
+                            page.toString(),
+                            rowsPerPage.toString(),
+                            numberOfDates,
+                            sessionToken
+                        );
+                        if (response.message === "200 OK") {
+                            setInventoryCheckData(
+                                response.data.map((item: any, index: number) => ({
+                                    ...item,
+                                    index: index + 1 + (page - 1) * rowsPerPage,
+                                }))
+                            );
+                            setTotal(response.total);
+                        }
+                    } else if (selectedOptions.outExpireDate) {
+                        response = await getListProductByCheckExpiredDate(
+                            page.toString(),
+                            rowsPerPage.toString(),
+                            sessionToken
+                        );
+                        if (response.message === "200 OK") {
+                            setInventoryCheckData(
+                                response.data.map((item: any, index: number) => ({
+                                    ...item,
+                                    index: index + 1 + (page - 1) * rowsPerPage,
+                                }))
+                            );
+                            setTotal(response.total);
+                        }
+                    }
                 }
             } catch (error) {
                 console.log(error);
@@ -114,7 +191,21 @@ const InventoryCheckTable = () => {
         };
 
         getListWarningProducts();
-    }, []);
+    }, [selectedOptions, filterMode, lowQuantityNumber, numberOfDates, page, rowsPerPage, sessionToken]);
+
+    useEffect(() => {
+        //Tạo query string từ object dataSearch
+        const queryParams = new URLSearchParams({
+            ...selectedOptions,
+            filterMode,
+            lowQuantityNumber: lowQuantityNumber.toString(),
+            numberOfDates: numberOfDates.toString(),
+            page: page.toString(),
+            size: rowsPerPage.toString(),
+        }).toString();
+        // Chuyển hướng đến đường dẫn mới với query string
+        router.push(`/inventory-check?${queryParams}`);
+    }, [selectedOptions, filterMode, numberOfDates, lowQuantityNumber, page, rowsPerPage, router]);
 
     if (loading) return <Loader />;
     else {
@@ -134,8 +225,8 @@ const InventoryCheckTable = () => {
                         setFilterMode={setFilterMode}
                         selectedOptions={selectedOptions}
                         setSelectedOptions={setSelectedOptions}
-                        lowQuantity={lowQuantity}
-                        setLowQuantity={setLowQuantity}
+                        lowQuantity={lowQuantityNumber}
+                        setLowQuantity={setLowQuantityNumber}
                         numberOfDates={numberOfDates}
                         setNumberOfDates={setNumberOfDates}
                         sessionToken={sessionToken}
