@@ -59,6 +59,7 @@ const ProductsTableInventoryCheck = ({
     }, [page, data]);
     useEffect(() => {
         const socket = new WebSocket('ws://warehouse.longtam.store/ws');
+        
         const stompClient = new Client({
           webSocketFactory: () => socket,
           connectHeaders: {
@@ -96,7 +97,25 @@ const ProductsTableInventoryCheck = ({
           heartbeatIncoming: 40000, // Heartbeat interval in milliseconds (server-to-client)
           heartbeatOutgoing: 40000, // Heartbeat interval in milliseconds (client-to-server)
         });
-    
+    // Send message to server every 30 seconds
+    const intervalId = setInterval(() => {
+        try {
+            const message = {
+                action: 'ping',
+                inventoryCheckId, // Example data
+                timestamp: new Date().toISOString(),
+            };
+
+            stompClient.publish({
+                destination: `/app/inventory-check/${inventoryCheckId}`,
+                body: JSON.stringify(message),
+            });
+
+            console.log('Sent message to server:', message);
+        } catch (error) {
+            console.error('Error sending message to server:', error);
+        }
+    }, 30000); // 30 seconds
         // Activate the STOMP client
         try {
           stompClient.activate();
@@ -107,6 +126,7 @@ const ProductsTableInventoryCheck = ({
         // Cleanup on component unmount
         return () => {
           try {
+            clearInterval(intervalId);
             stompClient.deactivate();
           } catch (error) {
             console.error('Error during WebSocket cleanup:', error);
