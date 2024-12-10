@@ -49,7 +49,6 @@ const ProductsTableInventoryCheck = ({
     const rowsPerPage = 20;
     const [updatedProductIds, setUpdatedProductIds] = useState<number[]>([]); // Explicitly define as number[]
     const [updatedBatchIds, setBatchIds] = useState<number[]>([]); // Explicitly define as number[]
-    const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null); // Store interval ID in state
     const pages = Math.ceil(data.length / rowsPerPage);
 
     const items = React.useMemo(() => {
@@ -59,81 +58,81 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
     useEffect(() => {
-        const socket = new WebSocket('ws://localhost:8081/dsd/ws');
+        const socket = new WebSocket('ws://warehouse.longtam.store/dsd/ws');
+        
         const stompClient = new Client({
           webSocketFactory: () => socket,
-          connectHeaders: {},
+          connectHeaders: {
+            // Optionally add any headers if needed
+          },
           onConnect: () => {
-            console.log('Connected to WebSocket');
-    
             try {
-              // Subscribe to the topic for real-time updates
+              console.log('Connected to WebSocket');
+    
+              // Subscribe to a topic for a specific inventory check ID
               stompClient.subscribe(`/topic/inventory-check/${inventoryCheckId}`, (message) => {
                 try {
                   const update = JSON.parse(message.body);
-                  if (Array.isArray(update.productIds)) {
-                    setUpdatedProductIds((prevProductIds) => [...prevProductIds, ...update.productIds]);
-                    console.log("is array");
-                }
-                
-                if (Array.isArray(update.batchIds)) {
-                    setBatchIds((prevBatchIds) => [...prevBatchIds, ...update.batchIds]);
-                    console.log("is array");
-                }
+                  setUpdatedProductIds(update.productIds || []);
+                  console.log(update.productIds);
+                  setBatchIds(update.batchIds || []);
+                  console.log(update.batchIds);
+                  console.log('Received update:', update);
                 } catch (error) {
                   console.error('Error parsing message body:', error);
                 }
               });
-    
-              // Start sending periodic "ping" messages
-              const id = setInterval(() => {
-                try {
-                  const message = {
-                    action: 'ping',
-                    inventoryCheckId,
-                    timestamp: new Date().toISOString(),
-                  };
-    
-                  stompClient.publish({
-                    destination: `/app/inventory-check/${inventoryCheckId}`,
-                    body: JSON.stringify(message),
-                  });
-    
-                  console.log('Sent message to server:', message);
-                } catch (error) {
-                  console.error('Error sending message to server:', error);
-                }
-              }, 30000); // 30 seconds
-              setIntervalId(id); // Save interval ID in state
             } catch (error) {
               console.error('Error during WebSocket onConnect:', error);
             }
           },
           onDisconnect: () => {
-            console.log('Disconnected from WebSocket');
+            try {
+              console.log('Disconnected from WebSocket');
+            } catch (error) {
+              console.error('Error during WebSocket onDisconnect:', error);
+            }
           },
-          reconnectDelay: 300, // Reconnect after 300ms if the connection is lost
-          heartbeatIncoming: 40000, // Server-to-client heartbeat every 40 seconds
-          heartbeatOutgoing: 40000, // Client-to-server heartbeat every 40 seconds
+          reconnectDelay: 300,
+          heartbeatIncoming: 40000, // Heartbeat interval in milliseconds (server-to-client)
+          heartbeatOutgoing: 40000, // Heartbeat interval in milliseconds (client-to-server)
         });
-    
+    // Send message to server every 30 seconds
+    const intervalId = setInterval(() => {
+        try {
+            const message = {
+                action: 'ping',
+                inventoryCheckId, // Example data
+                timestamp: new Date().toISOString(),
+            };
+
+            stompClient.publish({
+                destination: `/app/inventory-check/${inventoryCheckId}`,
+                body: JSON.stringify(message),
+            });
+
+            console.log('Sent message to server:', message);
+        } catch (error) {
+            console.error('Error sending message to server:', error);
+        }
+    }, 30000); // 30 seconds
         // Activate the STOMP client
-        stompClient.activate();
+        try {
+          stompClient.activate();
+        } catch (error) {
+          console.error('Error activating STOMP client:', error);
+        }
     
         // Cleanup on component unmount
         return () => {
           try {
-            if (intervalId) {
-                clearInterval(intervalId);
-                console.log('Cleared interval');
-              }
+            clearInterval(intervalId);
             stompClient.deactivate();
-            console.log('Deactivated WebSocket');
           } catch (error) {
-            console.error('Error during cleanup:', error);
+            console.error('Error during WebSocket cleanup:', error);
           }
         };
-      }, [inventoryCheckId]); // Rerun if inventoryCheckId changes
+      }, []); 
     const getProductsChanged = async (productId: number, batchCode: string | undefined) => {
         try {
             const response = await getProductsChangedHistory(startedDate, productId, sessionToken);
@@ -197,7 +196,7 @@ const ProductsTableInventoryCheck = ({
                     return product?.batch?.batchCode ? (
                         <div className="flex items-center justify-start">
                             <p
-                                className={`text-bold ml-12 text-sm capitalize text-default-400 ${
+                                className={`text-bold ml-12 text-sm capitalize ${
                                     isBatchUpdated
                                         ? "text-amber-600" // Highlight if the product or batch is updated
                                         : isUpdatedAfterStartDate
@@ -316,7 +315,7 @@ const ProductsTableInventoryCheck = ({
                     return cellValue;
             }
         },
-        [data, updatedProductIds, updatedBatchIds]
+        [data, updatedProductIds, updatedBatchIds, errors]
     );
 
     const renderCellTwo = React.useCallback((product: any, columnKey: any, index: number) => {
@@ -434,7 +433,7 @@ const ProductsTableInventoryCheck = ({
                                         <TableColumn className="text-center" key="productName">
                                             Tên sản phẩm
                                         </TableColumn>
-                                        <TableColumn className="text-center" key="batchCode">
+                                        <TableColumn className="text-center" key="batch">
                                             Mã lô
                                         </TableColumn>
                                         <TableColumn className="text-center" key="quantity">
@@ -463,15 +462,17 @@ const ProductsTableInventoryCheck = ({
                                             {changedQuantity}
                                         </span>
                                     </p>
-                                    <label>
-                                        Nhập số lượng thực tế{" "}
-                                        <input
-                                            value={data[indexProduct]?.countedQuantity || ""}
-                                            type="number"
-                                            onChange={(e) => handleChangeCountedQuantity(e, indexProduct)}
-                                            className="w-30 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
-                                        />
-                                    </label>
+                                    {active && (
+                                        <label>
+                                            Nhập số lượng thực tế{" "}
+                                            <input
+                                                value={data[indexProduct]?.countedQuantity || ""}
+                                                type="number"
+                                                onChange={(e) => handleChangeCountedQuantity(e, indexProduct)}
+                                                className="w-30 rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+                                            />
+                                        </label>
+                                    )}
                                 </div>
                                 <Button
                                     color="primary"
