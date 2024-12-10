@@ -72,11 +72,14 @@ const ProductsTableInventoryCheck = ({
               // Subscribe to a topic for a specific inventory check ID
               stompClient.subscribe(`/topic/inventory-check/${inventoryCheckId}`, (message) => {
                 try {
-                  const update = JSON.parse(message.body);
-                  setUpdatedProductIds(update.productIds || []);
-                  console.log(update.productIds);
-                  setBatchIds(update.batchIds || []);
-                  console.log(update.batchIds);
+                    const update = JSON.parse(message.body);
+                    if (Array.isArray(update.productIds)) {
+                      setUpdatedProductIds((prevProductIds) => [...prevProductIds, ...update.productIds]);
+                      console.log("is array");
+                  }
+                  if (Array.isArray(update.batchIds)) {
+                      setBatchIds((prevBatchIds) => [...prevBatchIds, ...update.batchIds]);
+                  }
                   console.log('Received update:', update);
                 } catch (error) {
                   console.error('Error parsing message body:', error);
