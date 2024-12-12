@@ -68,7 +68,7 @@ const ProductsTableInventoryCheck = ({
                 let products = response.data;
                 if (batchCode)
                     products = products.filter((product: ProductChangedHistory) => product.batch === batchCode);
-                else products = products.filter((product: ProductChangedHistory) => !product.batch);
+                // else products = products.filter((product: ProductChangedHistory) => !product.batch);
                 if (batchCode) {
                     setChangedQuantity(countQuantityChanged(true, batchCode, products));
                 } else {
@@ -93,7 +93,8 @@ const ProductsTableInventoryCheck = ({
                     quantity += product.transactionType === "INBOUND" ? product.quantity : -product.quantity;
                 }
             } else {
-                if (product.productId === code && !product.batch) {
+                // if (product.productId === code && !product.batch) {
+                if (product.productId === code) {
                     quantity += product.transactionType === "INBOUND" ? product.quantity : -product.quantity;
                 }
             }
