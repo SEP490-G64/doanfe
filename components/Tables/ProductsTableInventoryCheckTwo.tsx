@@ -12,8 +12,8 @@ import {
     Tooltip,
 } from "@nextui-org/react";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 import { formatDateTimeDDMMYYYYHHMM } from "@/utils/methods";
 import { ProductCheckType } from "@/lib/schemaValidate/inventoryCheckSchema";
 import { getProductsChangedHistory } from "@/services/productServices";
@@ -58,84 +58,75 @@ const ProductsTableInventoryCheck = ({
         return data.slice(start, end);
     }, [page, data]);
     useEffect(() => {
-        const socket = new WebSocket('wss://warehouse.longtam.store/dsd/ws');
-        
+        const socket = new WebSocket("wss://warehouse.longtam.store/dsd/ws");
+
         const stompClient = new Client({
-          webSocketFactory: () => socket,
-          connectHeaders: {
-            // Optionally add any headers if needed
-          },
-          onConnect: () => {
-            try {
-              console.log('Connected to WebSocket');
-    
-              // Subscribe to a topic for a specific inventory check ID
-              stompClient.subscribe(`/topic/inventory-check/${inventoryCheckId}`, (message) => {
+            webSocketFactory: () => socket,
+            connectHeaders: {
+                // Optionally add any headers if needed
+            },
+            onConnect: () => {
                 try {
                     const update = JSON.parse(message.body);
                     if (Array.isArray(update.productIds)) {
-                      setUpdatedProductIds((prevProductIds) => [...prevProductIds, ...update.productIds]);
-                      console.log("is array");
-                  }
-                  if (Array.isArray(update.batchIds)) {
-                      setBatchIds((prevBatchIds) => [...prevBatchIds, ...update.batchIds]);
-                  }
-                  console.log('Received update:', update);
+                        setUpdatedProductIds((prevProductIds) => [...prevProductIds, ...update.productIds]);
+                        console.log("is array");
+                    }
+                    if (Array.isArray(update.batchIds)) {
+                        setBatchIds((prevBatchIds) => [...prevBatchIds, ...update.batchIds]);
+                    }
+                    console.log("Received update:", update);
                 } catch (error) {
-                  console.error('Error parsing message body:', error);
+                    console.error("Error during WebSocket onConnect:", error);
                 }
-              });
-            } catch (error) {
-              console.error('Error during WebSocket onConnect:', error);
-            }
-          },
-          onDisconnect: () => {
-            try {
-              console.log('Disconnected from WebSocket');
-            } catch (error) {
-              console.error('Error during WebSocket onDisconnect:', error);
-            }
-          },
-          reconnectDelay: 300,
-          heartbeatIncoming: 40000, // Heartbeat interval in milliseconds (server-to-client)
-          heartbeatOutgoing: 40000, // Heartbeat interval in milliseconds (client-to-server)
+            },
+            onDisconnect: () => {
+                try {
+                    console.log("Disconnected from WebSocket");
+                } catch (error) {
+                    console.error("Error during WebSocket onDisconnect:", error);
+                }
+            },
+            reconnectDelay: 300,
+            heartbeatIncoming: 40000, // Heartbeat interval in milliseconds (server-to-client)
+            heartbeatOutgoing: 40000, // Heartbeat interval in milliseconds (client-to-server)
         });
-    // Send message to server every 30 seconds
-    const intervalId = setInterval(() => {
-        try {
-            const message = {
-                action: 'ping',
-                inventoryCheckId, // Example data
-                timestamp: new Date().toISOString(),
-            };
+        // Send message to server every 30 seconds
+        const intervalId = setInterval(() => {
+            try {
+                const message = {
+                    action: "ping",
+                    inventoryCheckId, // Example data
+                    timestamp: new Date().toISOString(),
+                };
 
-            stompClient.publish({
-                destination: `/app/inventory-check/${inventoryCheckId}`,
-                body: JSON.stringify(message),
-            });
+                stompClient.publish({
+                    destination: `/app/inventory-check/${inventoryCheckId}`,
+                    body: JSON.stringify(message),
+                });
 
-            console.log('Sent message to server:', message);
-        } catch (error) {
-            console.error('Error sending message to server:', error);
-        }
-    }, 30000); // 30 seconds
+                console.log("Sent message to server:", message);
+            } catch (error) {
+                console.error("Error sending message to server:", error);
+            }
+        }, 30000); // 30 seconds
         // Activate the STOMP client
         try {
-          stompClient.activate();
+            stompClient.activate();
         } catch (error) {
-          console.error('Error activating STOMP client:', error);
+            console.error("Error activating STOMP client:", error);
         }
-    
+
         // Cleanup on component unmount
         return () => {
-          try {
-            clearInterval(intervalId);
-            stompClient.deactivate();
-          } catch (error) {
-            console.error('Error during WebSocket cleanup:', error);
-          }
+            try {
+                clearInterval(intervalId);
+                stompClient.deactivate();
+            } catch (error) {
+                console.error("Error during WebSocket cleanup:", error);
+            }
         };
-      }, []); 
+    }, []);
     const getProductsChanged = async (productId: number, batchCode: string | undefined) => {
         try {
             const response = await getProductsChangedHistory(startedDate, productId, sessionToken);
@@ -144,7 +135,7 @@ const ProductsTableInventoryCheck = ({
                 let products = response.data;
                 if (batchCode)
                     products = products.filter((product: ProductChangedHistory) => product.batch === batchCode);
-                else products = products.filter((product: ProductChangedHistory) => !product.batch);
+                // else products = products.filter((product: ProductChangedHistory) => !product.batch);
                 if (batchCode) {
                     setChangedQuantity(countQuantityChanged(true, batchCode, products));
                 } else {
@@ -169,7 +160,8 @@ const ProductsTableInventoryCheck = ({
                     quantity += product.transactionType === "INBOUND" ? product.quantity : -product.quantity;
                 }
             } else {
-                if (product.productId === code && !product.batch) {
+                // if (product.productId === code && !product.batch) {
+                if (product.productId === code) {
                     quantity += product.transactionType === "INBOUND" ? product.quantity : -product.quantity;
                 }
             }
