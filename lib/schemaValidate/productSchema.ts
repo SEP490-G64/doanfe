@@ -55,7 +55,7 @@ export const ProductBody = z
         registrationCode: z.string().trim().min(1, "Vui lòng nhập mã đăng ký sản phẩm").max(255, "Giới hạn 255 kí tự"),
         urlImage: z.string().trim().optional(),
         activeIngredient: z.string().trim().min(1, "Vui lòng nhập hoạt chất").max(255, "Giới hạn 255 kí tự"),
-        excipient: z.string().trim().max(255, "Giới hạn 255 kí tự"),
+        excipient: z.string().trim().max(255, "Giới hạn 255 kí tự").optional(),
         formulation: z.string().trim().min(1, "Vui lòng nhập bào chế").max(255, "Giới hạn 255 kí tự"),
         status: z.preprocess(
             (val) => (val === null || val === undefined || val === "" ? undefined : val), // Turn null to undefined
