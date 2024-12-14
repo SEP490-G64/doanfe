@@ -225,6 +225,11 @@ const ProductsTableOutbound = ({
         setProducts("outboundProductDetails", [...data]);
     };
 
+    const handleChangePrice = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        data![index].price = Number(e.target.value);
+        setProducts("outboundProductDetails", data);
+    };
+
     const handlePreQuantity = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         if (outboundStatus !== "KIEM_HANG") {
             const newQuantity = e.target.value.replace(/,/g, ""); // Lấy giá trị nhập từ input
@@ -540,7 +545,8 @@ const ProductsTableOutbound = ({
                                         <input
                                             type="text"
                                             value={product?.inboundPrice ? product?.inboundPrice?.toLocaleString() : "0"}
-                                            disabled
+                                            onChange={(e) => handleChangePrice(e, key)}
+                                            disabled={!active}
                                             className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                         />
                                     ) : (
@@ -548,7 +554,8 @@ const ProductsTableOutbound = ({
                                         <input
                                             type="text"
                                             value={product?.price? product?.price?.toLocaleString() : "0"}
-                                            disabled
+                                            onChange={(e) => handleChangePrice(e, key)}
+                                            disabled={!active}
                                             className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                         />
                                     )}
@@ -559,7 +566,8 @@ const ProductsTableOutbound = ({
                                         type="text"
                                         defaultValue={product?.sellPrice ? product?.sellPrice?.toLocaleString() :
                                             (product?.price ? product?.price?.toLocaleString() : "0")}
-                                        disabled
+                                        onChange={(e) => handleChangePrice(e, key)}
+                                        disabled={!active}
                                         className="w-[100px] rounded border-1.5 border-stroke bg-transparent p-1 text-center text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
                                     />
                                 </td>
