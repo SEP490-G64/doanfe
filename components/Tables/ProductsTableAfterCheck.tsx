@@ -30,6 +30,26 @@ const ProductsTableAfterCheck = ({
     const [batchErrors, setBatchErrors] = useState<number[]>([]);
     const [totalPricing, setTotalPrice] = useState<number>(0);
 
+    useEffect(() => {
+        const updatedData = data.map((product) => {
+            if (product.batches && product.batches.length > 0) {
+                product.batches = product.batches.map((batch) => {
+                    if (batch.batchCode === "") {
+                        batch.inboundBatchQuantity = product.receiveQuantity || 0;
+                        batch.inboundPrice = product.price || 0;
+                    }
+                    return batch;
+                });
+            }
+            return product;
+        });
+
+        setProducts("productInbounds", updatedData);
+        const total = calculateTotalPrice(updatedData); // Tính tổng ngay sau khi cập nhật
+        setTotalPrice(total);
+        onTotalPriceChange(total);
+    }, []);
+
     // Xử lý khi thay đổi số lượng
     const handleChangeTaxRate = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         data![index].taxRate = Number(e.target.value);
