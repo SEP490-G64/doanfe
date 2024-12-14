@@ -285,11 +285,8 @@ const OutboundTable = () => {
             case "totalPrice":
                 return (
                     <p className={"font-normal text-black dark:text-white"}>
-                        {outbound.totalPrice
-                            ? `${outbound.totalPrice.toLocaleString()}đ`
-                            : outbound.status == "HOAN_THANH"
-                              ? "0đ"
-                              : "Chưa kiểm hàng nhập"}
+                        {["KIEM_HANG", "HOAN_THANH"].includes(outbound.status as string) ?
+                            (outbound.totalPrice ? `${outbound.totalPrice.toLocaleString()}đ` : "0đ") : "Chưa kiểm hàng xuất"}
                     </p>
                 );
             case "createdDate":

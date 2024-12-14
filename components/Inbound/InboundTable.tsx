@@ -255,7 +255,8 @@ const InboundTable = () => {
             case "totalPrice":
                 return (
                     <p className={"font-normal text-black dark:text-white"}>
-                        {inbound.totalPrice ? `${inbound.totalPrice.toLocaleString()}đ` : "Chưa kiểm hàng nhập"}
+                        {["KIEM_HANG", "HOAN_THANH"].includes(inbound.status as string) ?
+                            (inbound.totalPrice ? `${inbound.totalPrice.toLocaleString()}đ` : "0đ") : "Chưa kiểm hàng nhập"}
                     </p>
                 );
             case "createdDate":

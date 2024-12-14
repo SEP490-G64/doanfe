@@ -57,6 +57,7 @@ const ProductInbound = z
         productId: z.number().optional(),
         productCode: z.string().trim().optional(),
         registrationCode: z.string().trim().optional(),
+        urlImage: z.string().trim().optional(),
         productName: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm").max(100, "Giới hạn 100 kí tự"),
         discount: z.number().optional(),
         taxRate: z.number().min(0, "Thuế không âm").max(150, "Thuế không vượt quá 150").optional(),

@@ -36,6 +36,7 @@ const BatchProduct = z
 const ProductOutbound = z
     .object({
         id: z.coerce.number().optional(),
+        urlImage: z.string().trim().optional(),
         registrationCode: z.string().trim().optional(),
         productName: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm").max(100, "Giới hạn 100 kí tự").optional(),
         product: z.object({
