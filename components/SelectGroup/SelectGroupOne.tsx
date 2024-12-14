@@ -22,15 +22,6 @@ const SelectGroupOne = ({
     const tokenDecoded: TokenDecoded = jwtDecode(sessionToken);
     const userInfo = tokenDecoded.information;
 
-    useEffect(() => {
-        if (dataKey === "branchId" && userInfo?.branch?.id && dataSearch[dataKey] !== userInfo.branch.id) {
-            setDataSearch((prev: any) => ({
-                ...prev,
-                branchId: userInfo.branch.id, // Chỉ cập nhật nếu giá trị khác
-            }));
-        }
-    }, [dataKey, userInfo, setDataSearch, dataSearch]);
-
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setDataSearch({
