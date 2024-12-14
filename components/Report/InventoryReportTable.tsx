@@ -99,7 +99,7 @@ const InventoryReportTable = () => {
                 return <h5 className="text-black dark:text-white">{report.index}</h5>;
             case "image":
                 return report.image ? (
-                    <Image src={report.image} loading={"lazy"} alt="product-image" width={64} height={64} />
+                    <img src={report.image} loading={"lazy"} alt="product-image" width={64} height={64} />
                 ) : (
                     <Image src={"/images/no-image.png"} loading={"lazy"} alt="product-image" width={64} height={64} />
                 );
