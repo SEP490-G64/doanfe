@@ -510,7 +510,6 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                                     Giá nhập
                                                 </label>
                                                 <input
-                                                    {...register("inboundPrice")}
                                                     type="text"
                                                     value={formattedInboundPrice} // Hiển thị giá trị định dạng
                                                     onChange={handleInboundPriceChange} // Xử lý định dạng khi thay đổi
