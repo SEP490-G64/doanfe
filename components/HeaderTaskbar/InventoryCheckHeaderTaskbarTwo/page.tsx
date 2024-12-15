@@ -87,7 +87,7 @@ function HeaderTaskbar({
             let response;
             if (filterMode === "quantity") {
                 response = await getListProductByCheckQuantity(
-                    page.toString(),
+                    (page - 1).toString(),
                     pageSize.toString(),
                     selectedOptions.lowQuantity,
                     lowQuantity,
@@ -107,7 +107,11 @@ function HeaderTaskbar({
                 }
             } else if (filterMode === "price") {
                 if (selectedOptions.warningPrice) {
-                    response = await getListProductByCheckPrice(page.toString(), pageSize.toString(), sessionToken);
+                    response = await getListProductByCheckPrice(
+                        (page - 1).toString(),
+                        pageSize.toString(),
+                        sessionToken
+                    );
                     if (response.message === "200 OK") {
                         setInventoryCheckData(
                             response.data.map((item: Product, index: number) => ({
@@ -118,7 +122,11 @@ function HeaderTaskbar({
                         setTotal(response.total);
                     }
                 } else if (selectedOptions.lostPrice) {
-                    response = await getListProductByCheckNonePrice(page.toString(), pageSize.toString(), sessionToken);
+                    response = await getListProductByCheckNonePrice(
+                        (page - 1).toString(),
+                        pageSize.toString(),
+                        sessionToken
+                    );
                     if (response.message === "200 OK") {
                         setInventoryCheckData(
                             response.data.map((item: Product, index: number) => ({
@@ -132,7 +140,7 @@ function HeaderTaskbar({
             } else if (filterMode === "expireDate") {
                 if (selectedOptions.lowExpireDate) {
                     response = await getListProductByCheckNumberOfExpiredDate(
-                        page.toString(),
+                        (page - 1).toString(),
                         pageSize.toString(),
                         numberOfDates,
                         sessionToken
@@ -148,7 +156,7 @@ function HeaderTaskbar({
                     }
                 } else if (selectedOptions.outExpireDate) {
                     response = await getListProductByCheckExpiredDate(
-                        page.toString(),
+                        (page - 1).toString(),
                         pageSize.toString(),
                         sessionToken
                     );

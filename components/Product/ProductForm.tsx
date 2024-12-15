@@ -257,8 +257,8 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                     "sellPrice",
                 ];
 
-                setFormattedInboundPrice(response.data.inboundPrice.toLocaleString());
-                setFormattedSellPrice(response.data.sellPrice.toLocaleString());
+                setFormattedInboundPrice(response.data.inboundPrice?.toLocaleString());
+                setFormattedSellPrice(response.data.sellPrice?.toLocaleString());
                 fields.forEach((field) => setValue(field, response.data[field]));
 
                 const branchProduct = response.data.branchProducts.find(
@@ -280,7 +280,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
 
                 // Tính tổng quantity trong branchProducts
                 const totalQuantity = response.data.branchProducts.reduce((total, product) => {
-                    return total + (product.quantity || 0); // Sử dụng giá trị 0 nếu quantity không tồn tại
+                    return total + (product?.quantity || 0); // Sử dụng giá trị 0 nếu quantity không tồn tại
                 }, 0);
 
                 setTotalQuantity(totalQuantity);
@@ -835,7 +835,7 @@ const ProductForm = ({ viewMode, productId }: { viewMode: "details" | "update" |
                                             </label>
                                             <input
                                                 type="text"
-                                                value={totalQuantity ? totalQuantity.toLocaleString() : 0}
+                                                value={totalQuantity ? totalQuantity?.toLocaleString() : 0}
                                                 disabled
                                                 className="w-full rounded border-1.5 border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                                             />

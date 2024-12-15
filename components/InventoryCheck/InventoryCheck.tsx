@@ -99,10 +99,10 @@ const InventoryCheckTable = () => {
                 let response;
                 if (filterMode === "quantity") {
                     response = await getListProductByCheckQuantity(
-                        page.toString(),
+                        (page - 1).toString(),
                         rowsPerPage.toString(),
                         selectedOptions.lowQuantity,
-                        lowQuantity,
+                        lowQuantityNumber,
                         selectedOptions.warningQuantity,
                         selectedOptions.outOfStock,
                         sessionToken
@@ -120,7 +120,7 @@ const InventoryCheckTable = () => {
                 } else if (filterMode === "price") {
                     if (selectedOptions.warningPrice) {
                         response = await getListProductByCheckPrice(
-                            page.toString(),
+                            (page - 1).toString(),
                             rowsPerPage.toString(),
                             sessionToken
                         );
@@ -135,7 +135,7 @@ const InventoryCheckTable = () => {
                         }
                     } else if (selectedOptions.lostPrice) {
                         response = await getListProductByCheckNonePrice(
-                            page.toString(),
+                            (page - 1).toString(),
                             rowsPerPage.toString(),
                             sessionToken
                         );
@@ -152,7 +152,7 @@ const InventoryCheckTable = () => {
                 } else if (filterMode === "expireDate") {
                     if (selectedOptions.lowExpireDate) {
                         response = await getListProductByCheckNumberOfExpiredDate(
-                            page.toString(),
+                            (page - 1).toString(),
                             rowsPerPage.toString(),
                             numberOfDates,
                             sessionToken
@@ -168,7 +168,7 @@ const InventoryCheckTable = () => {
                         }
                     } else if (selectedOptions.outExpireDate) {
                         response = await getListProductByCheckExpiredDate(
-                            page.toString(),
+                            (page - 1).toString(),
                             rowsPerPage.toString(),
                             sessionToken
                         );
@@ -191,7 +191,7 @@ const InventoryCheckTable = () => {
         };
 
         getListWarningProducts();
-    }, [selectedOptions, filterMode, lowQuantityNumber, numberOfDates, page, rowsPerPage, sessionToken]);
+    }, []);
 
     useEffect(() => {
         //Tạo query string từ object dataSearch
