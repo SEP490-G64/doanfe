@@ -89,7 +89,7 @@ function HeaderTaskbar({
             let response;
             if (filterMode === "quantity") {
                 response = await getListProductByCheckQuantity(
-                    (page - 1).toString(),
+                    "1",
                     pageSize.toString(),
                     selectedOptions.lowQuantity,
                     lowQuantity,
@@ -109,11 +109,7 @@ function HeaderTaskbar({
                 }
             } else if (filterMode === "price") {
                 if (selectedOptions.warningPrice) {
-                    response = await getListProductByCheckPrice(
-                        (page - 1).toString(),
-                        pageSize.toString(),
-                        sessionToken
-                    );
+                    response = await getListProductByCheckPrice("1", pageSize.toString(), sessionToken);
                     if (response.message === "200 OK") {
                         setInventoryCheckData(
                             response.data.map((item: Product, index: number) => ({
@@ -124,11 +120,7 @@ function HeaderTaskbar({
                         setTotal(response.total);
                     }
                 } else if (selectedOptions.lostPrice) {
-                    response = await getListProductByCheckNonePrice(
-                        (page - 1).toString(),
-                        pageSize.toString(),
-                        sessionToken
-                    );
+                    response = await getListProductByCheckNonePrice("1", pageSize.toString(), sessionToken);
                     if (response.message === "200 OK") {
                         setInventoryCheckData(
                             response.data.map((item: Product, index: number) => ({
@@ -142,7 +134,7 @@ function HeaderTaskbar({
             } else if (filterMode === "expireDate") {
                 if (selectedOptions.lowExpireDate) {
                     response = await getListProductByCheckNumberOfExpiredDate(
-                        (page - 1).toString(),
+                        "1",
                         pageSize.toString(),
                         numberOfDates,
                         sessionToken
@@ -157,11 +149,7 @@ function HeaderTaskbar({
                         setTotal(response.total);
                     }
                 } else if (selectedOptions.outExpireDate) {
-                    response = await getListProductByCheckExpiredDate(
-                        (page - 1).toString(),
-                        pageSize.toString(),
-                        sessionToken
-                    );
+                    response = await getListProductByCheckExpiredDate("1", pageSize.toString(), sessionToken);
                     if (response.message === "200 OK") {
                         setInventoryCheckData(
                             response.data.map((item: any, index: number) => ({
@@ -182,7 +170,7 @@ function HeaderTaskbar({
 
     const handleSearch = async () => {
         try {
-            setPage(() => 1);
+            setPage(1);
             await getListProducts();
         } catch (error) {
             console.log(error);
