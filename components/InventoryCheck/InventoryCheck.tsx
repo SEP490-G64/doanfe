@@ -219,6 +219,7 @@ const InventoryCheckTable = () => {
                         loading={loading}
                         setLoading={setLoading}
                         page={page}
+                        setPage={setPage}
                         pageSize={rowsPerPage}
                         setTotal={setTotal}
                         filterMode={filterMode}

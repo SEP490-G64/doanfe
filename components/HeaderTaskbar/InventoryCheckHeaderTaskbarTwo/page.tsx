@@ -21,6 +21,7 @@ function HeaderTaskbar({
     loading,
     setLoading,
     page,
+    setPage,
     pageSize,
     setTotal,
     filterMode,
@@ -38,6 +39,7 @@ function HeaderTaskbar({
     loading: boolean;
     setLoading: any;
     page: number;
+    setPage: any;
     pageSize: number;
     setTotal: any;
     filterMode: "quantity" | "price" | "expireDate";
@@ -180,6 +182,7 @@ function HeaderTaskbar({
 
     const handleSearch = async () => {
         try {
+            setPage(1);
             await getListProducts();
         } catch (error) {
             console.log(error);
