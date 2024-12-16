@@ -88,6 +88,7 @@ const TypesTable = () => {
 
     const handleSearch = async () => {
         await getListTypeByPage();
+        setPage(1);
     };
 
     const handleDelete = async (typeId: string) => {

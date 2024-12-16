@@ -88,6 +88,7 @@ const UnitsTable = () => {
 
     const handleSearch = async () => {
         await getListUnitByPage();
+        setPage(1);
     };
 
     const handleDelete = async (unitId: string) => {

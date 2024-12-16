@@ -55,6 +55,7 @@ const InventoryCheckTable = () => {
     });
     const [lowQuantityNumber, setLowQuantityNumber] = useState(Number(searchParams.get("lowQuantityNumber")) || 0);
     const [numberOfDates, setNumberOfDates] = useState(Number(searchParams.get("numberOfDates")) || 0);
+    const [sellPrice, setSellPrice] = useState(Number(searchParams.get("sellPrice")) || 0);
 
     const totalPages = useMemo(() => {
         return Math.ceil(total / rowsPerPage);
@@ -137,6 +138,7 @@ const InventoryCheckTable = () => {
                         response = await getListProductByCheckNonePrice(
                             (page - 1).toString(),
                             rowsPerPage.toString(),
+                            sellPrice,
                             sessionToken
                         );
                         if (response.message === "200 OK") {
@@ -200,12 +202,13 @@ const InventoryCheckTable = () => {
             filterMode,
             lowQuantityNumber: lowQuantityNumber.toString(),
             numberOfDates: numberOfDates.toString(),
+            sellPrice: sellPrice.toString(),
             page: page.toString(),
             size: rowsPerPage.toString(),
         }).toString();
         // Chuyển hướng đến đường dẫn mới với query string
         router.push(`/inventory-check?${queryParams}`);
-    }, [selectedOptions, filterMode, numberOfDates, lowQuantityNumber, page, rowsPerPage, router]);
+    }, [selectedOptions, filterMode, numberOfDates, lowQuantityNumber, sellPrice, page, rowsPerPage, router]);
 
     if (loading) return <Loader />;
     else {
@@ -230,6 +233,8 @@ const InventoryCheckTable = () => {
                         setLowQuantity={setLowQuantityNumber}
                         numberOfDates={numberOfDates}
                         setNumberOfDates={setNumberOfDates}
+                        sellPrice={sellPrice}
+                        setSellPrice={setSellPrice}
                         sessionToken={sessionToken}
                     />
                     <div className="rounded-sm border border-stroke bg-white px-5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
