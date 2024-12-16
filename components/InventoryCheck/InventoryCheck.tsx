@@ -293,7 +293,7 @@ const InventoryCheckTable = () => {
                                         <TableRow
                                             key={item?.id}
                                             onClick={() => router.push(`/products/details/${item.id}`)}
-                                            className="hover:cursor-pointer"
+                                            className="hover:cursor-pointer hover:bg-slate-100"
                                         >
                                             {(columnKey) => (
                                                 <TableCell
