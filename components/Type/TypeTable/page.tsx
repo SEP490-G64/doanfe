@@ -63,10 +63,7 @@ const TypesTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListType((page - 1).toString(),
-                rowsPerPage.toString(),
-                dataSearch,
-                sessionToken);
+            const response = await getListType((page - 1).toString(), rowsPerPage.toString(), dataSearch, sessionToken);
 
             if (response.message === "200 OK") {
                 setTypeData(
@@ -127,7 +124,7 @@ const TypesTable = () => {
             case "typeDescription":
                 return (
                     <Tooltip content={type.typeDescription}>
-                        <h5 className="font-normal text-black dark:text-white line-clamp-1">
+                        <h5 className="line-clamp-1 font-normal text-black dark:text-white">
                             {type.typeDescription || "Không mô tả"}
                         </h5>
                     </Tooltip>
@@ -167,7 +164,7 @@ const TypesTable = () => {
                                 <FaPencil />
                             </button>
                         </Tooltip>
-                        <Tooltip color="danger" content="Xóa">
+                        {/* <Tooltip color="danger" content="Xóa">
                             <button className="hover:text-danger" onClick={() => handleOpenModal(type.id)}>
                                 <svg
                                     className="fill-current"
@@ -195,7 +192,7 @@ const TypesTable = () => {
                                     />
                                 </svg>
                             </button>
-                        </Tooltip>
+                        </Tooltip> */}
                     </div>
                 );
             default:
@@ -205,10 +202,8 @@ const TypesTable = () => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <>
@@ -218,8 +213,7 @@ const TypesTable = () => {
                     setDataSearch={setDataSearch}
                     handleSearch={handleSearch}
                 />
-                <div
-                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                     Tìm thấy <span className="font-bold text-blue-600">{total}</span> loại sản phẩm
                     <div className="max-w-full overflow-x-auto">
                         <Table

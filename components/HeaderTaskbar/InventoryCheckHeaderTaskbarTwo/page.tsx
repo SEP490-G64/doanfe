@@ -182,7 +182,7 @@ function HeaderTaskbar({
 
     const handleSearch = async () => {
         try {
-            setPage(1);
+            setPage(() => 1);
             await getListProducts();
         } catch (error) {
             console.log(error);

@@ -63,10 +63,12 @@ const ManufacturersTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListManufacturer((page - 1).toString(),
+            const response = await getListManufacturer(
+                (page - 1).toString(),
                 rowsPerPage.toString(),
                 dataSearch,
-                sessionToken);
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setManufacturerData(
@@ -169,7 +171,7 @@ const ManufacturersTable = () => {
                                 <FaPencil />
                             </button>
                         </Tooltip>
-                        <Tooltip color="danger" content="Xóa">
+                        {/* <Tooltip color="danger" content="Xóa">
                             <button className="hover:text-danger" onClick={() => handleOpenModal(manufacturer.id)}>
                                 <svg
                                     className="fill-current"
@@ -197,7 +199,7 @@ const ManufacturersTable = () => {
                                     />
                                 </svg>
                             </button>
-                        </Tooltip>
+                        </Tooltip> */}
                     </div>
                 );
             default:
@@ -207,10 +209,8 @@ const ManufacturersTable = () => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'MANAGER' || role.type === 'STAFF')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "MANAGER" || role.type === "STAFF")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <>
@@ -220,8 +220,7 @@ const ManufacturersTable = () => {
                     setDataSearch={setDataSearch}
                     handleSearch={handleSearch}
                 />
-                <div
-                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                     Tìm thấy <span className="font-bold text-blue-600">{total}</span> nhà sản xuất
                     <div className="max-w-full overflow-x-auto">
                         <Table
