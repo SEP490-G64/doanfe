@@ -99,6 +99,7 @@ const InventoryCheckTable = () => {
 
     const handleSearch = async () => {
         await getListInventoryCheckByPage();
+        setPage(1);
     };
 
     const handleDelete = async (inboundId: string) => {

@@ -93,6 +93,7 @@ const ManufacturersTable = () => {
 
     const handleSearch = async () => {
         await getListManufacturerByPage();
+        setPage(1);
     };
 
     const handleDelete = async (ManufacturerId: string) => {

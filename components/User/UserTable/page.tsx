@@ -23,7 +23,7 @@ import { toast } from "react-toastify";
 import { FaPencil } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-import {activateUser, deleteUser, getListUser} from "@/services/userServices";
+import { activateUser, deleteUser, getListUser } from "@/services/userServices";
 import { useAppContext } from "@/components/AppProvider/AppProvider";
 import Loader from "@/components/common/Loader";
 import { userColumns } from "@/utils/data";
@@ -64,12 +64,7 @@ const UsersTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListUser(
-                (page - 1).toString(),
-                rowsPerPage.toString(),
-                dataSearch,
-                sessionToken
-            );
+            const response = await getListUser((page - 1).toString(), rowsPerPage.toString(), dataSearch, sessionToken);
 
             if (response.message === "200 OK") {
                 setUserData(
@@ -95,6 +90,7 @@ const UsersTable = () => {
 
     const handleSearch = async () => {
         await getListUserByPage();
+        setPage(1);
     };
 
     const handleDelete = async (UserId: string) => {
@@ -311,10 +307,8 @@ const UsersTable = () => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
+        if (!userInfo?.roles?.some((role) => role.type === "ADMIN")) {
+            return <Unauthorized></Unauthorized>;
         }
         return (
             <>
@@ -325,8 +319,7 @@ const UsersTable = () => {
                     setDataSearch={setDataSearch}
                     handleSearch={handleSearch}
                 />
-                <div
-                    className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
+                <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default sm:px-7.5 xl:pb-1 dark:border-strokedark dark:bg-boxdark">
                     Tìm thấy <span className="font-bold text-blue-600">{total}</span> người dùng
                     <div className="max-w-full overflow-x-auto">
                         <Table
@@ -437,7 +430,7 @@ const UsersTable = () => {
                                                             case "DEACTIVATE":
                                                                 return handleActivate(selectedId);
                                                         }
-                                                    })()
+                                                    })();
                                                 }
                                                 onClose();
                                             }}

@@ -34,6 +34,7 @@ import { TokenDecoded } from "@/types/tokenDecoded";
 import { jwtDecode } from "jwt-decode";
 import Unauthorized from "@/components/common/Unauthorized";
 import { FiPackage } from "react-icons/fi";
+import { set } from "lodash";
 
 const ProductsTable = () => {
     const router = useRouter();
@@ -94,6 +95,7 @@ const ProductsTable = () => {
 
     const handleSearch = async () => {
         await getListProductByPage();
+        setPage(1);
     };
 
     const handleOpenModal = (productId: string) => {

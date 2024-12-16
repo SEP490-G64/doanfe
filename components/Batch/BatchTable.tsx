@@ -73,10 +73,12 @@ const BatchTable = ({ productId }: { productId?: string }) => {
         }
         setLoading(true);
         try {
-            const response = await getListBatch((page - 1).toString(),
+            const response = await getListBatch(
+                (page - 1).toString(),
                 rowsPerPage.toString(),
                 dataSearch,
-                sessionToken);
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setBatchData(
@@ -101,6 +103,7 @@ const BatchTable = ({ productId }: { productId?: string }) => {
 
     const handleSearch = async () => {
         await getListBatchByPage();
+        setPage(1);
     };
 
     const handleDelete = async (batchId: string) => {
@@ -148,15 +151,7 @@ const BatchTable = ({ productId }: { productId?: string }) => {
 
     const renderCell = useCallback((batch: Batch, columnKey: React.Key) => {
         const cellValue =
-            batch[
-                columnKey as
-                    | "id"
-                    | "batchCode"
-                    | "produceDate"
-                    | "expireDate"
-                    | "inboundPrice"
-                    | "actions"
-            ];
+            batch[columnKey as "id" | "batchCode" | "produceDate" | "expireDate" | "inboundPrice" | "actions"];
 
         switch (columnKey) {
             case "no.":
@@ -168,15 +163,11 @@ const BatchTable = ({ productId }: { productId?: string }) => {
             case "expireDate":
                 return <h5 className="font-normal text-black dark:text-white">{formatDateTime(batch.expireDate)}</h5>;
             case "inboundPrice":
-                return <h5
-                    className={`font-normal ${
-                        batch.inboundPrice ? "text-black dark:text-white" : "text-red"
-                    }`}
-                >
-                    {batch.inboundPrice
-                        ? `${batch.inboundPrice.toLocaleString()}đ`
-                        : "Chưa tính giá nhập hàng"}
-                </h5>;
+                return (
+                    <h5 className={`font-normal ${batch.inboundPrice ? "text-black dark:text-white" : "text-red"}`}>
+                        {batch.inboundPrice ? `${batch.inboundPrice.toLocaleString()}đ` : "Chưa tính giá nhập hàng"}
+                    </h5>
+                );
             case "quantity":
                 return (
                     <div>
@@ -187,7 +178,8 @@ const BatchTable = ({ productId }: { productId?: string }) => {
                             <>
                                 {batch.unitConversions.map((conversion) => (
                                     <h5 key={conversion.id} className="font-normal text-black dark:text-white">
-                                        = {conversion.factorConversion * batch.quantity} {conversion.smallerUnit?.unitName}
+                                        = {conversion.factorConversion * batch.quantity}{" "}
+                                        {conversion.smallerUnit?.unitName}
                                     </h5>
                                 ))}
                             </>
@@ -222,7 +214,8 @@ const BatchTable = ({ productId }: { productId?: string }) => {
                             </button>
                         </Tooltip>
                         <Tooltip color="secondary" content="Cập nhật" hidden>
-                            <button hidden
+                            <button
+                                hidden
                                 className="hover:text-secondary"
                                 onClick={() => router.push(`/products/batches/${productId}/update/${batch.id}`)}
                             >
@@ -267,12 +260,9 @@ const BatchTable = ({ productId }: { productId?: string }) => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'STAFF' || role.type === 'MANAGER')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
-        }
-        else {
+        if (!userInfo?.roles?.some((role) => role.type === "STAFF" || role.type === "MANAGER")) {
+            return <Unauthorized></Unauthorized>;
+        } else {
             return (
                 <>
                     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -308,7 +298,7 @@ const BatchTable = ({ productId }: { productId?: string }) => {
                                         className="hover:text-blue-600"
                                         onClick={() => router.push(`/products/list`)}
                                     >
-                                        <IoArrowBackSharp color={"blue"}/>
+                                        <IoArrowBackSharp color={"blue"} />
                                     </button>
                                 </Tooltip>
                             </div>
@@ -319,17 +309,23 @@ const BatchTable = ({ productId }: { productId?: string }) => {
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                                         Hình ảnh
                                     </label>
-                                    {(product?.urlImage ? (
-                                    <img
-                                        src={product.urlImage}
-                                        loading={"lazy"}
-                                        alt="product-image"
-                                        width={64}
-                                        height={64}
-                                    />
+                                    {product?.urlImage ? (
+                                        <img
+                                            src={product.urlImage}
+                                            loading={"lazy"}
+                                            alt="product-image"
+                                            width={64}
+                                            height={64}
+                                        />
                                     ) : (
-                                    <Image src={"/images/no-image.png"} loading={"lazy"} alt="product-image" width={64} height={64} />
-                                    ))}
+                                        <Image
+                                            src={"/images/no-image.png"}
+                                            loading={"lazy"}
+                                            alt="product-image"
+                                            width={64}
+                                            height={64}
+                                        />
+                                    )}
                                 </div>
                                 <div className="w-4/12">
                                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">

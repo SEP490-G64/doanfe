@@ -63,10 +63,12 @@ const BranchesTable = () => {
         }
         setLoading(true);
         try {
-            const response = await getListBranch((page - 1).toString(),
+            const response = await getListBranch(
+                (page - 1).toString(),
                 rowsPerPage.toString(),
                 dataSearch,
-                sessionToken);
+                sessionToken
+            );
 
             if (response.message === "200 OK") {
                 setBranchData(
@@ -91,6 +93,7 @@ const BranchesTable = () => {
 
     const handleSearch = async () => {
         await getListBranchByPage();
+        setPage(1);
     };
 
     const handleDelete = async (branchId: string) => {
@@ -219,12 +222,9 @@ const BranchesTable = () => {
 
     if (loading) return <Loader />;
     else {
-        if (!userInfo?.roles?.some(role => role.type === 'ADMIN')) {
-            return (
-                <Unauthorized></Unauthorized>
-            );
-        }
-        else {
+        if (!userInfo?.roles?.some((role) => role.type === "ADMIN")) {
+            return <Unauthorized></Unauthorized>;
+        } else {
             return (
                 <>
                     <HeaderTaskbar

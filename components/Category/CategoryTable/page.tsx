@@ -94,6 +94,7 @@ const CategoriesTable = () => {
 
     const handleSearch = async () => {
         await getListCategoryByPage();
+        setPage(1);
     };
 
     const handleDelete = async (categoryId: string) => {

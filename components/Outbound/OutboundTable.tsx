@@ -122,6 +122,7 @@ const OutboundTable = () => {
 
     const handleSearch = async () => {
         await getListOutboundByPage();
+        setPage(1);
     };
 
     useEffect(() => {
@@ -285,8 +286,11 @@ const OutboundTable = () => {
             case "totalPrice":
                 return (
                     <p className={"font-normal text-black dark:text-white"}>
-                        {["KIEM_HANG", "HOAN_THANH"].includes(outbound.status as string) ?
-                            (outbound.totalPrice ? `${outbound.totalPrice.toLocaleString()}đ` : "0đ") : "Chưa kiểm hàng xuất"}
+                        {["KIEM_HANG", "HOAN_THANH"].includes(outbound.status as string)
+                            ? outbound.totalPrice
+                                ? `${outbound.totalPrice.toLocaleString()}đ`
+                                : "0đ"
+                            : "Chưa kiểm hàng xuất"}
                     </p>
                 );
             case "createdDate":

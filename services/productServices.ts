@@ -84,14 +84,14 @@ export const getListProductByCheckQuantity = async (
     }
 };
 
-export const getListProductByCheckNonePrice = async (page: string, size: string, token: string) => {
+export const getListProductByCheckNonePrice = async (page: string, size: string, price: number, token: string) => {
     const params: Params = {
         page,
         size,
     };
 
     try {
-        const res = await httpRequest.get(`dsd/api/v1/staff/product/sell-price-equal-zero`, {
+        const res = await httpRequest.get(`dsd/api/v1/staff/product/sell-price?price=${price}`, {
             headers: { Authorization: `Bearer ${token}` },
             params,
         });

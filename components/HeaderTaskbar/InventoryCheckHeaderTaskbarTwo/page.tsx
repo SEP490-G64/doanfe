@@ -32,6 +32,8 @@ function HeaderTaskbar({
     setLowQuantity,
     numberOfDates,
     setNumberOfDates,
+    sellPrice,
+    setSellPrice,
     buttons,
 }: {
     sessionToken: string;
@@ -58,6 +60,8 @@ function HeaderTaskbar({
     setLowQuantity: any;
     numberOfDates: number;
     setNumberOfDates: any;
+    sellPrice: number;
+    setSellPrice: any;
     buttons?: string;
 }) {
     const router = useRouter();
@@ -89,7 +93,7 @@ function HeaderTaskbar({
             let response;
             if (filterMode === "quantity") {
                 response = await getListProductByCheckQuantity(
-                    "1",
+                    "0",
                     pageSize.toString(),
                     selectedOptions.lowQuantity,
                     lowQuantity,
@@ -109,7 +113,7 @@ function HeaderTaskbar({
                 }
             } else if (filterMode === "price") {
                 if (selectedOptions.warningPrice) {
-                    response = await getListProductByCheckPrice("1", pageSize.toString(), sessionToken);
+                    response = await getListProductByCheckPrice("0", pageSize.toString(), sessionToken);
                     if (response.message === "200 OK") {
                         setInventoryCheckData(
                             response.data.map((item: Product, index: number) => ({
@@ -120,7 +124,7 @@ function HeaderTaskbar({
                         setTotal(response.total);
                     }
                 } else if (selectedOptions.lostPrice) {
-                    response = await getListProductByCheckNonePrice("1", pageSize.toString(), sessionToken);
+                    response = await getListProductByCheckNonePrice("0", pageSize.toString(), sellPrice, sessionToken);
                     if (response.message === "200 OK") {
                         setInventoryCheckData(
                             response.data.map((item: Product, index: number) => ({
@@ -134,7 +138,7 @@ function HeaderTaskbar({
             } else if (filterMode === "expireDate") {
                 if (selectedOptions.lowExpireDate) {
                     response = await getListProductByCheckNumberOfExpiredDate(
-                        "1",
+                        "0",
                         pageSize.toString(),
                         numberOfDates,
                         sessionToken
@@ -149,7 +153,7 @@ function HeaderTaskbar({
                         setTotal(response.total);
                     }
                 } else if (selectedOptions.outExpireDate) {
-                    response = await getListProductByCheckExpiredDate("1", pageSize.toString(), sessionToken);
+                    response = await getListProductByCheckExpiredDate("0", pageSize.toString(), sessionToken);
                     if (response.message === "200 OK") {
                         setInventoryCheckData(
                             response.data.map((item: any, index: number) => ({
@@ -170,8 +174,8 @@ function HeaderTaskbar({
 
     const handleSearch = async () => {
         try {
-            setPage(1);
             await getListProducts();
+            setPage(1);
         } catch (error) {
             console.log(error);
         }
@@ -284,7 +288,7 @@ function HeaderTaskbar({
                                     onChange={handleChangeOpts}
                                     className="size-4 accent-primary"
                                 />
-                                <span>Giá bán nhỏ hơn giá nhập</span>
+                                <span>Giá bán bị lỗi</span>
                             </label>
                             <label className="flex items-center space-x-2">
                                 <input
@@ -294,7 +298,14 @@ function HeaderTaskbar({
                                     onChange={handleChangeOpts}
                                     className="size-4 accent-primary"
                                 />
-                                <span>Chưa có giá bán</span>
+                                <span>Giá bán nhỏ hơn hoặc bằng</span>
+                                <input
+                                    type="text"
+                                    value={sellPrice.toLocaleString()}
+                                    onChange={(e) => setSellPrice(Number(e.target.value.replace(/,/g, "")))}
+                                    className="border-gray-300 text-gray-700 w-32 rounded-md border p-1 shadow-sm focus:outline-none"
+                                />
+                                <span>VNĐ</span>
                             </label>
                         </div>
                     </TabPanel>

@@ -15,7 +15,9 @@ import {
     TableCell,
     TableColumn,
     TableHeader,
-    TableRow, Tooltip, useDisclosure,
+    TableRow,
+    Tooltip,
+    useDisclosure,
 } from "@nextui-org/react";
 import Image from "next/image";
 import { toast } from "react-toastify";
@@ -85,6 +87,7 @@ const InventoryReportTable = () => {
 
     const handleSearch = async () => {
         await getListStockByPage();
+        setPage(1);
     };
 
     useEffect(() => {
@@ -108,9 +111,17 @@ const InventoryReportTable = () => {
             case "productName":
                 return <h5 className="font-normal text-black dark:text-white">{report.productName}</h5>;
             case "minQuantity":
-                return <h5 className="font-normal text-black dark:text-white">{report.minQuantity?.toLocaleString()} {report.unit}</h5>;
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {report.minQuantity?.toLocaleString()} {report.unit}
+                    </h5>
+                );
             case "maxQuantity":
-                return <h5 className="font-normal text-black dark:text-white">{report.maxQuantity?.toLocaleString()}  {report.unit}</h5>;
+                return (
+                    <h5 className="font-normal text-black dark:text-white">
+                        {report.maxQuantity?.toLocaleString()} {report.unit}
+                    </h5>
+                );
             case "totalQuantity":
                 // Kiểm tra điều kiện so với min và max để thay đổi màu sắc
                 let totalQuantityClass = "text-green-700"; // Màu mặc định
@@ -126,11 +137,7 @@ const InventoryReportTable = () => {
 
                 return (
                     <div className="flex items-center justify-center space-x-2">
-                        {iconClass && (
-                            <div
-                                className={`w-3 h-3 rounded-full ${iconClass}`}
-                            ></div>
-                        )}
+                        {iconClass && <div className={`h-3 w-3 rounded-full ${iconClass}`}></div>}
                         <h5 className={`font-normal ${totalQuantityClass} dark:text-white`}>
                             {report.totalQuantity?.toLocaleString()} {report.unit}
                         </h5>
@@ -148,11 +155,7 @@ const InventoryReportTable = () => {
 
                 return (
                     <div className="flex items-center justify-center space-x-2">
-                        {iconSellableClass && (
-                            <div
-                                className={`w-3 h-3 rounded-full ${iconSellableClass}`}
-                            ></div>
-                        )}
+                        {iconSellableClass && <div className={`h-3 w-3 rounded-full ${iconSellableClass}`}></div>}
                         <h5 className={`font-normal ${sellableQuantityClass} dark:text-white`}>
                             {report.sellableQuantity?.toLocaleString()} {report.unit}
                         </h5>
@@ -168,7 +171,7 @@ const InventoryReportTable = () => {
                             onClick={() => {
                                 setSelectedProduct(report);
                                 onOpen();
-                                console.log(selectedProduct)
+                                console.log(selectedProduct);
                             }}
                         >
                             <svg
@@ -229,11 +232,7 @@ const InventoryReportTable = () => {
 
                     return (
                         <div className="flex items-center justify-center space-x-2">
-                            {quantityClass && (
-                                <div
-                                    className={`w-3 h-3 rounded-full ${iconClass}`}
-                                ></div>
-                            )}
+                            {quantityClass && <div className={`h-3 w-3 rounded-full ${iconClass}`}></div>}
                             <h5 className={`font-normal ${quantityClass} dark:text-white`}>
                                 {report.totalQuantity?.toLocaleString()} {selectedProduct?.unit}
                             </h5>
@@ -272,7 +271,8 @@ const InventoryReportTable = () => {
                                     {/* Ô vuông màu đỏ */}
                                     <div className="mr-2 h-4 w-4 rounded-sm bg-[#e53e3e]"></div>
                                     <span className="text-gray-700">
-                                        Số lượng tồn kho nhỏ hơn định mức dưới (dưới định mức) | Số lượng có thể bán nhỏ hơn 0
+                                        Số lượng tồn kho nhỏ hơn định mức dưới (dưới định mức) | Số lượng có thể bán nhỏ
+                                        hơn 0
                                     </span>
                                 </li>
                                 <li className="flex items-center">
@@ -285,7 +285,9 @@ const InventoryReportTable = () => {
                                 <li className="flex items-center">
                                     {/* Ô vuông màu xanh lá */}
                                     <div className="mr-2 h-4 w-4 rounded-sm bg-[#38a169]"></div>
-                                    <span className="text-gray-700">Số lượng tồn kho trong phạm vi bình thường | Số lượng có thể bán lớn hơn 0</span>
+                                    <span className="text-gray-700">
+                                        Số lượng tồn kho trong phạm vi bình thường | Số lượng có thể bán lớn hơn 0
+                                    </span>
                                 </li>
                             </ul>
                         </div>
@@ -375,16 +377,12 @@ const InventoryReportTable = () => {
                                                 <li className="flex items-center">
                                                     {/* Ô vuông màu đỏ */}
                                                     <div className="mr-2 h-4 w-4 rounded-sm bg-[#e53e3e]"></div>
-                                                    <span className="text-gray-700">
-                                                        Lô sản phẩm hết hạn
-                                                    </span>
+                                                    <span className="text-gray-700">Lô sản phẩm hết hạn</span>
                                                 </li>
                                                 <li className="flex items-center">
                                                     {/* Ô vuông màu xanh lá */}
                                                     <div className="mr-2 h-4 w-4 rounded-sm bg-[#38a169]"></div>
-                                                    <span className="text-gray-700">
-                                                        Lô sản phẩm bình thường
-                                                    </span>
+                                                    <span className="text-gray-700">Lô sản phẩm bình thường</span>
                                                 </li>
                                             </ul>
                                         </div>
