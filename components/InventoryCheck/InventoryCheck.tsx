@@ -191,7 +191,7 @@ const InventoryCheckTable = () => {
         };
 
         getListWarningProducts();
-    }, []);
+    }, [page, rowsPerPage]);
 
     useEffect(() => {
         //Tạo query string từ object dataSearch
